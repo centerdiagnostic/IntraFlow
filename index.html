@@ -1,0 +1,1432 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบจัดการและอนุมัติเอกสาร (Document Approval Workflow)</title>
+    
+    <!-- Fonts & Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+
+    <!-- เพิ่ม Script ของ EmailJS -->
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+
+    <!-- เพิ่ม Script ของ jsPDF และ jsPDF-AutoTable -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+    
+    <!-- เพิ่มฟอนต์ภาษาไทยสำหรับ jsPDF (THSarabunNew ปกติและตัวหนา) เพื่อแก้ปัญหาโหลดฟอนต์ -->
+    <script src="https://cdn.jsdelivr.net/gh/mangeks/THSarabunNew-jsPDF@master/THSarabunNew-normal.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/mangeks/THSarabunNew-jsPDF@master/THSarabunNew-Bold.js"></script>
+
+    <!-- ==================== CSS STYLES (Redesigned) ==================== -->
+    <style>
+        :root {
+            /* Modern Color Palette */
+            --primary: #4f46e5;
+            --primary-hover: #4338ca;
+            --primary-light: #e0e7ff;
+            --success: #10b981;
+            --success-hover: #059669;
+            --danger: #f43f5e;
+            --danger-hover: #e11d48;
+            --warning: #f59e0b;
+            --background: #f8fafc;
+            --surface: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+            --radius-md: 12px;
+            --radius-lg: 20px;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03);
+            --shadow-lg: 0 10px 25px -3px rgba(0,0,0,0.05), 0 4px 6px -2px rgba(0,0,0,0.03);
+            --shadow-glow: 0 0 15px rgba(79, 70, 229, 0.3);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Prompt', sans-serif; }
+        body { background-color: var(--background); color: var(--text-main); line-height: 1.6; overflow-x: hidden; }
+
+        /* Typography & Utilities */
+        h1, h2, h3 { color: var(--text-main); font-weight: 600; letter-spacing: -0.02em; }
+        .hidden { display: none !important; }
+        .text-center { text-align: center; }
+        .mt-4 { margin-top: 1rem; }
+        .mb-4 { margin-bottom: 1rem; }
+        .mb-6 { margin-bottom: 1.5rem; }
+        .w-100 { width: 100%; }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        .animate-fade-in { animation: fadeInUp 0.5s ease-out forwards; }
+
+        /* Layout */
+        .container { max-width: 1200px; margin: 0 auto; padding: 2rem; }
+        .card { 
+            background: var(--surface); 
+            padding: 2.5rem; 
+            border-radius: var(--radius-lg); 
+            box-shadow: var(--shadow-md); 
+            border: 1px solid rgba(255,255,255,0.8);
+            transition: var(--transition);
+        }
+        .card:hover { box-shadow: var(--shadow-lg); }
+        
+        /* Navbar */
+        nav { 
+            background: rgba(255, 255, 255, 0.9); 
+            backdrop-filter: blur(10px);
+            padding: 1rem 2rem; 
+            display: flex; justify-content: space-between; align-items: center; 
+            box-shadow: var(--shadow-sm); 
+            position: sticky; top: 0; z-index: 100;
+        }
+        .nav-brand { font-size: 1.5rem; font-weight: 700; color: var(--primary); display: flex; align-items: center; gap: 0.5rem; }
+        .nav-menu { display: flex; gap: 1.5rem; align-items: center; }
+        
+        /* Buttons */
+        .btn { 
+            padding: 0.75rem 1.5rem; border: none; border-radius: var(--radius-md); 
+            cursor: pointer; font-weight: 500; transition: var(--transition); 
+            display: inline-flex; justify-content: center; align-items: center; gap: 0.5rem; 
+            font-size: 0.95rem;
+        }
+        .btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none !important; }
+        .btn:active { transform: scale(0.97); }
+        
+        .btn-primary { background: var(--primary); color: white; box-shadow: 0 4px 10px rgba(79, 70, 229, 0.2); }
+        .btn-primary:hover:not(:disabled) { background: var(--primary-hover); box-shadow: var(--shadow-glow); transform: translateY(-2px); }
+        
+        .btn-success { background: var(--success); color: white; }
+        .btn-success:hover:not(:disabled) { background: var(--success-hover); transform: translateY(-2px); box-shadow: 0 4px 10px rgba(16, 185, 129, 0.2); }
+        
+        .btn-danger { background: var(--danger); color: white; }
+        .btn-danger:hover:not(:disabled) { background: var(--danger-hover); transform: translateY(-2px); box-shadow: 0 4px 10px rgba(244, 63, 94, 0.2); }
+        
+        .btn-outline { background: transparent; border: 1.5px solid var(--border); color: var(--text-main); }
+        .btn-outline:hover { border-color: var(--text-muted); background: var(--background); }
+
+        .btn-icon-only { padding: 0.5rem; border-radius: 50%; width: 36px; height: 36px; }
+
+        /* Forms */
+        .form-group { margin-bottom: 1.5rem; position: relative; }
+        label { display: block; margin-bottom: 0.5rem; font-weight: 500; font-size: 0.9rem; color: var(--text-muted); }
+        input, select, textarea { 
+            width: 100%; padding: 0.875rem 1rem; 
+            border: 1.5px solid var(--border); border-radius: var(--radius-md); 
+            font-size: 1rem; outline: none; transition: var(--transition);
+            background: var(--background); color: var(--text-main);
+        }
+        input:focus, select:focus, textarea:focus { 
+            border-color: var(--primary); background: var(--surface);
+            box-shadow: 0 0 0 4px var(--primary-light); 
+        }
+        input:disabled { background: #e2e8f0; cursor: not-allowed; opacity: 0.7; }
+
+        /* Status Badges */
+        .badge { padding: 0.35rem 0.85rem; border-radius: 999px; font-size: 0.85rem; font-weight: 500; display: inline-flex; align-items: center; gap: 0.25rem; }
+        .badge-pending { background: #fef3c7; color: #b45309; border: 1px solid #fde68a; }
+        .badge-approved { background: #d1fae5; color: #047857; border: 1px solid #a7f3d0; }
+        .badge-rejected { background: #ffe4e6; color: #be123c; border: 1px solid #fecdd3; }
+        .badge-role { background: var(--primary-light); color: var(--primary); }
+
+        /* Table */
+        .table-container { overflow-x: auto; border-radius: var(--radius-md); border: 1px solid var(--border); }
+        table { width: 100%; border-collapse: collapse; background: var(--surface); }
+        th, td { padding: 1.25rem 1rem; text-align: left; border-bottom: 1px solid var(--border); }
+        th { background: var(--background); font-weight: 600; color: var(--text-muted); font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.05em; }
+        tr { transition: var(--transition); }
+        tr:hover { background: #f8fafc; }
+        td { font-size: 0.95rem; }
+
+        /* Toasts */
+        #toast-container { position: fixed; bottom: 2rem; right: 2rem; z-index: 9999; display: flex; flex-direction: column; gap: 1rem; }
+        .toast { 
+            padding: 1rem 1.5rem; border-radius: var(--radius-md); color: white; 
+            box-shadow: var(--shadow-lg); animation: slideIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+            display: flex; align-items: center; gap: 0.75rem; font-weight: 500;
+        }
+        .toast.success { background-color: var(--success); }
+        .toast.error { background-color: var(--danger); }
+        .toast.info { background-color: var(--text-main); }
+        @keyframes slideIn { from { transform: translateX(120%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+        /* Loaders */
+        .loader { border: 3px solid rgba(255,255,255,0.3); border-radius: 50%; border-top: 3px solid white; width: 20px; height: 20px; animation: spin 1s linear infinite; display: inline-block; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        #global-loader { 
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background: rgba(255,255,255,0.9); backdrop-filter: blur(5px);
+            z-index: 10000; display: flex; justify-content: center; align-items: center; flex-direction: column; 
+            transition: opacity 0.3s;
+        }
+        .spinner-large { 
+            border: 4px solid var(--primary-light); border-top: 4px solid var(--primary); 
+            width: 60px; height: 60px; border-radius: 50%; animation: spin 1s linear infinite; 
+            box-shadow: 0 0 20px rgba(79, 70, 229, 0.2);
+        }
+
+        /* Tabs (Modern Pills) */
+        .tabs { display: flex; gap: 0.5rem; background: var(--border); padding: 0.5rem; border-radius: var(--radius-lg); margin-bottom: 2rem; display: inline-flex; }
+        .tab { 
+            padding: 0.75rem 1.5rem; cursor: pointer; font-weight: 500; color: var(--text-muted); 
+            border-radius: var(--radius-md); transition: var(--transition); display: flex; align-items: center; gap: 0.5rem;
+        }
+        .tab:hover { color: var(--text-main); }
+        .tab.active { background: var(--surface); color: var(--primary); box-shadow: var(--shadow-sm); }
+
+        /* Auth Container (Redesigned) */
+        .auth-wrapper { 
+            display: flex; justify-content: center; align-items: center; min-height: 100vh; 
+            background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+            background-size: 400% 400%;
+            animation: gradientShift 15s ease infinite;
+            padding: 2rem;
+        }
+        .auth-card { 
+            width: 100%; max-width: 420px; 
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        }
+        .auth-logo {
+            max-height: 120px;
+            width: auto;
+            margin: 0 auto;
+            display: block;
+            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1));
+            transition: transform 0.3s ease;
+        }
+        .auth-logo:hover { transform: scale(1.05); }
+
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(5px);
+            z-index: 10000; display: flex; justify-content: center; align-items: center;
+        }
+        .modal-content {
+            background: var(--surface); width: 100%; max-width: 450px;
+            padding: 2rem; border-radius: var(--radius-lg); box-shadow: var(--shadow-lg);
+            animation: fadeInUp 0.3s ease-out;
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- ==================== HTML STRUCTURE ==================== -->
+    
+    <!-- ตัวโหลดข้อมูล (Global Loader) -->
+    <div id="global-loader">
+        <div class="spinner-large"></div>
+        <p class="mt-4" style="font-weight: 500; color: var(--primary); letter-spacing: 1px;">กำลังเตรียมระบบ...</p>
+    </div>
+
+    <!-- ส่วนสำหรับแสดงการแจ้งเตือน (Toast Notifications) -->
+    <div id="toast-container"></div>
+
+    <!-- บังคับเปลี่ยนรหัสผ่าน (First Login Modal) -->
+    <div id="first-login-modal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <h3 class="mb-4" style="color: var(--primary);"><i class="ri-lock-password-line"></i> เข้าใช้งานครั้งแรก</h3>
+            <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.5rem;">
+                เพื่อความปลอดภัยของบัญชี กรุณาตั้งรหัสผ่านใหม่ของคุณก่อนเริ่มต้นใช้งานระบบ IntraFlow
+            </p>
+            <form id="first-login-form">
+                <div class="form-group">
+                    <label>รหัสผ่านใหม่ (อย่างน้อย 6 ตัวอักษร)</label>
+                    <input type="password" id="new-password" required minlength="6" placeholder="••••••••">
+                </div>
+                <div class="form-group mb-6">
+                    <label>ยืนยันรหัสผ่านใหม่</label>
+                    <input type="password" id="confirm-new-password" required minlength="6" placeholder="••••••••">
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                    <button type="submit" class="btn btn-primary w-100" id="btn-submit-new-password">
+                        บันทึกรหัสผ่านและเข้าสู่ระบบ <i class="ri-arrow-right-line"></i>
+                    </button>
+                    <button type="button" class="btn btn-outline w-100" id="btn-cancel-first-login" style="background: transparent;">
+                        ข้ามไปก่อน (เข้าสู่ระบบปกติ)
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 1. หน้าต่างเข้าสู่ระบบ / ลงทะเบียน (Redesigned) -->
+    <div id="auth-view" class="auth-wrapper hidden">
+        <div class="card auth-card animate-fade-in">
+            <!-- โลโก้ใหม่ตามที่ระบุ -->
+            <div class="text-center mb-6">
+                <img src="https://kvdc-vetku.com/wp-content/uploads/2026/03/1.png" alt="KVDC Logo" class="auth-logo">
+            </div>
+            
+            <h2 class="text-center mb-6" id="auth-title" style="color: var(--text-main);">เข้าสู่ระบบ IntraFlow</h2>
+            
+            <form id="auth-form">
+                <div class="form-group">
+                    <label><i class="ri-mail-line"></i> อีเมล</label>
+                    <input type="email" id="auth-email" required placeholder="name@company.com">
+                </div>
+                <div class="form-group">
+                    <label><i class="ri-lock-password-line"></i> รหัสผ่าน</label>
+                    <input type="password" id="auth-password" required placeholder="••••••••">
+                </div>
+                <div class="form-group hidden" id="register-role-group">
+                    <label><i class="ri-user-settings-line"></i> บทบาท (สำหรับจำลองระบบ)</label>
+                    <select id="auth-role">
+                        <option value="user">พนักงานทั่วไป (ยื่นเอกสาร)</option>
+                        <option value="approver">ผู้อนุมัติ (พิจารณาเอกสาร)</option>
+                        <option value="admin">ผู้ดูแลระบบ (เห็นเอกสารทั้งหมด)</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary w-100 mt-4" style="padding: 0.875rem;" id="auth-submit-btn">
+                    เข้าสู่ระบบ <i class="ri-arrow-right-line"></i>
+                </button>
+            </form>
+            
+            <p class="text-center mt-6" style="font-size: 0.9rem; color: var(--text-muted);">
+                <span id="auth-toggle-text">ยังไม่มีบัญชีใช่หรือไม่?</span>
+                <a href="#" id="auth-toggle-btn" style="color: var(--primary); text-decoration: none; font-weight: 600; margin-left: 0.5rem; transition: var(--transition);">ลงทะเบียนทดสอบ</a>
+            </p>
+        </div>
+    </div>
+
+    <!-- 2. หน้าจอหลักของแอปพลิเคชัน -->
+    <div id="app-view" class="hidden">
+        <!-- แถบนำทางด้านบน -->
+        <nav>
+            <div class="nav-brand">
+                <i class="ri-file-copy-2-line" style="font-size: 1.8rem;"></i>
+                IntraFlow
+            </div>
+            <div class="nav-menu">
+                <!-- ปุ่มเมนูสำหรับแอดมิน (เปลี่ยน Tab) -->
+                <button id="btn-admin-panel" class="btn btn-outline hidden" style="padding: 0.5rem 1rem;">
+                    <i class="ri-settings-3-line"></i> จัดการระบบ
+                </button>
+
+                <div style="display: flex; flex-direction: column; align-items: flex-end; line-height: 1.2;">
+                    <span id="user-info-display" style="font-size: 0.9rem; font-weight: 500;"></span>
+                    <span id="user-role-badge" class="badge badge-role mt-1" style="font-size: 0.7rem; padding: 0.15rem 0.5rem;"></span>
+                </div>
+                <div style="height: 30px; width: 1px; background: var(--border); margin: 0 0.5rem;"></div>
+                <button id="btn-logout" class="btn btn-outline" style="padding: 0.5rem 1rem;">
+                    <i class="ri-logout-box-r-line"></i> ออกจากระบบ
+                </button>
+            </div>
+        </nav>
+
+        <div class="container">
+            <!-- 2.1 ส่วนของแดชบอร์ดหลัก (รายการเอกสาร & ยื่นเอกสาร & แอดมิน) -->
+            <div id="dashboard-section" class="animate-fade-in">
+                <!-- Tabs -->
+                <div class="tabs">
+                    <div class="tab active" data-target="tab-list" id="tab-list-btn">
+                        <i class="ri-list-check-2"></i> รายการเอกสาร
+                    </div>
+                    <div class="tab" data-target="tab-submit" id="tab-submit-btn">
+                        <i class="ri-add-circle-line"></i> ยื่นเอกสารใหม่
+                    </div>
+                    <!-- แท็บนี้จะแสดงเมื่อกดปุ่มจัดการระบบ -->
+                    <div class="tab hidden" data-target="tab-admin" id="tab-admin-btn">
+                        <i class="ri-shield-user-line"></i> Admin Dashboard
+                    </div>
+                </div>
+
+                <!-- แท็บ: รายการเอกสาร -->
+                <div id="tab-list" class="tab-content animate-fade-in">
+                    <div class="card">
+                        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem;">
+                            <h3><i class="ri-folder-open-line mr-2"></i> เอกสารในระบบ</h3>
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <label style="margin: 0; font-size: 0.9rem;"><i class="ri-filter-3-line"></i> กรองสถานะ:</label>
+                                <select id="filter-status" style="width: auto; padding: 0.5rem 1rem; border-radius: 999px;">
+                                    <option value="all">ทั้งหมด</option>
+                                    <option value="pending">รออนุมัติ</option>
+                                    <option value="approved">อนุมัติแล้ว</option>
+                                    <option value="rejected">ไม่อนุมัติ</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>วันที่สร้าง</th>
+                                        <th>ประเภทเอกสาร</th>
+                                        <th>ผู้ขออนุมัติ</th>
+                                        <th>ผู้อนุมัติ</th>
+                                        <th>สถานะ</th>
+                                        <th style="text-align: right;">จัดการ</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="document-table-body">
+                                    <!-- สร้างแถวข้อมูลด้วย JavaScript -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- แท็บ: ฟอร์มยื่นเอกสารใหม่ -->
+                <div id="tab-submit" class="tab-content hidden animate-fade-in">
+                    <div class="card" style="max-width: 800px; margin: 0 auto; position: relative; overflow: hidden;">
+                        <div style="position: absolute; top: 0; left: 0; width: 4px; height: 100%; background: var(--primary);"></div>
+                        <h3 class="mb-6"><i class="ri-draft-line"></i> แบบฟอร์มขออนุมัติเอกสาร</h3>
+                        <form id="submit-doc-form">
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                                <div class="form-group">
+                                    <label>ชื่อ-นามสกุลผู้ขอ</label>
+                                    <input type="text" id="doc-requester-name" required placeholder="ระบุชื่อจริง">
+                                </div>
+                                <div class="form-group">
+                                    <label>อีเมลผู้ขอ (ระบบบันทึกอัตโนมัติ)</label>
+                                    <input type="email" id="doc-requester-email" disabled>
+                                </div>
+                            </div>
+                            
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                                <div class="form-group">
+                                    <label>ประเภทของเอกสาร</label>
+                                    <select id="doc-type" required>
+                                        <option value="แบบฟอร์มคำขอยกเลิกรายการทดสอบ (Cancel Test)" selected>📝 แบบฟอร์มคำขอยกเลิกรายการทดสอบ (Cancel Test)</option>
+                                        <option value="แบบฟอร์มขอแก้ไขผลการทดสอบ">📝 แบบฟอร์มขอแก้ไขผลการทดสอบ</option>
+                                        <option value="แบบฟอร์มขออนุมัติงบประมาณ">💰 แบบฟอร์มขออนุมัติงบประมาณ</option>
+                                        <option value="แบบฟอร์มขอลางาน">📅 แบบฟอร์มขอลางาน</option>
+                                        <option value="อื่นๆ">📌 อื่นๆ</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>วันที่อ้างอิง / วันที่ยื่นเรื่อง</label>
+                                    <input type="date" id="doc-date" required>
+                                </div>
+                            </div>
+
+                            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.5rem;">
+                                <div class="form-group">
+                                    <label>เลขที่คำร้อง (AR Number)</label>
+                                    <input type="text" id="doc-ar-number" required placeholder="เช่น AR26-0001">
+                                </div>
+                                <div class="form-group">
+                                    <label>วันที่ส่งตัวอย่าง</label>
+                                    <input type="date" id="doc-receive-date" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>ห้องปฏิบัติการ</label>
+                                    <input type="text" id="doc-lab-room" required placeholder="ระบุห้องปฏิบัติการ">
+                                </div>
+                            </div>
+
+                            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.5rem;">
+                                <div class="form-group">
+                                    <label>หมายเลข Folder</label>
+                                    <input type="text" id="doc-folder-number" placeholder="ระบุหมายเลข Folder (ถ้ามี)">
+                                </div>
+                                <div class="form-group">
+                                    <label>เลขที่ใบเสร็จรับเงิน</label>
+                                    <input type="text" id="doc-receipt-number" placeholder="ระบุเลขที่ใบเสร็จ (ถ้ามี)">
+                                </div>
+                                <div class="form-group">
+                                    <label>เลขที่ใบแจ้งหนี้</label>
+                                    <input type="text" id="doc-invoice-number" placeholder="ระบุเลขที่ใบแจ้งหนี้ (ถ้ามี)">
+                                </div>
+                            </div>
+
+                            <div class="form-group" style="background: var(--background); padding: 1.5rem; border-radius: var(--radius-md); border: 1px solid var(--border);">
+                                <label style="font-size: 1rem; color: var(--text-main); margin-bottom: 1rem;"><i class="ri-error-warning-line"></i> สาเหตุในการยกเลิก</label>
+                                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; align-items: center;">
+                                    <label style="display: flex; align-items: center; gap: 0.5rem; font-weight: 400; margin: 0;"><input type="radio" name="cancel-reason" value="ลูกค้าขอยกเลิก" required> ลูกค้าขอยกเลิก</label>
+                                    <label style="display: flex; align-items: center; gap: 0.5rem; font-weight: 400; margin: 0;"><input type="radio" name="cancel-reason" value="ตัวอย่างไม่สมบูรณ์"> ตัวอย่างไม่สมบูรณ์</label>
+                                    <label style="display: flex; align-items: center; gap: 0.5rem; font-weight: 400; margin: 0;"><input type="radio" name="cancel-reason" value="ข้อมูลตัวอย่างไม่ถูกต้อง"> ข้อมูลตัวอย่างไม่ถูกต้อง</label>
+                                    <label style="display: flex; align-items: center; gap: 0.5rem; font-weight: 400; margin: 0;"><input type="radio" name="cancel-reason" value="ทดสอบซ้ำ/รายการซ้ำ"> ทดสอบซ้ำ/รายการซ้ำ</label>
+                                    <label style="display: flex; align-items: center; gap: 0.5rem; font-weight: 400; grid-column: 1 / -1; margin: 0;">
+                                        <input type="radio" name="cancel-reason" value="อื่นๆ" id="reason-other-radio"> อื่นๆ 
+                                        <input type="text" id="doc-cancel-other" placeholder="โปรดระบุสาเหตุ..." style="padding: 0.5rem 0.75rem; width: 100%; max-width: 400px; margin-left: 0.5rem; border: 1px solid var(--border); border-radius: var(--radius-md);">
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="form-group" style="background: var(--background); padding: 1.5rem; border-radius: var(--radius-md); border: 1px solid var(--border);">
+                                <label style="font-size: 1rem; color: var(--text-main); margin-bottom: 1rem;"><i class="ri-edit-2-line"></i> รายละเอียดการแก้ไข</label>
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                                    <div>
+                                        <label style="color: var(--danger);">รายการทดสอบที่ยกเลิก</label>
+                                        <input type="text" id="doc-cancel-test-name" placeholder="ชื่อรายการทดสอบ" class="mb-4">
+                                        <input type="text" id="doc-cancel-test-code" placeholder="Test Code (ถ้ามี)">
+                                    </div>
+                                    <div>
+                                        <label style="color: var(--success);">รายการทดสอบที่เพิ่มใหม่ (ถ้ามี)</label>
+                                        <input type="text" id="doc-new-test-name" placeholder="ชื่อรายการทดสอบ" class="mb-4">
+                                        <input type="text" id="doc-new-test-code" placeholder="Test Code (ถ้ามี)">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label>รายละเอียดเพิ่มเติม / หมายเหตุ</label>
+                                <textarea id="doc-description" rows="3" placeholder="ระบุเหตุผลและรายละเอียดเพิ่มเติมให้ชัดเจน..."></textarea>
+                            </div>
+
+                            <div class="form-group">
+                                <label>เลือกผู้มีอำนาจอนุมัติ (Approver)</label>
+                                <select id="doc-approver-select" required>
+                                    <option value="" disabled selected>-- กำลังโหลดข้อมูลผู้อนุมัติ... --</option>
+                                </select>
+                            </div>
+
+                            <div style="display: flex; justify-content: flex-end; margin-top: 2rem;">
+                                <button type="submit" class="btn btn-primary" id="btn-submit-doc" style="padding: 0.875rem 2rem;">
+                                    <i class="ri-send-plane-fill"></i> ยื่นเอกสารเข้าระบบ
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- แท็บ: Admin Dashboard -->
+                <div id="tab-admin" class="tab-content hidden animate-fade-in">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+                        <!-- ส่วนจัดการผู้ใช้ใหม่ -->
+                        <div class="card" style="border-top: 4px solid var(--primary);">
+                            <h3 class="mb-4"><i class="ri-user-add-line"></i> เพิ่มผู้ใช้งานใหม่</h3>
+                            <form id="admin-add-user-form">
+                                <div class="form-group">
+                                    <label>อีเมลผู้ใช้งาน</label>
+                                    <input type="email" id="admin-new-user-email" required placeholder="user@company.com">
+                                </div>
+                                <div class="form-group">
+                                    <label>รหัสผ่านเริ่มต้น</label>
+                                    <input type="password" id="admin-new-user-pass" required placeholder="อย่างน้อย 6 ตัวอักษร" minlength="6">
+                                </div>
+                                <div class="form-group">
+                                    <label>บทบาท (Role)</label>
+                                    <select id="admin-new-user-role" required>
+                                        <option value="user">พนักงานทั่วไป (User)</option>
+                                        <option value="approver">ผู้อนุมัติ (Approver)</option>
+                                        <option value="admin">ผู้ดูแลระบบ (Admin)</option>
+                                    </select>
+                                </div>
+                                <button type="submit" class="btn btn-primary w-100" id="btn-admin-add-user">เพิ่มผู้ใช้งานเข้าสู่ระบบ</button>
+                            </form>
+                        </div>
+
+                        <!-- ส่วนจัดการรายชื่อผู้อนุมัติ -->
+                        <div class="card" style="border-top: 4px solid var(--success);">
+                            <h3 class="mb-4"><i class="ri-shield-check-line"></i> เพิ่มรายชื่อผู้อนุมัติ</h3>
+                            <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.5rem;">
+                                รายชื่อนี้จะปรากฏใน Dropdown ของหน้ายื่นเอกสาร
+                            </p>
+                            <form id="admin-add-approver-form">
+                                <div class="form-group">
+                                    <label>ชื่อ-นามสกุล / ตำแหน่ง</label>
+                                    <input type="text" id="admin-approver-name" required placeholder="น.สพ. ตัวอย่าง (ผู้อำนวยการ)">
+                                </div>
+                                <div class="form-group">
+                                    <label>อีเมลสำหรับรับแจ้งเตือนอนุมัติ</label>
+                                    <input type="email" id="admin-approver-email" required placeholder="director@company.com">
+                                </div>
+                                <button type="submit" class="btn btn-success w-100" id="btn-admin-add-approver">บันทึกรายชื่อผู้อนุมัติ</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- 2.2 ส่วนของหน้าพิจารณาอนุมัติ -->
+            <div id="approval-section" class="hidden animate-fade-in">
+                <div class="card" style="max-width: 800px; margin: 0 auto; border-top: 5px solid var(--primary);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 1.5rem; margin-bottom: 1.5rem;">
+                        <h2 style="margin: 0;"><i class="ri-mail-check-line"></i> พิจารณาอนุมัติ</h2>
+                        <div style="display: flex; gap: 1rem; align-items: center;">
+                            <span id="approve-view-status" class="badge"></span>
+                            <button id="btn-download-pdf" type="button" class="btn btn-outline" style="padding: 0.5rem 1rem; background: var(--primary-light); color: var(--primary); border: none;"><i class="ri-file-pdf-line"></i> ดาวน์โหลด PDF</button>
+                        </div>
+                    </div>
+                    
+                    <div id="approval-content">
+                        <!-- โหลดเนื้อหาเอกสารด้วย JavaScript -->
+                    </div>
+
+                    <div id="approval-actions" class="mt-6" style="display: flex; gap: 1rem; padding-top: 2rem; border-top: 1px dashed var(--border);">
+                        <button id="btn-do-approve" class="btn btn-success" style="flex: 1; padding: 1rem; font-size: 1.1rem;">
+                            <i class="ri-check-double-line"></i> อนุมัติเอกสาร
+                        </button>
+                        <button id="btn-do-reject" class="btn btn-danger" style="flex: 1; padding: 1rem; font-size: 1.1rem;">
+                            <i class="ri-close-circle-line"></i> ไม่อนุมัติ
+                        </button>
+                    </div>
+                    
+                    <div id="approval-log-msg" class="mt-6 hidden text-center" style="background: var(--background); padding: 1rem; border-radius: var(--radius-md);">
+                        <!-- ข้อความกรณีพิจารณาไปแล้ว -->
+                    </div>
+                    
+                    <div class="text-center mt-6">
+                        <button id="btn-back-home" class="btn btn-outline">
+                            <i class="ri-arrow-left-line"></i> กลับสู่หน้าหลัก
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+    </div>
+
+    <!-- ==================== JAVASCRIPT & FIREBASE INTEGRATION ==================== -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { 
+            getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, 
+            signOut, onAuthStateChanged, updatePassword
+        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { 
+            getFirestore, collection, addDoc, getDocs, getDoc, doc, updateDoc, 
+            query, where, serverTimestamp, onSnapshot, setDoc
+        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // ==================== ตั้งค่า EmailJS ====================
+        const EMAILJS_SERVICE_ID = "service_slrcztv";
+        const EMAILJS_TEMPLATE_ID = "template_yf0a1qd";
+        const EMAILJS_PUBLIC_KEY = "4sii1kC9JVF0yYefL";
+        const ADMIN_EMAIL = "centerdiagnostic@kvdc-vetku.com";
+        
+        emailjs.init(EMAILJS_PUBLIC_KEY);
+
+        async function sendIntraFlowEmail(toEmail, subject, message, actionUrl) {
+            try {
+                await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
+                    to_email: toEmail,
+                    subject: subject,
+                    message: message,
+                    action_url: actionUrl
+                });
+                console.log(`[EmailJS] ส่งอีเมลสำเร็จไปยัง: ${toEmail}`);
+            } catch (error) {
+                console.error(`[EmailJS] ส่งอีเมลล้มเหลวไปยัง: ${toEmail}`, error);
+            }
+        }
+
+        // ==================== Firebase Config ====================
+        const firebaseConfig = {
+            apiKey: "AIzaSyBlo146IfCdTEjng0gHfqhU8DjZ5mRjgzM",
+            authDomain: "intraflow-731ad.firebaseapp.com",
+            projectId: "intraflow-731ad",
+            storageBucket: "intraflow-731ad.firebasestorage.app",
+            messagingSenderId: "603428304227",
+            appId: "1:603428304227:web:a49c8c37afc9d3208b8f56"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // สร้าง Instance ที่สองสำหรับ Admin ใช้สร้างบัญชีใหม่โดยไม่หลุดจากระบบหลัก
+        const secondaryApp = initializeApp(firebaseConfig, "SecondaryApp");
+        const secondaryAuth = getAuth(secondaryApp);
+
+        // Global State
+        let currentUser = null;
+        let userRole = 'user';
+        let isLoginMode = true;
+        let unsubscribeDocs = null;
+        let currentApprovalDocData = null;
+
+        // Route Check
+        const urlParams = new URLSearchParams(window.location.search);
+        let targetDocId = urlParams.get('docId');
+        let targetToken = urlParams.get('token');
+        const isApprovalRoute = targetDocId && targetToken;
+
+        // ==================== Utilities ====================
+        function showLoader(show) {
+            const loader = document.getElementById('global-loader');
+            if (show) {
+                loader.style.display = 'flex';
+                setTimeout(() => loader.style.opacity = '1', 10);
+            } else {
+                loader.style.opacity = '0';
+                setTimeout(() => loader.style.display = 'none', 300);
+            }
+        }
+
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toast-container');
+            if (!container) return;
+            const toast = document.createElement('div');
+            let icon = type === 'success' ? '<i class="ri-checkbox-circle-fill"></i>' : 
+                       type === 'error' ? '<i class="ri-error-warning-fill"></i>' : 
+                       '<i class="ri-information-fill"></i>';
+            toast.className = `toast ${type}`;
+            toast.innerHTML = `${icon} <span>${message}</span>`;
+            container.appendChild(toast);
+            setTimeout(() => { 
+                toast.style.transform = 'translateX(120%)';
+                toast.style.opacity = '0';
+                setTimeout(() => toast.remove(), 400);
+            }, 3000);
+        }
+
+        function formatDate(timestamp) {
+            if (!timestamp) return '-';
+            const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+            return date.toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+        }
+
+        function getStatusBadgeHtml(status) {
+            switch(status) {
+                case 'pending': return '<span class="badge badge-pending"><i class="ri-time-line"></i> รออนุมัติ</span>';
+                case 'approved': return '<span class="badge badge-approved"><i class="ri-check-line"></i> อนุมัติแล้ว</span>';
+                case 'rejected': return '<span class="badge badge-rejected"><i class="ri-close-line"></i> ไม่อนุมัติ</span>';
+                default: return `<span class="badge">${status}</span>`;
+            }
+        }
+
+        // ==================== System Logs (บันทึกการทำงาน) ====================
+        async function logSystemAction(docId, userEmail, actionDetails) {
+            try {
+                await setDoc(doc(db, 'system_logs', docId), {
+                    action: actionDetails,
+                    userEmail: userEmail,
+                    timestamp: serverTimestamp()
+                });
+            } catch(e) { console.error("Error logging system action:", e); }
+        }
+
+        // ==================== PDF Generation ====================
+        window.generatePDF = function(docData) {
+            showLoader(true);
+            try {
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
+                
+                // ตรวจสอบและใช้งานฟอนต์ THSarabunNew อย่างระมัดระวัง
+                if (doc.getFontList()['THSarabunNew']) { 
+                    doc.setFont('THSarabunNew', 'normal'); 
+                }
+                
+                doc.setFontSize(20);
+                doc.text("ศูนย์ชันสูตรโรคสัตว์ กำแพงแสน", 105, 15, { align: "center" });
+                doc.setFontSize(18);
+                doc.text(`แบบฟอร์มคำขอยกเลิกรายการทดสอบ (Cancel Test)`, 105, 25, { align: "center" });
+                
+                doc.setLineWidth(0.5);
+                doc.line(20, 30, 190, 30);
+
+                doc.setFontSize(16);
+                let startY = 40;
+                let lineSpacing = 12;
+                
+                doc.text(`เลขที่คำร้อง (AR Number):  ${docData.arNumber || '-'}`, 20, startY);
+                doc.text(`วันที่ยื่นเรื่อง:  ${docData.date || '-'}`, 120, startY);
+                startY += lineSpacing;
+                
+                doc.text(`ชื่อ-นามสกุลผู้ขอ:  ${docData.requesterName || '-'}`, 20, startY);
+                doc.text(`วันที่ส่งตัวอย่าง:  ${docData.receiveDate || '-'}`, 120, startY);
+                startY += lineSpacing;
+                
+                doc.text(`ห้องปฏิบัติการ:  ${docData.labRoom || '-'}`, 20, startY);
+                doc.text(`หมายเลข Folder:  ${docData.folderNumber || '-'}`, 120, startY);
+                startY += lineSpacing;
+                
+                doc.text(`เลขที่ใบเสร็จรับเงิน:  ${docData.receiptNumber || '-'}`, 20, startY);
+                doc.text(`เลขที่ใบแจ้งหนี้:  ${docData.invoiceNumber || '-'}`, 120, startY);
+                startY += lineSpacing + 5;
+
+                if (doc.getFontList()['THSarabunNew']) { doc.setFont('THSarabunNew', 'bold'); }
+                doc.text(`สาเหตุในการยกเลิก:`, 20, startY);
+                if (doc.getFontList()['THSarabunNew']) { doc.setFont('THSarabunNew', 'normal'); }
+                startY += lineSpacing;
+                
+                const reasons = [
+                    "ลูกค้าขอยกเลิก", "ตัวอย่างไม่สมบูรณ์", "ข้อมูลตัวอย่างไม่ถูกต้อง", "ทดสอบซ้ำ/รายการซ้ำ", "อื่นๆ"
+                ];
+                
+                reasons.forEach((reason) => {
+                    let isChecked = (docData.cancelReason === reason) ? "[X]" : "[  ]";
+                    doc.text(isChecked, 25, startY);
+                    
+                    let text = reason;
+                    if (reason === "อื่นๆ" && docData.cancelReason === "อื่นๆ") {
+                        text += ` (โปรดระบุ: ${docData.cancelReasonOther || '-'})`;
+                    }
+                    doc.text(text, 32, startY);
+                    startY += lineSpacing;
+                });
+
+                startY += 5;
+                if (doc.getFontList()['THSarabunNew']) { doc.setFont('THSarabunNew', 'bold'); }
+                doc.text(`รายละเอียดการแก้ไข:`, 20, startY);
+                if (doc.getFontList()['THSarabunNew']) { doc.setFont('THSarabunNew', 'normal'); }
+                
+                doc.autoTable({
+                    startY: startY + 3,
+                    head: [['รายการทดสอบที่ยกเลิก', 'Test Code', 'รายการทดสอบที่เพิ่มใหม่', 'Test Code']],
+                    body: [
+                        [
+                            docData.cancelTestName || '-', 
+                            docData.cancelTestCode || '-', 
+                            docData.newTestName || '-', 
+                            docData.newTestCode || '-'
+                        ]
+                    ],
+                    styles: { font: 'THSarabunNew', fontSize: 16, cellPadding: 3 },
+                    headStyles: { font: 'THSarabunNew', fontSize: 16, fillColor: [79, 70, 229], textColor: [255, 255, 255], fontStyle: 'bold' },
+                    bodyStyles: { font: 'THSarabunNew', fontSize: 16 },
+                    theme: 'grid'
+                });
+
+                let finalY = doc.lastAutoTable.finalY + 10;
+                if (docData.description) {
+                    if (doc.getFontList()['THSarabunNew']) { doc.setFont('THSarabunNew', 'bold'); }
+                    doc.text(`หมายเหตุเพิ่มเติม:`, 20, finalY);
+                    if (doc.getFontList()['THSarabunNew']) { doc.setFont('THSarabunNew', 'normal'); }
+                    let splitDesc = doc.splitTextToSize(docData.description, 170);
+                    doc.text(splitDesc, 20, finalY + 8);
+                    finalY += (splitDesc.length * 7) + 10;
+                } else {
+                    finalY += 10;
+                }
+
+                doc.setDrawColor(200);
+                doc.rect(20, finalY, 170, 45);
+                
+                finalY += 15;
+                doc.text(`ลงชื่อ.......................................................`, 35, finalY);
+                doc.text(`( ${docData.requesterName || '.......................................'} )`, 45, finalY + 8);
+                doc.text(`ผู้ขออนุมัติ`, 60, finalY + 16);
+
+                doc.text(`ลงชื่อ.......................................................`, 115, finalY);
+                doc.text(`( ${docData.approverEmail || '.......................................'} )`, 120, finalY + 8);
+                doc.text(`ผู้อนุมัติ`, 140, finalY + 16);
+                
+                finalY += 30;
+                doc.setDrawColor(200);
+                doc.rect(20, finalY, 170, 35);
+                
+                finalY += 10;
+                if (doc.getFontList()['THSarabunNew']) { doc.setFont('THSarabunNew', 'bold'); }
+                doc.text(`สำหรับเจ้าหน้าที่:`, 25, finalY);
+                if (doc.getFontList()['THSarabunNew']) { doc.setFont('THSarabunNew', 'normal'); }
+                
+                doc.text(`[  ] บันทึกข้อมูลลงระบบบัญชีเรียบร้อยแล้ว`, 35, finalY + 10);
+                doc.text(`ลงชื่อ....................................................... ผู้บันทึก`, 105, finalY + 10);
+                doc.text(`(.......................................................)`, 113, finalY + 18);
+
+                doc.save(`Cancel_Test_${docData.arNumber || Date.now()}.pdf`);
+                showToast("สร้างไฟล์ PDF สำเร็จ", "success");
+            } catch (error) {
+                console.error(error);
+                showToast("ไม่สามารถสร้าง PDF ได้: " + error.message, "error");
+            } finally {
+                showLoader(false);
+            }
+        }
+
+        document.getElementById('btn-download-pdf')?.addEventListener('click', () => {
+            if (currentApprovalDocData) window.generatePDF(currentApprovalDocData);
+            else showToast("ไม่สามารถสร้าง PDF ได้ในขณะนี้ ข้อมูลไม่สมบูรณ์", "error");
+        });
+
+        // ==================== Auth & Security Logic ====================
+        const authForm = document.getElementById('auth-form');
+        const authToggleBtn = document.getElementById('auth-toggle-btn');
+        const registerRoleGroup = document.getElementById('register-role-group');
+
+        authToggleBtn?.addEventListener('click', (e) => {
+            e.preventDefault();
+            isLoginMode = !isLoginMode;
+            document.getElementById('auth-title').innerText = isLoginMode ? 'เข้าสู่ระบบ IntraFlow' : 'ลงทะเบียนบัญชีทดสอบ';
+            document.getElementById('auth-toggle-text').innerText = isLoginMode ? 'ยังไม่มีบัญชีใช่หรือไม่?' : 'มีบัญชีอยู่แล้ว?';
+            authToggleBtn.innerText = isLoginMode ? 'ลงทะเบียนทดสอบ' : 'เข้าสู่ระบบ';
+            document.getElementById('auth-submit-btn').innerHTML = isLoginMode ? 'เข้าสู่ระบบ <i class="ri-arrow-right-line"></i>' : 'ลงทะเบียน <i class="ri-user-add-line"></i>';
+            registerRoleGroup.classList.toggle('hidden', isLoginMode);
+        });
+
+        authForm?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('auth-email').value;
+            const password = document.getElementById('auth-password').value;
+            const role = document.getElementById('auth-role').value;
+            
+            showLoader(true);
+            try {
+                if (isLoginMode) {
+                    await signInWithEmailAndPassword(auth, email, password);
+                } else {
+                    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                    await setDoc(doc(db, 'users', userCredential.user.uid), { 
+                        role: role, email: email, firstLogin: false, createdAt: serverTimestamp() 
+                    });
+                    showToast('ลงทะเบียนสำเร็จ ระบบกำลังเข้าสู่หน้าหลัก', 'success');
+                }
+            } catch (error) {
+                let errorMsg = 'เกิดข้อผิดพลาด';
+                if(error.code === 'auth/invalid-credential') errorMsg = 'อีเมลหรือรหัสผ่านไม่ถูกต้อง';
+                else if(error.code === 'auth/email-already-in-use') errorMsg = 'อีเมลนี้ถูกใช้งานในระบบแล้ว';
+                showToast(errorMsg, 'error');
+                showLoader(false);
+            }
+        });
+
+        document.getElementById('btn-logout')?.addEventListener('click', () => { signOut(auth); });
+
+        // สร้างฟังก์ชันเข้าสู่หน้าหลักเพื่อให้เรียกใช้ซ้ำได้
+        const enterMainApp = (user, role) => {
+            document.getElementById('first-login-modal')?.classList.add('hidden');
+            
+            const reqEmailEl = document.getElementById('doc-requester-email');
+            if (reqEmailEl) reqEmailEl.value = user.email;
+            
+            const infoDispEl = document.getElementById('user-info-display');
+            if (infoDispEl) infoDispEl.innerText = user.email;
+
+            const roleNames = { 'admin': 'ผู้ดูแลระบบ', 'approver': 'ผู้อนุมัติ', 'user': 'พนักงาน' };
+            const roleBadgeEl = document.getElementById('user-role-badge');
+            if (roleBadgeEl) roleBadgeEl.innerHTML = `<i class="ri-shield-user-line"></i> ${roleNames[role] || 'พนักงาน'}`;
+
+            // Admin Controls
+            if (role === 'admin') {
+                document.getElementById('btn-admin-panel')?.classList.remove('hidden');
+                document.getElementById('tab-admin-btn')?.classList.remove('hidden');
+            } else {
+                document.getElementById('btn-admin-panel')?.classList.add('hidden');
+                document.getElementById('tab-admin-btn')?.classList.add('hidden');
+            }
+
+            document.getElementById('auth-view')?.classList.add('hidden');
+            document.getElementById('app-view')?.classList.remove('hidden');
+
+            loadApproversList(); // ดึงรายชื่อผู้อนุมัติสำหรับ Dropdown
+
+            if (isApprovalRoute) initApprovalView();
+            else initDashboard();
+            
+            showLoader(false);
+        };
+
+        // จัดการสถานะผู้ใช้และเช็ค First Login
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                currentUser = user;
+                let userFirstLogin = false;
+                
+                try {
+                    const userDoc = await getDoc(doc(db, 'users', user.uid));
+                    if (userDoc.exists()) {
+                        userRole = userDoc.data().role;
+                        userFirstLogin = userDoc.data().firstLogin === true;
+                    } else {
+                        userRole = 'user';
+                    }
+                } catch(e) { console.error(e); }
+
+                if (userFirstLogin) {
+                    // แสดงหน้าเปลี่ยนรหัสผ่าน และระงับการเข้าสู่หน้าหลักชั่วคราว
+                    document.getElementById('first-login-modal')?.classList.remove('hidden');
+                    document.getElementById('auth-view')?.classList.add('hidden');
+                    document.getElementById('app-view')?.classList.add('hidden');
+                    showLoader(false);
+                } else {
+                    // เข้าสู่ระบบหน้าหลักตามปกติ
+                    enterMainApp(user, userRole);
+                }
+            } else {
+                currentUser = null;
+                document.getElementById('first-login-modal')?.classList.add('hidden');
+                document.getElementById('auth-view')?.classList.remove('hidden');
+                document.getElementById('app-view')?.classList.add('hidden');
+                showLoader(false);
+            }
+        });
+
+        // ==================== ระบบเปลี่ยนรหัสผ่านครั้งแรก ====================
+        document.getElementById('first-login-form')?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const newPass = document.getElementById('new-password').value;
+            const confirmPass = document.getElementById('confirm-new-password').value;
+
+            if (newPass !== confirmPass) {
+                showToast('รหัสผ่านและการยืนยันรหัสผ่านไม่ตรงกัน', 'error');
+                return;
+            }
+
+            const btn = document.getElementById('btn-submit-new-password');
+            btn.disabled = true;
+            btn.innerHTML = 'กำลังบันทึก...';
+
+            try {
+                // 1. อัปเดตรหัสผ่านในระบบ Firebase Auth
+                await updatePassword(currentUser, newPass);
+                
+                // 2. อัปเดตสถานะ firstLogin ใน Firestore ทันทีที่เปลี่ยนรหัสผ่านสำเร็จ
+                await updateDoc(doc(db, 'users', currentUser.uid), { firstLogin: false });
+                
+                // 3. ตรวจสอบและดึงสิทธิ์ (userRole) ให้พร้อมก่อนเรียกใช้งาน enterMainApp
+                const userDocSnap = await getDoc(doc(db, 'users', currentUser.uid));
+                if (userDocSnap.exists()) {
+                    userRole = userDocSnap.data().role || 'user';
+                } else {
+                    userRole = 'user';
+                }
+                
+                showToast('ตั้งรหัสผ่านใหม่เรียบร้อยแล้ว ยินดีต้อนรับสู่ระบบ', 'success');
+                
+                // 4. เรียกฟังก์ชันเข้าสู่หน้าหลักเพื่อเปลี่ยนหน้าทันทีโดยไม่ต้องรีโหลด
+                enterMainApp(currentUser, userRole);
+            } catch (error) {
+                if(error.code === 'auth/requires-recent-login') {
+                    showToast('เซสชันหมดอายุ กรุณาออกจากระบบและเข้าใหม่อีกครั้งก่อนเปลี่ยนรหัสผ่าน', 'error');
+                } else {
+                    showToast('อัปเดตรหัสผ่านล้มเหลว: ' + error.message, 'error');
+                }
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = 'บันทึกรหัสผ่านและเข้าสู่ระบบ <i class="ri-arrow-right-line"></i>';
+            }
+        });
+
+        // ปุ่มข้ามการเปลี่ยนรหัสผ่าน (เข้าสู่ระบบทันที แต่คราวหน้าจะเด้งถามอีก)
+        document.getElementById('btn-cancel-first-login')?.addEventListener('click', () => {
+            document.getElementById('first-login-form').reset();
+            showToast('ข้ามการเปลี่ยนรหัสผ่านชั่วคราว', 'info');
+            // พาเข้าสู่หน้าหลักโดยไม่เปลี่ยนสถานะ firstLogin ใน Database
+            enterMainApp(currentUser, userRole);
+        });
+
+        // ==================== ดึงรายชื่อผู้อนุมัติเข้า Dropdown ====================
+        async function loadApproversList() {
+            const selectEl = document.getElementById('doc-approver-select');
+            if (!selectEl) return;
+            
+            try {
+                const approverSnapshot = await getDocs(collection(db, 'approver_list'));
+                let optionsHtml = '<option value="" disabled selected>-- เลือกผู้อนุมัติ --</option>';
+                
+                approverSnapshot.forEach((doc) => {
+                    const data = doc.data();
+                    optionsHtml += `<option value="${data.email}">${data.name} (${data.email})</option>`;
+                });
+                
+                if (approverSnapshot.empty) {
+                    optionsHtml = '<option value="" disabled selected>-- ไม่มีรายชื่อผู้อนุมัติในระบบ --</option>';
+                }
+                
+                selectEl.innerHTML = optionsHtml;
+            } catch (error) {
+                console.error("Error fetching approvers", error);
+                selectEl.innerHTML = '<option value="" disabled selected>-- โหลดข้อมูลผู้อนุมัติไม่สำเร็จ --</option>';
+            }
+        }
+
+        // ==================== Tabs Logic ====================
+        const tabs = ['list', 'submit', 'admin'];
+        
+        document.getElementById('tab-list-btn')?.addEventListener('click', () => switchTab('list'));
+        document.getElementById('tab-submit-btn')?.addEventListener('click', () => switchTab('submit'));
+        document.getElementById('tab-admin-btn')?.addEventListener('click', () => switchTab('admin'));
+        document.getElementById('btn-admin-panel')?.addEventListener('click', () => switchTab('admin'));
+
+        function switchTab(target) {
+            tabs.forEach(t => {
+                const btn = document.getElementById(`tab-${t}-btn`);
+                const content = document.getElementById(`tab-${t}`);
+                if (t === target) {
+                    btn?.classList.add('active');
+                    content?.classList.remove('hidden');
+                } else {
+                    btn?.classList.remove('active');
+                    content?.classList.add('hidden');
+                }
+            });
+            if (target === 'submit') {
+                const docDateEl = document.getElementById('doc-date');
+                if (docDateEl) docDateEl.valueAsDate = new Date();
+            }
+        }
+
+        // ==================== Admin Management ====================
+        
+        // 1. Admin เพิ่มผู้ใช้งานใหม่
+        document.getElementById('admin-add-user-form')?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('btn-admin-add-user');
+            const email = document.getElementById('admin-new-user-email').value;
+            const pass = document.getElementById('admin-new-user-pass').value;
+            const role = document.getElementById('admin-new-user-role').value;
+
+            btn.disabled = true;
+            btn.innerHTML = '<div class="loader"></div> กำลังเพิ่มผู้ใช้...';
+
+            try {
+                // ใช้ secondaryAuth เพื่อไม่ให้แอดมินหลุดจากการล็อกอินปัจจุบัน
+                const userCred = await createUserWithEmailAndPassword(secondaryAuth, email, pass);
+                await setDoc(doc(db, 'users', userCred.user.uid), {
+                    email: email,
+                    role: role,
+                    firstLogin: true, // บังคับเปลี่ยนรหัสผ่าน
+                    createdAt: serverTimestamp()
+                });
+                await signOut(secondaryAuth);
+                
+                await logSystemAction(`CREATE_USER_${Date.now()}`, currentUser.email, `Created user: ${email} (${role})`);
+                showToast(`เพิ่มบัญชีผู้ใช้ ${email} เรียบร้อยแล้ว`, 'success');
+                e.target.reset();
+            } catch (error) {
+                showToast(`เพิ่มผู้ใช้ไม่สำเร็จ: ${error.message}`, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = 'เพิ่มผู้ใช้งานเข้าสู่ระบบ';
+            }
+        });
+
+        // 2. Admin เพิ่มผู้อนุมัติ
+        document.getElementById('admin-add-approver-form')?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('btn-admin-add-approver');
+            const name = document.getElementById('admin-approver-name').value;
+            const email = document.getElementById('admin-approver-email').value;
+
+            btn.disabled = true;
+            btn.innerHTML = '<div class="loader"></div> กำลังบันทึก...';
+
+            try {
+                await addDoc(collection(db, 'approver_list'), {
+                    name: name,
+                    email: email,
+                    createdAt: serverTimestamp()
+                });
+                
+                await logSystemAction(`ADD_APPROVER_${Date.now()}`, currentUser.email, `Added approver: ${name}`);
+                showToast(`บันทึกผู้อนุมัติ ${name} สำเร็จ!`, 'success');
+                e.target.reset();
+                loadApproversList(); // โหลด Dropdown ใหม่
+            } catch (error) {
+                showToast(`เกิดข้อผิดพลาด: ${error.message}`, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = 'บันทึกรายชื่อผู้อนุมัติ';
+            }
+        });
+
+        // ==================== Submit Logic ====================
+        const submitForm = document.getElementById('submit-doc-form');
+        submitForm?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('btn-submit-doc');
+            if (btn) {
+                btn.innerHTML = '<div class="loader"></div> กำลังเข้ารหัสและบันทึก...';
+                btn.disabled = true;
+            }
+
+            const newDoc = {
+                requesterName: document.getElementById('doc-requester-name')?.value || '',
+                requesterEmail: currentUser?.email || '',
+                type: document.getElementById('doc-type')?.value || '',
+                date: document.getElementById('doc-date')?.value || '',
+                
+                arNumber: document.getElementById('doc-ar-number')?.value || '',
+                receiveDate: document.getElementById('doc-receive-date')?.value || '',
+                labRoom: document.getElementById('doc-lab-room')?.value || '',
+                folderNumber: document.getElementById('doc-folder-number')?.value || '',
+                receiptNumber: document.getElementById('doc-receipt-number')?.value || '',
+                invoiceNumber: document.getElementById('doc-invoice-number')?.value || '',
+                cancelReason: document.querySelector('input[name="cancel-reason"]:checked')?.value || '',
+                cancelReasonOther: document.getElementById('doc-cancel-other')?.value || '',
+                cancelTestName: document.getElementById('doc-cancel-test-name')?.value || '',
+                cancelTestCode: document.getElementById('doc-cancel-test-code')?.value || '',
+                newTestName: document.getElementById('doc-new-test-name')?.value || '',
+                newTestCode: document.getElementById('doc-new-test-code')?.value || '',
+                description: document.getElementById('doc-description')?.value || '',
+                
+                approverEmail: document.getElementById('doc-approver-select')?.value || '',
+                status: 'pending',
+                token: crypto.randomUUID(),
+                createdAt: serverTimestamp(),
+                isDeleted: false
+            };
+
+            try {
+                const docRef = await addDoc(collection(db, 'documents'), newDoc);
+                
+                // บันทึก System Log โดยใช้ชื่อ AR Number หรือ Doc ID
+                const logId = `SUBMIT_DOC_${newDoc.arNumber ? newDoc.arNumber : docRef.id}`;
+                await logSystemAction(logId, currentUser.email, "SUBMIT_DOCUMENT");
+
+                const baseUrl = window.location.href.split('?')[0]; 
+                const approvalUrl = `${baseUrl}?docId=${docRef.id}&token=${newDoc.token}`;
+                const emailSubject = `[IntraFlow] มีเอกสารรออนุมัติ: ${newDoc.type}`;
+                
+                // อัปเดตเนื้อหาอีเมลให้ครอบคลุมฟิลด์ใหม่ทั้งหมดอย่างครบถ้วน
+                const reasonText = newDoc.cancelReason === 'อื่นๆ' ? `อื่นๆ (${newDoc.cancelReasonOther})` : newDoc.cancelReason;
+                const emailMessage = `ผู้ขออนุมัติ: ${newDoc.requesterName}
+ประเภทเอกสาร: ${newDoc.type}
+เลขที่คำร้อง (AR Number): ${newDoc.arNumber || '-'}
+วันที่ส่งตัวอย่าง: ${newDoc.receiveDate || '-'}
+ห้องปฏิบัติการ: ${newDoc.labRoom || '-'}
+สาเหตุการยกเลิก: ${reasonText || '-'}
+
+รายละเอียด/หมายเหตุ:
+${newDoc.description}
+
+กรุณาคลิกลิงก์ด้านล่างเพื่อพิจารณาเอกสาร`;
+                
+                await sendIntraFlowEmail(newDoc.approverEmail, emailSubject, emailMessage, approvalUrl);
+
+                showToast('ส่งเอกสารเข้าสู่ระบบ Workflow เรียบร้อย!', 'success');
+                submitForm.reset();
+                switchTab('list');
+                const reqEmailEl = document.getElementById('doc-requester-email');
+                if (reqEmailEl) reqEmailEl.value = currentUser.email;
+            } catch (error) {
+                showToast('ไม่สามารถบันทึกได้: ' + error.message, 'error');
+            } finally {
+                if (btn) {
+                    btn.innerHTML = '<i class="ri-send-plane-fill"></i> ยื่นเอกสารเข้าระบบ';
+                    btn.disabled = false;
+                }
+            }
+        });
+
+        // ==================== Load Docs Logic ====================
+        document.getElementById('filter-status')?.addEventListener('change', () => loadDocuments());
+
+        // แก้ไขปุ่มเพื่อใช้การดึง state ผ่านตัวแปร และการทำ SPA routing หลีกเลี่ยง href modification
+        document.getElementById('document-table-body')?.addEventListener('click', (e) => {
+            const btn = e.target.closest('.btn-view-doc');
+            if (btn) {
+                e.preventDefault();
+                const docId = btn.getAttribute('data-id');
+                const token = btn.getAttribute('data-token');
+                
+                targetDocId = docId;
+                targetToken = token;
+                
+                try {
+                    const baseUrl = window.location.href.split('?')[0];
+                    window.history.pushState({}, '', `${baseUrl}?docId=${docId}&token=${token}`);
+                } catch(error) { 
+                    console.warn("Cannot update URL in preview environment", error); 
+                }
+                
+                initApprovalView();
+            }
+        });
+
+        // ใช้ Event SPA Routing กับปุ่มกลับหน้าแรกเพื่อป้องกัน Failed to set href property URL ว่าง
+        document.getElementById('btn-back-home')?.addEventListener('click', () => {
+            targetDocId = null;
+            targetToken = null;
+            try {
+                const baseUrl = window.location.href.split('?')[0];
+                window.history.pushState({}, '', baseUrl);
+            } catch(error) { 
+                console.warn("Cannot update URL in preview environment", error); 
+            }
+            initDashboard();
+        });
+
+        function initDashboard() {
+            document.getElementById('dashboard-section')?.classList.remove('hidden');
+            document.getElementById('approval-section')?.classList.add('hidden');
+            loadDocuments();
+        }
+
+        function loadDocuments() {
+            if (unsubscribeDocs) unsubscribeDocs();
+            showLoader(true);
+
+            let qConstraints = [where('isDeleted', '==', false)];
+            if (userRole === 'user') qConstraints.push(where('requesterEmail', '==', currentUser.email));
+            else if (userRole === 'approver') qConstraints.push(where('approverEmail', '==', currentUser.email));
+
+            const statusVal = document.getElementById('filter-status')?.value || 'all';
+            if (statusVal !== 'all') qConstraints.push(where('status', '==', statusVal));
+
+            const q = query(collection(db, 'documents'), ...qConstraints);
+
+            unsubscribeDocs = onSnapshot(q, (snapshot) => {
+                const tbody = document.getElementById('document-table-body');
+                if (!tbody) return;
+                tbody.innerHTML = '';
+                
+                let docsData = [];
+                snapshot.forEach(docSnap => docsData.push({ id: docSnap.id, ...docSnap.data() }));
+                docsData.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
+
+                if (docsData.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted" style="padding: 3rem;"><i class="ri-inbox-2-line" style="font-size: 2rem; display: block; margin-bottom: 0.5rem;"></i> ไม่มีเอกสารในระบบ</td></tr>';
+                }
+
+                docsData.forEach(d => {
+                    const tr = document.createElement('tr');
+                    
+                    // เปลี่ยนจากลิงก์ <a> เป็นปุ่ม <button> เพื่อรองรับ SPA Routing
+                    let actionHtml = `<button class="btn btn-outline btn-view-doc" data-id="${d.id}" data-token="${d.token}" style="padding: 0.35rem 0.75rem; font-size: 0.85rem;"><i class="ri-eye-line"></i> ดูข้อมูล</button>`;
+                    
+                    if (userRole === 'approver' && d.status === 'pending') {
+                        actionHtml = `<button class="btn btn-primary btn-view-doc" data-id="${d.id}" data-token="${d.token}" style="padding: 0.35rem 0.75rem; font-size: 0.85rem;"><i class="ri-edit-box-line"></i> พิจารณา</button>`;
+                    }
+
+                    tr.innerHTML = `
+                        <td style="color: var(--text-muted); font-size: 0.85rem;">${formatDate(d.createdAt)}</td>
+                        <td style="font-weight: 500;">${d.type}</td>
+                        <td>
+                            <div style="font-weight: 500;">${d.requesterName}</div>
+                            <div style="color: var(--text-muted); font-size: 0.8rem;">${d.requesterEmail}</div>
+                        </td>
+                        <td style="font-size: 0.9rem;">${d.approverEmail}</td>
+                        <td>${getStatusBadgeHtml(d.status)}</td>
+                        <td style="text-align: right;">${actionHtml}</td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+                showLoader(false);
+            }, (error) => {
+                showToast("พบปัญหาในการดึงข้อมูลจากเซิร์ฟเวอร์", "error");
+                showLoader(false);
+            });
+        }
+
+        // ==================== Approval Logic ====================
+        async function initApprovalView() {
+            document.getElementById('dashboard-section')?.classList.add('hidden');
+            document.getElementById('approval-section')?.classList.remove('hidden');
+            showLoader(true);
+
+            try {
+                const docRef = doc(db, 'documents', targetDocId);
+                const docSnap = await getDoc(docRef);
+
+                if (!docSnap.exists()) throw new Error("ไม่พบเอกสาร หรือถูกลบไปแล้ว");
+                const docData = docSnap.data();
+                if (docData.token !== targetToken) throw new Error("ลิงก์ไม่ถูกต้อง หรือหมดอายุแล้ว");
+
+                currentApprovalDocData = docData; 
+
+                const statusEl = document.getElementById('approve-view-status');
+                if (statusEl) statusEl.innerHTML = getStatusBadgeHtml(docData.status);
+                
+                const contentHtml = `
+                    <div style="background: var(--primary-light); color: var(--text-main); padding: 1.5rem; border-radius: var(--radius-md); margin-bottom: 1.5rem; border-left: 4px solid var(--primary);">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                            <div><span style="color: var(--text-muted); font-size: 0.85rem;">เลขที่คำร้อง (AR Number)</span><br><strong>${docData.arNumber || '-'}</strong></div>
+                            <div><span style="color: var(--text-muted); font-size: 0.85rem;">ประเภทคำร้อง</span><br><strong>${docData.type}</strong></div>
+                            <div><span style="color: var(--text-muted); font-size: 0.85rem;">ผู้ขออนุมัติ</span><br><strong>${docData.requesterName}</strong> <br><span style="font-size: 0.85rem;">(${docData.requesterEmail})</span></div>
+                            <div><span style="color: var(--text-muted); font-size: 0.85rem;">วันที่ส่งตัวอย่าง / วันที่ยื่นเรื่อง</span><br><strong>${docData.receiveDate || '-'} / ${formatDate(docData.createdAt)}</strong></div>
+                        </div>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; background: var(--background); padding: 1.5rem; border-radius: var(--radius-md); margin-bottom: 1.5rem; border: 1px solid var(--border);">
+                        <div><span style="color: var(--text-muted); font-size: 0.85rem;">ห้องปฏิบัติการ</span><br><strong>${docData.labRoom || '-'}</strong></div>
+                        <div><span style="color: var(--text-muted); font-size: 0.85rem;">หมายเลข Folder</span><br><strong>${docData.folderNumber || '-'}</strong></div>
+                        <div><span style="color: var(--text-muted); font-size: 0.85rem;">เลขที่ใบเสร็จ / ใบแจ้งหนี้</span><br><strong>${docData.receiptNumber || '-'} / ${docData.invoiceNumber || '-'}</strong></div>
+                    </div>
+
+                    <div style="background: var(--background); padding: 1.5rem; border-radius: var(--radius-md); margin-bottom: 1.5rem; border: 1px solid var(--border);">
+                        <h4 style="margin-bottom: 0.75rem; color: var(--text-main);"><i class="ri-error-warning-line"></i> สาเหตุในการยกเลิก</h4>
+                        <p style="margin: 0;"><strong>${docData.cancelReason || '-'}</strong> ${docData.cancelReason === 'อื่นๆ' ? `(${docData.cancelReasonOther || ''})` : ''}</p>
+                    </div>
+
+                    <div style="background: var(--background); padding: 1.5rem; border-radius: var(--radius-md); margin-bottom: 1.5rem; border: 1px solid var(--border);">
+                        <h4 style="margin-bottom: 0.75rem; color: var(--text-main);"><i class="ri-edit-2-line"></i> รายละเอียดการแก้ไข</h4>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                            <div><span style="color: var(--danger); font-size: 0.85rem;">รายการทดสอบที่ยกเลิก</span><br><strong>${docData.cancelTestName || '-'}</strong> (Code: ${docData.cancelTestCode || '-'})</div>
+                            <div><span style="color: var(--success); font-size: 0.85rem;">รายการทดสอบที่เพิ่มใหม่</span><br><strong>${docData.newTestName || '-'}</strong> (Code: ${docData.newTestCode || '-'})</div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <h4 style="margin-bottom: 0.75rem; color: var(--text-muted);"><i class="ri-file-text-line"></i> รายละเอียด / หมายเหตุเพิ่มเติม</h4>
+                        <div style="white-space: pre-wrap; background: var(--surface); padding: 1.5rem; border: 1px solid var(--border); border-radius: var(--radius-md); line-height: 1.7;">${docData.description || '-'}</div>
+                    </div>
+                `;
+                
+                const contentEl = document.getElementById('approval-content');
+                if (contentEl) contentEl.innerHTML = contentHtml;
+
+                const actionsDiv = document.getElementById('approval-actions');
+                const logMsg = document.getElementById('approval-log-msg');
+
+                if (docData.status !== 'pending') {
+                    actionsDiv?.classList.add('hidden');
+                    logMsg?.classList.remove('hidden');
+                    let icon = docData.status === 'approved' ? '<i class="ri-check-line" style="color: var(--success); font-size: 1.5rem;"></i>' : '<i class="ri-close-line" style="color: var(--danger); font-size: 1.5rem;"></i>';
+                    if (logMsg) logMsg.innerHTML = `${icon} <br> เอกสารนี้ได้รับการ <strong>${docData.status === 'approved' ? 'อนุมัติ' : 'ไม่อนุมัติ'}</strong> ไปแล้ว<br>เมื่อ ${formatDate(docData.approvedAt)}<br><span style="color: var(--text-muted); font-size: 0.85rem;">ดำเนินการโดย ${docData.approvedBy}</span>`;
+                } else if (currentUser.email !== docData.approverEmail && userRole !== 'admin') {
+                    actionsDiv?.classList.add('hidden');
+                    logMsg?.classList.remove('hidden');
+                    if (logMsg) logMsg.innerHTML = `<i class="ri-shield-keyhole-line" style="color: var(--danger); font-size: 1.5rem;"></i><br><span style="color: var(--danger); font-weight: 500;">ไม่อนุญาตให้เข้าถึง</span><br><span style="color: var(--text-muted); font-size: 0.9rem;">คุณไม่ได้รับสิทธิ์ให้พิจารณาเอกสารฉบับนี้</span>`;
+                } else {
+                    actionsDiv?.classList.remove('hidden');
+                    logMsg?.classList.add('hidden');
+                }
+            } catch (error) {
+                const contentEl = document.getElementById('approval-content');
+                if (contentEl) contentEl.innerHTML = `
+                    <div style="text-align: center; padding: 3rem; color: var(--danger);">
+                        <i class="ri-error-warning-line" style="font-size: 3rem; margin-bottom: 1rem; display: block;"></i>
+                        <h3 style="color: var(--danger);">${error.message}</h3>
+                    </div>`;
+                document.getElementById('approval-actions')?.classList.add('hidden');
+            }
+            showLoader(false);
+        }
+
+        const processApproval = async (newStatus) => {
+            const statusLabel = newStatus === 'approved' ? 'อนุมัติ' : 'ไม่อนุมัติ';
+            if (!confirm(`ยืนยันการ ${statusLabel} เอกสารนี้ ใช่หรือไม่?`)) return;
+            
+            showLoader(true);
+            try {
+                await updateDoc(doc(db, 'documents', targetDocId), {
+                    status: newStatus,
+                    approvedAt: serverTimestamp(),
+                    approvedBy: currentUser.email,
+                    auditLog: `[${newStatus.toUpperCase()}] ดำเนินการโดย ${currentUser.email}`
+                });
+                
+                // บันทึก System Log
+                const actionTypeStr = newStatus === 'approved' ? 'APPROVE_DOC_' : 'REJECT_DOC_';
+                await logSystemAction(`${actionTypeStr}${targetDocId}`, currentUser.email, newStatus.toUpperCase());
+
+                const currentDocSnap = await getDoc(doc(db, 'documents', targetDocId));
+                const docData = currentDocSnap.data();
+                const baseUrl = window.location.href.split('?')[0];
+                
+                const reqSubject = `[IntraFlow] อัปเดตผลการพิจารณาเอกสาร: ${statusLabel}`;
+                const reqMessage = `เอกสารประเภท ${docData.type} ของคุณได้รับการพิจารณาแล้ว\nผลการพิจารณา: ${statusLabel}\nดำเนินการโดย: ${currentUser.email}`;
+                await sendIntraFlowEmail(docData.requesterEmail, reqSubject, reqMessage, baseUrl);
+                
+                if (newStatus === 'approved') {
+                    const adminSubject = `[IntraFlow - Admin] เอกสารได้รับการอนุมัติ: ${docData.type}`;
+                    const adminMessage = `เอกสารคำร้องจาก ${docData.requesterName} ได้รับการอนุมัติแล้วโดย ${currentUser.email}\nประเภทเอกสาร: ${docData.type}\nรายละเอียด:\n${docData.description}`;
+                    await sendIntraFlowEmail(ADMIN_EMAIL, adminSubject, adminMessage, baseUrl);
+                }
+
+                showToast(`บันทึกผลการ${statusLabel}สำเร็จ!`, 'success');
+                setTimeout(() => { initApprovalView(); }, 1500);
+            } catch (error) {
+                showToast('เกิดข้อผิดพลาด: ' + error.message, 'error');
+                showLoader(false);
+            }
+        };
+
+        document.getElementById('btn-do-approve')?.addEventListener('click', () => processApproval('approved'));
+        document.getElementById('btn-do-reject')?.addEventListener('click', () => processApproval('rejected'));
+
+    </script>
+</body>
+</html>
