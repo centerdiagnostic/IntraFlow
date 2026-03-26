@@ -6,7 +6,7 @@
     <title>ระบบจัดการและอนุมัติเอกสาร (Document Approval Workflow)</title>
     
     <!-- Fonts & Icons -->
-    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
 
     <!-- เพิ่ม Script ของ EmailJS -->
@@ -59,24 +59,26 @@
             from { opacity: 0; transform: translateY(20px); }
             to { opacity: 1; transform: translateY(0); }
         }
-        @keyframes gradientShift {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
+        
+        /* 1.3 สร้างอนิเมชั่น Data Path Flow */
+        @keyframes dataPathFlow {
+            0% {
+                background-position: 0 0, 0 0;
+                opacity: 0.4;
+            }
+            50% {
+                opacity: 1;
+            }
+            100% {
+                background-position: 80px 80px, -80px -80px;
+                opacity: 0.4;
+            }
         }
+
         .animate-fade-in { animation: fadeInUp 0.5s ease-out forwards; }
 
         /* Layout */
         .container { max-width: 1200px; margin: 0 auto; padding: 2rem; }
-        .card { 
-            background: var(--surface); 
-            padding: 2.5rem; 
-            border-radius: var(--radius-lg); 
-            box-shadow: var(--shadow-md); 
-            border: 1px solid rgba(255,255,255,0.8);
-            transition: var(--transition);
-        }
-        .card:hover { box-shadow: var(--shadow-lg); }
         
         /* Navbar */
         nav { 
@@ -87,7 +89,61 @@
             box-shadow: var(--shadow-sm); 
             position: sticky; top: 0; z-index: 100;
         }
-        .nav-brand { font-size: 1.5rem; font-weight: 700; color: var(--primary); display: flex; align-items: center; gap: 0.5rem; }
+
+        /* Modern Nav Brand Branding */
+        .nav-brand { 
+            font-size: 1.8rem; 
+            font-weight: 800; 
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%); 
+            -webkit-background-clip: text; 
+            -webkit-text-fill-color: transparent; 
+            letter-spacing: -1px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .brand-icon-wrapper {
+            background: linear-gradient(135deg, rgba(79, 70, 229, 0.1) 0%, rgba(124, 58, 237, 0.1) 100%);
+            width: 42px;
+            height: 42px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+            box-shadow: inset 0 0 10px rgba(79, 70, 229, 0.05);
+        }
+        .brand-icon-wrapper i {
+            -webkit-text-fill-color: initial;
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-size: 1.6rem;
+        }
+
+        /* 1.2 ปรับปรุงการแสดงผล Card Login */
+        .card { 
+            background: rgba(255, 255, 255, 0.92); 
+            padding: 2.5rem; 
+            border-radius: var(--radius-lg); 
+            box-shadow: var(--shadow-md); 
+            border: 1px solid rgba(255,255,255,0.8);
+            transition: var(--transition);
+            backdrop-filter: blur(20px);
+        }
+        .card:hover { box-shadow: 0 15px 50px rgba(79, 70, 229, 0.25); }
+
+        /* Login Title branding */
+        .auth-brand-title {
+            font-size: 1.75rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.5px;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+
         .nav-menu { display: flex; gap: 1.5rem; align-items: center; }
         
         /* Buttons */
@@ -181,23 +237,53 @@
         .tab:hover { color: var(--text-main); }
         .tab.active { background: var(--surface); color: var(--primary); box-shadow: var(--shadow-sm); }
 
-        /* Auth Container (Redesigned) */
+        /* 1.1 & 3 ปรับเปลี่ยนพื้นหลัง Login ให้มี Grid และ Data Path Flow */
         .auth-wrapper { 
             display: flex; justify-content: center; align-items: center; min-height: 100vh; 
-            background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
-            background-size: 400% 400%;
-            animation: gradientShift 15s ease infinite;
+            background-color: #050a19; /* Deep Blue */
+            position: relative;
             padding: 2rem;
+            overflow: hidden;
         }
+
+        /* Grid Pattern Overlay */
+        .auth-wrapper::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-image: 
+                linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        /* Data Flow Dots Overlay */
+        .auth-wrapper::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-image: 
+                radial-gradient(circle, #23d5ab 1px, transparent 1.5px),
+                radial-gradient(circle, #7c3aed 1px, transparent 1.5px);
+            background-size: 80px 80px;
+            background-position: 0 0, 40px 40px;
+            animation: dataPathFlow 6s linear infinite;
+            pointer-events: none;
+            z-index: 2;
+        }
+
         .auth-card { 
+            position: relative;
+            z-index: 10; /* ให้ Card อยู่เหนือพื้นหลัง */
             width: 100%; max-width: 420px; 
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.5);
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            background: rgba(255, 255, 255, 0.9);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 10px 50px rgba(79, 70, 229, 0.2);
         }
+        
         .auth-logo {
-            max-height: 120px;
+            max-height: 100px;
             width: auto;
             margin: 0 auto;
             display: block;
@@ -216,6 +302,35 @@
             background: var(--surface); width: 100%; max-width: 450px;
             padding: 2rem; border-radius: var(--radius-lg); box-shadow: var(--shadow-lg);
             animation: fadeInUp 0.3s ease-out;
+        }
+
+        /* Mobile Responsive adjustments */
+        @media (max-width: 768px) {
+            .container { padding: 1rem; }
+            .card { padding: 1.5rem; }
+            
+            div[style*="display: grid"],
+            #submit-doc-form > div[style*="display: grid"],
+            .form-group[style*="display: grid"],
+            #tab-admin > div[style*="display: grid"] {
+                grid-template-columns: 1fr !important;
+            }
+            
+            .tabs {
+                overflow-x: auto;
+                white-space: nowrap;
+                -webkit-overflow-scrolling: touch;
+                padding-bottom: 0.25rem;
+            }
+            .tabs::-webkit-scrollbar {
+                height: 4px;
+            }
+            
+            .table-container {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+                width: 100%;
+            }
         }
 
     </style>
@@ -261,15 +376,14 @@
         </div>
     </div>
 
-    <!-- 1. หน้าต่างเข้าสู่ระบบ / ลงทะเบียน (Redesigned) -->
+    <!-- 1. หน้าต่างเข้าสู่ระบบ (ถอดระบบลงทะเบียน และปรับปรุงสไตล์หัวข้อ) -->
     <div id="auth-view" class="auth-wrapper hidden">
         <div class="card auth-card animate-fade-in">
-            <!-- โลโก้ใหม่ตามที่ระบุ -->
             <div class="text-center mb-6">
                 <img src="https://kvdc-vetku.com/wp-content/uploads/2026/03/1.png" alt="KVDC Logo" class="auth-logo">
             </div>
             
-            <h2 class="text-center mb-6" id="auth-title" style="color: var(--text-main);">เข้าสู่ระบบ IntraFlow</h2>
+            <h2 class="auth-brand-title" id="auth-title">เข้าสู่ระบบ IntraFlow</h2>
             
             <form id="auth-form">
                 <div class="form-group">
@@ -280,36 +394,24 @@
                     <label><i class="ri-lock-password-line"></i> รหัสผ่าน</label>
                     <input type="password" id="auth-password" required placeholder="••••••••">
                 </div>
-                <div class="form-group hidden" id="register-role-group">
-                    <label><i class="ri-user-settings-line"></i> บทบาท (สำหรับจำลองระบบ)</label>
-                    <select id="auth-role">
-                        <option value="user">พนักงานทั่วไป (ยื่นเอกสาร)</option>
-                        <option value="approver">ผู้อนุมัติ (พิจารณาเอกสาร)</option>
-                        <option value="admin">ผู้ดูแลระบบ (เห็นเอกสารทั้งหมด)</option>
-                    </select>
-                </div>
                 <button type="submit" class="btn btn-primary w-100 mt-4" style="padding: 0.875rem;" id="auth-submit-btn">
                     เข้าสู่ระบบ <i class="ri-arrow-right-line"></i>
                 </button>
             </form>
-            
-            <p class="text-center mt-6" style="font-size: 0.9rem; color: var(--text-muted);">
-                <span id="auth-toggle-text">ยังไม่มีบัญชีใช่หรือไม่?</span>
-                <a href="#" id="auth-toggle-btn" style="color: var(--primary); text-decoration: none; font-weight: 600; margin-left: 0.5rem; transition: var(--transition);">ลงทะเบียนทดสอบ</a>
-            </p>
         </div>
     </div>
 
     <!-- 2. หน้าจอหลักของแอปพลิเคชัน -->
     <div id="app-view" class="hidden">
-        <!-- แถบนำทางด้านบน -->
+        <!-- แถบนำทางด้านบน (Branding ใหม่) -->
         <nav>
             <div class="nav-brand">
-                <i class="ri-file-copy-2-line" style="font-size: 1.8rem;"></i>
+                <div class="brand-icon-wrapper">
+                    <i class="ri-file-copy-2-line"></i>
+                </div>
                 IntraFlow
             </div>
             <div class="nav-menu">
-                <!-- ปุ่มเมนูสำหรับแอดมิน (เปลี่ยน Tab) -->
                 <button id="btn-admin-panel" class="btn btn-outline hidden" style="padding: 0.5rem 1rem;">
                     <i class="ri-settings-3-line"></i> จัดการระบบ
                 </button>
@@ -326,7 +428,7 @@
         </nav>
 
         <div class="container">
-            <!-- 2.1 ส่วนของแดชบอร์ดหลัก (รายการเอกสาร & ยื่นเอกสาร & แอดมิน) -->
+            <!-- 2.1 ส่วนของแดชบอร์ดหลัก -->
             <div id="dashboard-section" class="animate-fade-in">
                 <!-- Tabs -->
                 <div class="tabs">
@@ -336,7 +438,6 @@
                     <div class="tab" data-target="tab-submit" id="tab-submit-btn">
                         <i class="ri-add-circle-line"></i> ยื่นเอกสารใหม่
                     </div>
-                    <!-- แท็บนี้จะแสดงเมื่อกดปุ่มจัดการระบบ -->
                     <div class="tab hidden" data-target="tab-admin" id="tab-admin-btn">
                         <i class="ri-shield-user-line"></i> Admin Dashboard
                     </div>
@@ -439,15 +540,18 @@
 
                             <div class="form-group" style="background: var(--background); padding: 1.5rem; border-radius: var(--radius-md); border: 1px solid var(--border);">
                                 <label style="font-size: 1rem; color: var(--text-main); margin-bottom: 1rem;"><i class="ri-error-warning-line"></i> สาเหตุในการยกเลิก</label>
-                                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; align-items: center;">
-                                    <label style="display: flex; align-items: center; gap: 0.5rem; font-weight: 400; margin: 0;"><input type="radio" name="cancel-reason" value="ลูกค้าขอยกเลิก" required> ลูกค้าขอยกเลิก</label>
-                                    <label style="display: flex; align-items: center; gap: 0.5rem; font-weight: 400; margin: 0;"><input type="radio" name="cancel-reason" value="ตัวอย่างไม่สมบูรณ์"> ตัวอย่างไม่สมบูรณ์</label>
-                                    <label style="display: flex; align-items: center; gap: 0.5rem; font-weight: 400; margin: 0;"><input type="radio" name="cancel-reason" value="ข้อมูลตัวอย่างไม่ถูกต้อง"> ข้อมูลตัวอย่างไม่ถูกต้อง</label>
-                                    <label style="display: flex; align-items: center; gap: 0.5rem; font-weight: 400; margin: 0;"><input type="radio" name="cancel-reason" value="ทดสอบซ้ำ/รายการซ้ำ"> ทดสอบซ้ำ/รายการซ้ำ</label>
-                                    <label style="display: flex; align-items: center; gap: 0.5rem; font-weight: 400; grid-column: 1 / -1; margin: 0;">
-                                        <input type="radio" name="cancel-reason" value="อื่นๆ" id="reason-other-radio"> อื่นๆ 
-                                        <input type="text" id="doc-cancel-other" placeholder="โปรดระบุสาเหตุ..." style="padding: 0.5rem 0.75rem; width: 100%; max-width: 400px; margin-left: 0.5rem; border: 1px solid var(--border); border-radius: var(--radius-md);">
-                                    </label>
+                                <select id="doc-cancel-reason-select" required>
+                                    <option value="" disabled selected>-- เลือกสาเหตุการยกเลิก --</option>
+                                    <option value="ลูกค้าขอยกเลิก">ลูกค้าขอยกเลิก</option>
+                                    <option value="ตัวอย่างไม่สมบูรณ์ / ไม่เป็นไปตามเกณฑ์">ตัวอย่างไม่สมบูรณ์ / ไม่เป็นไปตามเกณฑ์</option>
+                                    <option value="ข้อมูลตัวอย่างไม่ถูกต้อง">ข้อมูลตัวอย่างไม่ถูกต้อง</option>
+                                    <option value="ทดสอบซ้ำ / รายการซ้ำ">ทดสอบซ้ำ / รายการซ้ำ</option>
+                                    <option value="อื่นๆ">อื่นๆ (โปรดระบุ)</option>
+                                </select>
+                                
+                                <div id="other-reason-container" class="hidden mt-4 animate-fade-in">
+                                    <label>ระบุสาเหตุอื่นๆ</label>
+                                    <input type="text" id="doc-cancel-other" placeholder="โปรดระบุสาเหตุที่ชัดเจน...">
                                 </div>
                             </div>
 
@@ -495,6 +599,10 @@
                         <div class="card" style="border-top: 4px solid var(--primary);">
                             <h3 class="mb-4"><i class="ri-user-add-line"></i> เพิ่มผู้ใช้งานใหม่</h3>
                             <form id="admin-add-user-form">
+                                <div class="form-group">
+                                    <label>ชื่อ-นามสกุล</label>
+                                    <input type="text" id="admin-new-user-name" required placeholder="นายตัวอย่าง ดีงาม">
+                                </div>
                                 <div class="form-group">
                                     <label>อีเมลผู้ใช้งาน</label>
                                     <input type="email" id="admin-new-user-email" required placeholder="user@company.com">
@@ -632,11 +740,10 @@
         // Global State
         let currentUser = null;
         let userRole = 'user';
-        let isLoginMode = true;
         let unsubscribeDocs = null;
         let currentApprovalDocData = null;
 
-        // Route Check (เปลี่ยนเป็น let เพื่อรองรับการทำงานแบบ SPA Routing)
+        // Route Check (SPA Routing)
         const urlParams = new URLSearchParams(window.location.search);
         let targetDocId = urlParams.get('docId');
         let targetToken = urlParams.get('token');
@@ -738,13 +845,12 @@
 
                 // --- เริ่มวาด PDF ---
                 if(logoB64) {
-                    doc.addImage(logoB64, 'PNG', 15, 10, 20, 20); // ปรับขนาดโลโก้ให้พอดี
+                    doc.addImage(logoB64, 'PNG', 15, 10, 20, 20); 
                 }
                 
                 doc.setFontSize(20);
                 doc.text("แบบฟอร์มคำขอยกเลิกรายการทดสอบ (Cancel Test)", 40, 20);
                 doc.setFontSize(14);
-                // ชิดขวาเพื่อไม่ให้ซ้อนทับ
                 doc.text(`เลขที่คำร้อง AR: ${docData.arNumber || '............................'}`, 195, 20, { align: 'right' });
                 
                 doc.setLineWidth(0.5);
@@ -755,7 +861,7 @@
                 doc.text("Kamphaengsaen Veterinary Diagnostic Center, Faculty of Veterinary Medicine, Kasetsart University", 15, 38);
                 
                 let startY = 48;
-                const lineH = 7; // ลดระยะบรรทัดเพื่อไม่ให้ตกขอบ
+                const lineH = 7; 
                 
                 doc.setFontSize(15);
                 doc.setFont('THSarabunNew', 'bold');
@@ -763,7 +869,6 @@
                 doc.setFont('THSarabunNew', 'normal');
                 startY += lineH;
                 
-                // จัด Colon ให้ตรงกัน
                 const labelX = 15;
                 const colonX = 45;
                 const dataX = 48;
@@ -788,13 +893,13 @@
                 drawCheck(startY, docData.cancelReason === 'ลูกค้าขอยกเลิก');
                 doc.text("ลูกค้าขอยกเลิก", 22, startY); startY += lineH;
                 
-                drawCheck(startY, docData.cancelReason === 'ตัวอย่างไม่สมบูรณ์');
+                drawCheck(startY, docData.cancelReason === 'ตัวอย่างไม่สมบูรณ์ / ไม่เป็นไปตามเกณฑ์');
                 doc.text("ตัวอย่างไม่สมบูรณ์ / ไม่เป็นไปตามเกณฑ์", 22, startY); startY += lineH;
                 
                 drawCheck(startY, docData.cancelReason === 'ข้อมูลตัวอย่างไม่ถูกต้อง');
                 doc.text("ข้อมูลตัวอย่างไม่ถูกต้อง", 22, startY); startY += lineH;
                 
-                drawCheck(startY, docData.cancelReason === 'ทดสอบซ้ำ/รายการซ้ำ');
+                drawCheck(startY, docData.cancelReason === 'ทดสอบซ้ำ / รายการซ้ำ');
                 doc.text("ทดสอบซ้ำ / รายการซ้ำ", 22, startY); startY += lineH;
                 
                 drawCheck(startY, docData.cancelReason === 'อื่นๆ');
@@ -817,11 +922,10 @@
                 
                 startY += 15;
                 doc.text(`ลงชื่อ ................................................................ ผู้เสนอขอยกเลิก`, 105, startY);
-                // จัดชื่อผู้ขอให้อยู่กึ่งกลาง
                 doc.text(`( ${docData.requesterName || '........................................'} )`, 140, startY + lineH, { align: 'center' });
                 doc.text(`วันที่ขอแก้ไข ......../......../........`, 140, startY + (lineH*2), { align: 'center' });
                 
-                startY += 25; // ปรับลดระยะห่างไม่ให้ตกขอบ
+                startY += 25; 
                 doc.setFont('THSarabunNew', 'bold');
                 doc.text("4. ผู้อนุมัติ", 15, startY);
                 doc.text("5. บันทึกข้อมูลลงระบบบัญชีเรียบร้อยแล้ว", 105, startY);
@@ -836,7 +940,6 @@
                 
                 startY += 15;
                 doc.text(`ลงชื่อ ................................................................`, 15, startY);
-                // แสดงชื่อผู้อนุมัติและจัดกึ่งกลาง
                 doc.text(`( ${docData.approverName || '........................................................'} )`, 45, startY + lineH, { align: 'center' });
                 doc.text(`ผู้อำนวยการศูนย์ชันสูตรโรคสัตว์ กำแพงแสน`, 45, startY + (lineH*2), { align: 'center' });
                 doc.text(`วันที่ ......../......../........`, 45, startY + (lineH*3), { align: 'center' });
@@ -863,40 +966,18 @@
 
         // ==================== Auth & Security Logic ====================
         const authForm = document.getElementById('auth-form');
-        const authToggleBtn = document.getElementById('auth-toggle-btn');
-        const registerRoleGroup = document.getElementById('register-role-group');
-
-        authToggleBtn?.addEventListener('click', (e) => {
-            e.preventDefault();
-            isLoginMode = !isLoginMode;
-            document.getElementById('auth-title').innerText = isLoginMode ? 'เข้าสู่ระบบ IntraFlow' : 'ลงทะเบียนบัญชีทดสอบ';
-            document.getElementById('auth-toggle-text').innerText = isLoginMode ? 'ยังไม่มีบัญชีใช่หรือไม่?' : 'มีบัญชีอยู่แล้ว?';
-            authToggleBtn.innerText = isLoginMode ? 'ลงทะเบียนทดสอบ' : 'เข้าสู่ระบบ';
-            document.getElementById('auth-submit-btn').innerHTML = isLoginMode ? 'เข้าสู่ระบบ <i class="ri-arrow-right-line"></i>' : 'ลงทะเบียน <i class="ri-user-add-line"></i>';
-            registerRoleGroup.classList.toggle('hidden', isLoginMode);
-        });
 
         authForm?.addEventListener('submit', async (e) => {
             e.preventDefault();
             const email = document.getElementById('auth-email').value;
             const password = document.getElementById('auth-password').value;
-            const role = document.getElementById('auth-role').value;
             
             showLoader(true);
             try {
-                if (isLoginMode) {
-                    await signInWithEmailAndPassword(auth, email, password);
-                } else {
-                    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-                    await setDoc(doc(db, 'users', userCredential.user.uid), { 
-                        role: role, email: email, firstLogin: false, createdAt: serverTimestamp() 
-                    });
-                    showToast('ลงทะเบียนสำเร็จ ระบบกำลังเข้าสู่หน้าหลัก', 'success');
-                }
+                await signInWithEmailAndPassword(auth, email, password);
+                showToast('เข้าสู่ระบบสำเร็จ ยินดีต้อนรับ!', 'success');
             } catch (error) {
-                let errorMsg = 'เกิดข้อผิดพลาด';
-                if(error.code === 'auth/invalid-credential') errorMsg = 'อีเมลหรือรหัสผ่านไม่ถูกต้อง';
-                else if(error.code === 'auth/email-already-in-use') errorMsg = 'อีเมลนี้ถูกใช้งานในระบบแล้ว';
+                let errorMsg = 'อีเมลหรือรหัสผ่านไม่ถูกต้อง';
                 showToast(errorMsg, 'error');
                 showLoader(false);
             }
@@ -904,7 +985,6 @@
 
         document.getElementById('btn-logout')?.addEventListener('click', () => { signOut(auth); });
 
-        // สร้างฟังก์ชันเข้าสู่หน้าหลักเพื่อให้เรียกใช้ซ้ำได้
         const enterMainApp = (user, role) => {
             document.getElementById('first-login-modal')?.classList.add('hidden');
             
@@ -918,7 +998,6 @@
             const roleBadgeEl = document.getElementById('user-role-badge');
             if (roleBadgeEl) roleBadgeEl.innerHTML = `<i class="ri-shield-user-line"></i> ${roleNames[role] || 'พนักงาน'}`;
 
-            // Admin Controls
             if (role === 'admin') {
                 document.getElementById('btn-admin-panel')?.classList.remove('hidden');
                 document.getElementById('tab-admin-btn')?.classList.remove('hidden');
@@ -930,7 +1009,7 @@
             document.getElementById('auth-view')?.classList.add('hidden');
             document.getElementById('app-view')?.classList.remove('hidden');
 
-            loadApproversList(); // ดึงรายชื่อผู้อนุมัติสำหรับ Dropdown
+            loadApproversList(); 
 
             if (isApprovalRoute) initApprovalView();
             else initDashboard();
@@ -938,7 +1017,6 @@
             showLoader(false);
         };
 
-        // จัดการสถานะผู้ใช้และเช็ค First Login
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 currentUser = user;
@@ -955,13 +1033,11 @@
                 } catch(e) { console.error(e); }
 
                 if (userFirstLogin) {
-                    // แสดงหน้าเปลี่ยนรหัสผ่าน และระงับการเข้าสู่หน้าหลักชั่วคราว
                     document.getElementById('first-login-modal')?.classList.remove('hidden');
                     document.getElementById('auth-view')?.classList.add('hidden');
                     document.getElementById('app-view')?.classList.add('hidden');
                     showLoader(false);
                 } else {
-                    // เข้าสู่ระบบหน้าหลักตามปกติ
                     enterMainApp(user, userRole);
                 }
             } else {
@@ -973,7 +1049,6 @@
             }
         });
 
-        // ==================== ระบบเปลี่ยนรหัสผ่านครั้งแรก ====================
         document.getElementById('first-login-form')?.addEventListener('submit', async (e) => {
             e.preventDefault();
             const newPass = document.getElementById('new-password').value;
@@ -989,13 +1064,9 @@
             btn.innerHTML = 'กำลังบันทึก...';
 
             try {
-                // 1. อัปเดตรหัสผ่านในระบบ Firebase Auth
                 await updatePassword(currentUser, newPass);
-                
-                // 2. อัปเดตสถานะ firstLogin ใน Firestore ทันทีที่เปลี่ยนรหัสผ่านสำเร็จ
                 await updateDoc(doc(db, 'users', currentUser.uid), { firstLogin: false });
                 
-                // 3. ตรวจสอบและดึงสิทธิ์ (userRole) ให้พร้อมก่อนเรียกใช้งาน enterMainApp
                 const userDocSnap = await getDoc(doc(db, 'users', currentUser.uid));
                 if (userDocSnap.exists()) {
                     userRole = userDocSnap.data().role || 'user';
@@ -1004,30 +1075,21 @@
                 }
                 
                 showToast('ตั้งรหัสผ่านใหม่เรียบร้อยแล้ว ยินดีต้อนรับสู่ระบบ', 'success');
-                
-                // 4. เรียกฟังก์ชันเข้าสู่หน้าหลักเพื่อเปลี่ยนหน้าทันทีโดยไม่ต้องรีโหลด
                 enterMainApp(currentUser, userRole);
             } catch (error) {
-                if(error.code === 'auth/requires-recent-login') {
-                    showToast('เซสชันหมดอายุ กรุณาออกจากระบบและเข้าใหม่อีกครั้งก่อนเปลี่ยนรหัสผ่าน', 'error');
-                } else {
-                    showToast('อัปเดตรหัสผ่านล้มเหลว: ' + error.message, 'error');
-                }
+                showToast('อัปเดตรหัสผ่านล้มเหลว: ' + error.message, 'error');
             } finally {
                 btn.disabled = false;
                 btn.innerHTML = 'บันทึกรหัสผ่านและเข้าสู่ระบบ <i class="ri-arrow-right-line"></i>';
             }
         });
 
-        // ปุ่มข้ามการเปลี่ยนรหัสผ่าน (เข้าสู่ระบบทันที แต่คราวหน้าจะเด้งถามอีก)
         document.getElementById('btn-cancel-first-login')?.addEventListener('click', () => {
             document.getElementById('first-login-form').reset();
             showToast('ข้ามการเปลี่ยนรหัสผ่านชั่วคราว', 'info');
-            // พาเข้าสู่หน้าหลักโดยไม่เปลี่ยนสถานะ firstLogin ใน Database
             enterMainApp(currentUser, userRole);
         });
 
-        // ==================== ดึงรายชื่อผู้อนุมัติเข้า Dropdown ====================
         async function loadApproversList() {
             const selectEl = document.getElementById('doc-approver-select');
             if (!selectEl) return;
@@ -1047,12 +1109,10 @@
                 
                 selectEl.innerHTML = optionsHtml;
             } catch (error) {
-                console.error("Error fetching approvers", error);
                 selectEl.innerHTML = '<option value="" disabled selected>-- โหลดข้อมูลผู้อนุมัติไม่สำเร็จ --</option>';
             }
         }
 
-        // ==================== Tabs Logic ====================
         const tabs = ['list', 'submit', 'admin'];
         
         document.getElementById('tab-list-btn')?.addEventListener('click', () => switchTab('list'));
@@ -1078,12 +1138,20 @@
             }
         }
 
-        // ==================== Admin Management ====================
-        
-        // 1. Admin เพิ่มผู้ใช้งานใหม่
+        document.getElementById('doc-cancel-reason-select')?.addEventListener('change', (e) => {
+            const otherContainer = document.getElementById('other-reason-container');
+            if (e.target.value === 'อื่นๆ') {
+                otherContainer.classList.remove('hidden');
+            } else {
+                otherContainer.classList.add('hidden');
+            }
+        });
+
+        // 1. Admin เพิ่มผู้ใช้งานใหม่ (พร้อมบันทึก displayName)
         document.getElementById('admin-add-user-form')?.addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = document.getElementById('btn-admin-add-user');
+            const name = document.getElementById('admin-new-user-name').value;
             const email = document.getElementById('admin-new-user-email').value;
             const pass = document.getElementById('admin-new-user-pass').value;
             const role = document.getElementById('admin-new-user-role').value;
@@ -1092,18 +1160,18 @@
             btn.innerHTML = '<div class="loader"></div> กำลังเพิ่มผู้ใช้...';
 
             try {
-                // ใช้ secondaryAuth เพื่อไม่ให้แอดมินหลุดจากการล็อกอินปัจจุบัน
                 const userCred = await createUserWithEmailAndPassword(secondaryAuth, email, pass);
                 await setDoc(doc(db, 'users', userCred.user.uid), {
                     email: email,
                     role: role,
-                    firstLogin: true, // บังคับเปลี่ยนรหัสผ่าน
+                    displayName: name, 
+                    firstLogin: true, 
                     createdAt: serverTimestamp()
                 });
                 await signOut(secondaryAuth);
                 
                 await logSystemAction(`CREATE_USER_${Date.now()}`, currentUser.email, `Created user: ${email} (${role})`);
-                showToast(`เพิ่มบัญชีผู้ใช้ ${email} เรียบร้อยแล้ว`, 'success');
+                showToast(`เพิ่มบัญชีผู้ใช้ ${name} เรียบร้อยแล้ว`, 'success');
                 e.target.reset();
             } catch (error) {
                 showToast(`เพิ่มผู้ใช้ไม่สำเร็จ: ${error.message}`, 'error');
@@ -1133,7 +1201,7 @@
                 await logSystemAction(`ADD_APPROVER_${Date.now()}`, currentUser.email, `Added approver: ${name}`);
                 showToast(`บันทึกผู้อนุมัติ ${name} สำเร็จ!`, 'success');
                 e.target.reset();
-                loadApproversList(); // โหลด Dropdown ใหม่
+                loadApproversList(); 
             } catch (error) {
                 showToast(`เกิดข้อผิดพลาด: ${error.message}`, 'error');
             } finally {
@@ -1148,9 +1216,13 @@
             e.preventDefault();
             const btn = document.getElementById('btn-submit-doc');
             if (btn) {
-                btn.innerHTML = '<div class="loader"></div> กำลังเข้ารหัสและบันทึก...';
+                btn.innerHTML = '<div class="loader"></div> กำลังบันทึก...';
                 btn.disabled = true;
             }
+
+            const approverSelect = document.getElementById('doc-approver-select');
+            const selectedApproverText = approverSelect?.options[approverSelect.selectedIndex]?.text || '';
+            const approverNameOnly = selectedApproverText.split(' (')[0];
 
             const newDoc = {
                 requesterName: document.getElementById('doc-requester-name')?.value || '',
@@ -1164,16 +1236,18 @@
                 folderNumber: document.getElementById('doc-folder-number')?.value || '',
                 receiptNumber: document.getElementById('doc-receipt-number')?.value || '',
                 invoiceNumber: document.getElementById('doc-invoice-number')?.value || '',
-                cancelReason: document.querySelector('input[name="cancel-reason"]:checked')?.value || '',
+                
+                cancelReason: document.getElementById('doc-cancel-reason-select')?.value || '',
                 cancelReasonOther: document.getElementById('doc-cancel-other')?.value || '',
+                
                 cancelTestName: document.getElementById('doc-cancel-test-name')?.value || '',
                 cancelTestCode: document.getElementById('doc-cancel-test-code')?.value || '',
                 newTestName: document.getElementById('doc-new-test-name')?.value || '',
                 newTestCode: document.getElementById('doc-new-test-code')?.value || '',
                 description: document.getElementById('doc-description')?.value || '',
                 
-                approverEmail: document.getElementById('doc-approver-select')?.value || '',
-                approverName: document.getElementById('doc-approver-select')?.options[document.getElementById('doc-approver-select')?.selectedIndex]?.text.split(' (')[0] || '',
+                approverEmail: approverSelect?.value || '',
+                approverName: approverNameOnly,
                 status: 'pending',
                 token: crypto.randomUUID(),
                 createdAt: serverTimestamp(),
@@ -1182,8 +1256,6 @@
 
             try {
                 const docRef = await addDoc(collection(db, 'documents'), newDoc);
-                
-                // บันทึก System Log โดยใช้ชื่อ AR Number หรือ Doc ID
                 const logId = `SUBMIT_DOC_${newDoc.arNumber ? newDoc.arNumber : docRef.id}`;
                 await logSystemAction(logId, currentUser.email, "SUBMIT_DOCUMENT");
 
@@ -1191,7 +1263,6 @@
                 const approvalUrl = `${baseUrl}?docId=${docRef.id}&token=${newDoc.token}`;
                 const emailSubject = `[IntraFlow] มีเอกสารรออนุมัติ: ${newDoc.type}`;
                 
-                // อัปเดตเนื้อหาอีเมลให้ครอบคลุมฟิลด์ใหม่ทั้งหมดอย่างครบถ้วน
                 const reasonText = newDoc.cancelReason === 'อื่นๆ' ? `อื่นๆ (${newDoc.cancelReasonOther})` : newDoc.cancelReason;
                 const emailMessage = `ผู้ขออนุมัติ: ${newDoc.requesterName}
 ประเภทเอกสาร: ${newDoc.type}
@@ -1207,11 +1278,10 @@ ${newDoc.description}
                 
                 await sendIntraFlowEmail(newDoc.approverEmail, emailSubject, emailMessage, approvalUrl);
 
-                showToast('ส่งเอกสารเข้าสู่ระบบ Workflow เรียบร้อย!', 'success');
+                showToast('ส่งเอกสารเข้าสู่ระบบเรียบร้อย!', 'success');
                 submitForm.reset();
+                document.getElementById('other-reason-container').classList.add('hidden');
                 switchTab('list');
-                const reqEmailEl = document.getElementById('doc-requester-email');
-                if (reqEmailEl) reqEmailEl.value = currentUser.email;
             } catch (error) {
                 showToast('ไม่สามารถบันทึกได้: ' + error.message, 'error');
             } finally {
@@ -1225,7 +1295,6 @@ ${newDoc.description}
         // ==================== Load Docs Logic ====================
         document.getElementById('filter-status')?.addEventListener('change', () => loadDocuments());
 
-        // 5. การจัดการ Error ตัวแปร และ SPA Routing
         document.getElementById('document-table-body')?.addEventListener('click', (e) => {
             const btn = e.target.closest('.btn-view-doc');
             if (btn) {
@@ -1239,25 +1308,19 @@ ${newDoc.description}
                 try {
                     const baseUrl = window.location.href.split('?')[0];
                     window.history.pushState({}, '', `${baseUrl}?docId=${docId}&token=${token}`);
-                } catch(error) { 
-                    console.warn("Cannot update URL in preview environment", error); 
-                }
+                } catch(error) { console.warn(error); }
                 
-                // โหลดข้อมูลเข้า Approval View ทันทีโดยไม่รีเฟรชหน้าต่าง
                 initApprovalView();
             }
         });
 
-        // ใช้ Event SPA Routing กับปุ่มกลับหน้าแรกเพื่อป้องกัน Failed to set href property URL ว่าง
         document.getElementById('btn-back-home')?.addEventListener('click', () => {
             targetDocId = null;
             targetToken = null;
             try {
                 const baseUrl = window.location.href.split('?')[0];
                 window.history.pushState({}, '', baseUrl);
-            } catch(error) { 
-                console.warn("Cannot update URL in preview environment", error); 
-            }
+            } catch(error) { console.warn(error); }
             initDashboard();
         });
 
@@ -1295,8 +1358,6 @@ ${newDoc.description}
 
                 docsData.forEach(d => {
                     const tr = document.createElement('tr');
-                    
-                    // เปลี่ยนจากลิงก์ <a> เป็นปุ่ม <button> เพื่อรองรับ SPA Routing
                     let actionHtml = `<button class="btn btn-outline btn-view-doc" data-id="${d.id}" data-token="${d.token}" style="padding: 0.35rem 0.75rem; font-size: 0.85rem;"><i class="ri-eye-line"></i> ดูข้อมูล</button>`;
                     
                     if (userRole === 'approver' && d.status === 'pending') {
@@ -1323,7 +1384,6 @@ ${newDoc.description}
             });
         }
 
-        // ==================== Approval Logic ====================
         async function initApprovalView() {
             document.getElementById('dashboard-section')?.classList.add('hidden');
             document.getElementById('approval-section')?.classList.remove('hidden');
@@ -1386,8 +1446,9 @@ ${newDoc.description}
                 if (docData.status !== 'pending') {
                     actionsDiv?.classList.add('hidden');
                     logMsg?.classList.remove('hidden');
-                    let icon = docData.status === 'approved' ? '<i class="ri-check-line" style="color: var(--success); font-size: 1.5rem;"></i>' : '<i class="ri-close-line" style="color: var(--danger); font-size: 1.5rem;"></i>';
-                    if (logMsg) logMsg.innerHTML = `${icon} <br> เอกสารนี้ได้รับการ <strong>${docData.status === 'approved' ? 'อนุมัติ' : 'ไม่อนุมัติ'}</strong> ไปแล้ว<br>เมื่อ ${formatDate(docData.approvedAt)}<br><span style="color: var(--text-muted); font-size: 0.85rem;">ดำเนินการโดย ${docData.approvedBy}</span>`;
+                    let icon = docData.status === 'approved' ? '<i class="ri-check-line" style="color: var(--success); font-size: 1.2rem; vertical-align: middle;"></i>' : '<i class="ri-close-line" style="color: var(--danger); font-size: 1.2rem; vertical-align: middle;"></i>';
+                    let statusText = docData.status === 'approved' ? 'อนุมัติ' : 'ไม่อนุมัติ';
+                    if (logMsg) logMsg.innerHTML = `${icon} <span style="vertical-align: middle; font-weight: 600;">เอกสารนี้ได้รับการ${statusText}แล้ว เมื่อ ${formatDate(docData.approvedAt)}</span><br><span style="color: var(--text-muted); font-size: 0.9rem; display: inline-block; margin-top: 0.25rem;">ดำเนินการโดย ${docData.approverName || docData.approvedBy}</span>`;
                 } else if (currentUser.email !== docData.approverEmail && userRole !== 'admin') {
                     actionsDiv?.classList.add('hidden');
                     logMsg?.classList.remove('hidden');
@@ -1421,7 +1482,6 @@ ${newDoc.description}
                     auditLog: `[${newStatus.toUpperCase()}] ดำเนินการโดย ${currentUser.email}`
                 });
                 
-                // บันทึก System Log
                 const actionTypeStr = newStatus === 'approved' ? 'APPROVE_DOC_' : 'REJECT_DOC_';
                 await logSystemAction(`${actionTypeStr}${targetDocId}`, currentUser.email, newStatus.toUpperCase());
 
@@ -1434,9 +1494,24 @@ ${newDoc.description}
                 await sendIntraFlowEmail(docData.requesterEmail, reqSubject, reqMessage, baseUrl);
                 
                 if (newStatus === 'approved') {
-                    const adminSubject = `[IntraFlow - Admin] เอกสารได้รับการอนุมัติ: ${docData.type}`;
-                    const adminMessage = `เอกสารคำร้องจาก ${docData.requesterName} ได้รับการอนุมัติแล้วโดย ${currentUser.email}\nประเภทเอกสาร: ${docData.type}\nรายละเอียด:\n${docData.description}`;
-                    await sendIntraFlowEmail(ADMIN_EMAIL, adminSubject, adminMessage, baseUrl);
+                    try {
+                        const adminQuery = query(collection(db, 'users'), where('role', '==', 'admin'));
+                        const adminSnapshot = await getDocs(adminQuery);
+                        const adminEmails = [];
+                        adminSnapshot.forEach(d => { if (d.data().email) adminEmails.push(d.data().email); });
+
+                        const adminSubject = `[IntraFlow - Admin] เอกสารได้รับการอนุมัติ: ${docData.arNumber || docData.type}`;
+                        const adminMessage = `แจ้งเตือนการอนุมัติเอกสารใหม่ในระบบ
+เลขที่เอกสาร: ${docData.arNumber || '-'}
+ประเภท: ${docData.type}
+สถานะ: อนุมัติแล้ว
+ผู้อนุมัติ: ${docData.approverName || currentUser.email}
+วันที่อนุมัติ: ${formatDate(new Date())}
+
+กรุณาตรวจสอบรายละเอียดเพิ่มเติมในระบบ`;
+
+                        for (const adminEmail of adminEmails) { await sendIntraFlowEmail(adminEmail, adminSubject, adminMessage, baseUrl); }
+                    } catch (err) { console.error(err); }
                 }
 
                 showToast(`บันทึกผลการ${statusLabel}สำเร็จ!`, 'success');
