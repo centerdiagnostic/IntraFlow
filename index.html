@@ -95,10 +95,8 @@
             font-size: 1.8rem; 
             font-weight: 800; 
             background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%); 
-            background-clip: text; /* เพิ่มบรรทัดมาตรฐาน */
             -webkit-background-clip: text; 
             -webkit-text-fill-color: transparent; 
-            color: transparent; /* เพิ่มเพื่อให้รองรับมาตรฐานหลัก */
             letter-spacing: -1px;
             display: flex;
             align-items: center;
@@ -115,11 +113,10 @@
             box-shadow: inset 0 0 10px rgba(79, 70, 229, 0.05);
         }
         .brand-icon-wrapper i {
+            -webkit-text-fill-color: initial;
             background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
-            background-clip: text;
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            color: transparent;
             font-size: 1.6rem;
         }
 
@@ -140,10 +137,8 @@
             font-size: 1.75rem;
             font-weight: 800;
             background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
-            background-clip: text;
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            color: transparent;
             letter-spacing: -0.5px;
             margin-bottom: 1.5rem;
             text-align: center;
@@ -672,6 +667,9 @@
                         </button>
                         <button id="btn-do-reject" class="btn btn-danger" style="flex: 1; padding: 1rem; font-size: 1.1rem;">
                             <i class="ri-close-circle-line"></i> ไม่อนุมัติ
+                        </button>
+                        <button id="btn-do-process" class="btn btn-primary hidden" style="flex: 1; padding: 1rem; font-size: 1.1rem;">
+                            <i class="ri-macbook-line"></i> แอดมินดำเนินการแล้ว
                         </button>
                     </div>
                     
@@ -1283,6 +1281,20 @@ ${newDoc.description}
                 
                 await sendIntraFlowEmail(newDoc.approverEmail, emailSubject, emailMessage, approvalUrl);
 
+                // 1. ส่งอีเมลหา Admin ทุกคนเมื่อยื่นเอกสาร
+                try {
+                    const adminQuery = query(collection(db, 'users'), where('role', '==', 'admin'));
+                    const adminSnapshot = await getDocs(adminQuery);
+                    const adminSubject = `[IntraFlow] แจ้งเตือนแอดมิน: มีเอกสารใหม่รออนุมัติ (${newDoc.type})`;
+                    const adminMsg = `ระบบได้รับเอกสารใหม่\nผู้ขอ: ${newDoc.requesterName}\nประเภท: ${newDoc.type}\nส่งถึงผู้อนุมัติ: ${newDoc.approverName}\n\nกรุณาตรวจสอบในระบบ`;
+                    
+                    adminSnapshot.forEach(async (d) => {
+                        if (d.data().email) {
+                            await sendIntraFlowEmail(d.data().email, adminSubject, adminMsg, baseUrl);
+                        }
+                    });
+                } catch (err) { console.error("Admin Email Error:", err); }
+
                 showToast('ส่งเอกสารเข้าสู่ระบบเรียบร้อย!', 'success');
                 submitForm.reset();
                 document.getElementById('other-reason-container').classList.add('hidden');
@@ -1449,17 +1461,34 @@ ${newDoc.description}
                 const logMsg = document.getElementById('approval-log-msg');
 
                 if (docData.status !== 'pending') {
-                    actionsDiv?.classList.add('hidden');
-                    logMsg?.classList.remove('hidden');
                     let icon = docData.status === 'approved' ? '<i class="ri-check-line" style="color: var(--success); font-size: 1.2rem; vertical-align: middle;"></i>' : '<i class="ri-close-line" style="color: var(--danger); font-size: 1.2rem; vertical-align: middle;"></i>';
                     let statusText = docData.status === 'approved' ? 'อนุมัติ' : 'ไม่อนุมัติ';
-                    if (logMsg) logMsg.innerHTML = `${icon} <span style="vertical-align: middle; font-weight: 600;">เอกสารนี้ได้รับการ${statusText}แล้ว เมื่อ ${formatDate(docData.approvedAt)}</span><br><span style="color: var(--text-muted); font-size: 0.9rem; display: inline-block; margin-top: 0.25rem;">ดำเนินการโดย ${docData.approverName || docData.approvedBy}</span>`;
+                    let logHtml = `${icon} <span style="vertical-align: middle; font-weight: 600;">เอกสารนี้ได้รับการ${statusText}แล้ว เมื่อ ${formatDate(docData.approvedAt)}</span><br><span style="color: var(--text-muted); font-size: 0.9rem; display: inline-block; margin-top: 0.25rem;">ดำเนินการโดย ${docData.approverName || docData.approvedBy}</span>`;
+                    
+                    if (docData.isProcessed) {
+                        logHtml += `<div class="mt-2"><span class="badge badge-success" style="background: var(--primary-light); color: var(--primary);"><i class="ri-macbook-line"></i> แอดมินดำเนินการในระบบเรียบร้อยแล้ว</span></div>`;
+                    }
+                    if (logMsg) logMsg.innerHTML = logHtml;
+
+                    if (docData.status === 'approved' && userRole === 'admin' && !docData.isProcessed) {
+                        actionsDiv?.classList.remove('hidden');
+                        document.getElementById('btn-do-approve')?.classList.add('hidden');
+                        document.getElementById('btn-do-reject')?.classList.add('hidden');
+                        document.getElementById('btn-do-process')?.classList.remove('hidden');
+                        logMsg?.classList.add('hidden');
+                    } else {
+                        actionsDiv?.classList.add('hidden');
+                        logMsg?.classList.remove('hidden');
+                    }
                 } else if (currentUser.email !== docData.approverEmail && userRole !== 'admin') {
                     actionsDiv?.classList.add('hidden');
                     logMsg?.classList.remove('hidden');
                     if (logMsg) logMsg.innerHTML = `<i class="ri-shield-keyhole-line" style="color: var(--danger); font-size: 1.5rem;"></i><br><span style="color: var(--danger); font-weight: 500;">ไม่อนุญาตให้เข้าถึง</span><br><span style="color: var(--text-muted); font-size: 0.9rem;">คุณไม่ได้รับสิทธิ์ให้พิจารณาเอกสารฉบับนี้</span>`;
                 } else {
                     actionsDiv?.classList.remove('hidden');
+                    document.getElementById('btn-do-approve')?.classList.remove('hidden');
+                    document.getElementById('btn-do-reject')?.classList.remove('hidden');
+                    document.getElementById('btn-do-process')?.classList.add('hidden');
                     logMsg?.classList.add('hidden');
                 }
             } catch (error) {
@@ -1529,6 +1558,36 @@ ${newDoc.description}
 
         document.getElementById('btn-do-approve')?.addEventListener('click', () => processApproval('approved'));
         document.getElementById('btn-do-reject')?.addEventListener('click', () => processApproval('rejected'));
+
+        // 3. จัดการปุ่มดำเนินการโดยแอดมิน
+        document.getElementById('btn-do-process')?.addEventListener('click', async () => {
+            if (!confirm(`ยืนยันว่าคุณได้ดำเนินการตามเอกสารนี้เรียบร้อยแล้ว?`)) return;
+            showLoader(true);
+            try {
+                await updateDoc(doc(db, 'documents', targetDocId), {
+                    isProcessed: true,
+                    processedAt: serverTimestamp(),
+                    processedBy: currentUser.email
+                });
+
+                await logSystemAction(`PROCESS_DOC_${targetDocId}`, currentUser.email, 'ADMIN_PROCESSED');
+
+                // ส่งอีเมลแจ้งผู้ใช้งาน
+                const docSnap = await getDoc(doc(db, 'documents', targetDocId));
+                const docData = docSnap.data();
+                const baseUrl = window.location.href.split('?')[0];
+
+                const userSubject = `[IntraFlow] แอดมินดำเนินการเอกสารของคุณเรียบร้อยแล้ว`;
+                const userMessage = `เอกสารประเภท ${docData.type} ของคุณ (เลขที่: ${docData.arNumber || '-'}) \n\nทางแอดมินได้ทำการจัดการข้อมูลเข้าระบบเรียบร้อยแล้ว\nดำเนินการโดย: ${currentUser.email}\n\nคุณสามารถตรวจสอบรายละเอียดได้ในระบบ`;
+                await sendIntraFlowEmail(docData.requesterEmail, userSubject, userMessage, baseUrl);
+
+                showToast('บันทึกการดำเนินการและส่งอีเมลแจ้งผู้ใช้งานสำเร็จ!', 'success');
+                setTimeout(() => { initApprovalView(); }, 1500);
+            } catch (error) {
+                showToast('เกิดข้อผิดพลาด: ' + error.message, 'error');
+                showLoader(false);
+            }
+        });
 
     </script>
 </body>
