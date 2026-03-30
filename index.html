@@ -463,10 +463,10 @@
                                 <thead>
                                     <tr>
                                         <th>วันที่สร้าง</th>
-                                        <th>ประเภทเอกสาร</th>
-                                        <th>ผู้ขออนุมัติ</th>
-                                        <th>ผู้อนุมัติ</th>
+                                        <th style="white-space: nowrap;">ผู้ขออนุมัติ</th>
+                                        <th style="white-space: nowrap;">ผู้อนุมัติ</th>
                                         <th>สถานะ</th>
+                                        <th style="text-align: center; white-space: nowrap;">แอดมินดำเนินการ</th>
                                         <th style="text-align: right;">จัดการ</th>
                                     </tr>
                                 </thead>
@@ -1375,22 +1375,39 @@ ${newDoc.description}
 
                 docsData.forEach(d => {
                     const tr = document.createElement('tr');
+                    
+                    // เปลี่ยนจากลิงก์ <a> เป็นปุ่ม <button> เพื่อรองรับ SPA Routing
                     let actionHtml = `<button class="btn btn-outline btn-view-doc" data-id="${d.id}" data-token="${d.token}" style="padding: 0.35rem 0.75rem; font-size: 0.85rem;"><i class="ri-eye-line"></i> ดูข้อมูล</button>`;
                     
                     if (userRole === 'approver' && d.status === 'pending') {
                         actionHtml = `<button class="btn btn-primary btn-view-doc" data-id="${d.id}" data-token="${d.token}" style="padding: 0.35rem 0.75rem; font-size: 0.85rem;"><i class="ri-edit-box-line"></i> พิจารณา</button>`;
                     }
 
+                    // สร้าง Checkbox สำหรับแสดงสถานะแอดมินดำเนินการ
+                    let adminCheckboxHtml = `<span style="color: var(--text-muted); font-size: 0.85rem; display: flex; justify-content: center;">-</span>`;
+                    if (d.status === 'approved') {
+                        let isChecked = d.isProcessed ? 'checked' : '';
+                        adminCheckboxHtml = `
+                            <div style="display: flex; justify-content: center; align-items: center; height: 100%;">
+                                <input type="checkbox" disabled ${isChecked} style="width: 18px; height: 18px; accent-color: var(--primary); cursor: not-allowed; opacity: 1;">
+                            </div>
+                        `;
+                    }
+
                     tr.innerHTML = `
-                        <td style="color: var(--text-muted); font-size: 0.85rem; white-space: nowrap;">${formatDate(d.createdAt)}</td>
-                        <td style="font-weight: 500;">${d.type}</td>
-                        <td>
+                        <td style="color: var(--text-muted); font-size: 0.85rem; white-space: nowrap; vertical-align: top;">${formatDate(d.createdAt)}</td>
+                        <td style="white-space: nowrap; vertical-align: top;">
                             <div style="font-weight: 500;">${d.requesterName}</div>
                             <div style="color: var(--text-muted); font-size: 0.8rem;">${d.requesterEmail}</div>
                         </td>
-                        <td style="font-size: 0.9rem;">${d.approverName || d.approverEmail}</td>
-                        <td style="white-space: nowrap;">${getStatusBadgeHtml(d.status)}</td>
-                        <td style="text-align: right; white-space: nowrap;">${actionHtml}</td>
+                        <td style="font-size: 0.9rem; white-space: nowrap; vertical-align: top;">${d.approverName || d.approverEmail}</td>
+                        <td style="white-space: nowrap; vertical-align: top;">
+                            ${getStatusBadgeHtml(d.status)}
+                        </td>
+                        <td style="vertical-align: top;">
+                            ${adminCheckboxHtml}
+                        </td>
+                        <td style="text-align: right; white-space: nowrap; vertical-align: top;">${actionHtml}</td>
                     `;
                     tbody.appendChild(tr);
                 });
@@ -1523,9 +1540,12 @@ ${newDoc.description}
                 const docData = currentDocSnap.data();
                 const baseUrl = window.location.href.split('?')[0];
                 
-                const reqSubject = `[IntraFlow] อัปเดตผลการพิจารณาเอกสาร: ${statusLabel}`;
-                const reqMessage = `เอกสารประเภท ${docData.type} ของคุณได้รับการพิจารณาแล้ว\nผลการพิจารณา: ${statusLabel}\nดำเนินการโดย: ${currentUser.email}`;
-                await sendIntraFlowEmail(docData.requesterEmail, reqSubject, reqMessage, baseUrl);
+                if (newStatus === 'rejected') {
+                    // แจ้งผู้ใช้เฉพาะกรณีถูกปฏิเสธ (ถ้ารอแอดมินดำเนินการจะไม่ส่งซ้ำซ้อน)
+                    const reqSubject = `[IntraFlow] อัปเดตผลการพิจารณาเอกสาร: ไม่อนุมัติ`;
+                    const reqMessage = `เอกสารประเภท ${docData.type} ของคุณได้รับการพิจารณาแล้ว\nผลการพิจารณา: ไม่อนุมัติ\nดำเนินการโดย: ${currentUser.email}`;
+                    await sendIntraFlowEmail(docData.requesterEmail, reqSubject, reqMessage, baseUrl);
+                }
                 
                 if (newStatus === 'approved') {
                     try {
