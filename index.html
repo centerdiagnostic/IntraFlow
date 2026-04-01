@@ -30,6 +30,7 @@
             --warning: #f59e0b;
             --background: #f8fafc;
             --surface: #ffffff;
+            --nav-dark: #1E224F; /* สีน้ำเงินเข้มโจน Indigo/Navy ตามที่กำหนด */
             --text-main: #0f172a;
             --text-muted: #64748b;
             --border: #e2e8f0;
@@ -80,23 +81,22 @@
         /* Layout */
         .container { max-width: 1200px; margin: 0 auto; padding: 2rem; }
         
-        /* Navbar */
+        /* Navbar (Updated to dark blue based on Image 1 & 2) */
         nav { 
-            background: rgba(255, 255, 255, 0.9); 
+            background: var(--nav-dark); /* เปลี่ยนเป็นสีน้ำเงินเข้ม */
             backdrop-filter: blur(10px);
-            padding: 1rem 2rem; 
+            padding: 0.5rem 2rem; /* ลด padding ลงเล็กน้อย */
             display: flex; justify-content: space-between; align-items: center; 
             box-shadow: var(--shadow-sm); 
-            position: sticky; top: 0; z-index: 100;
+            position: sticky; top: 0; z-index: 1000; /* เพิ่ม z-index */
+            color: white;
         }
 
         /* Modern Nav Brand Branding */
         .nav-brand { 
             font-size: 1.8rem; 
             font-weight: 800; 
-            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%); 
-            -webkit-background-clip: text; 
-            -webkit-text-fill-color: transparent; 
+            color: white; /* เปลี่ยนเป็นสีขาว */
             letter-spacing: -1px;
             display: flex;
             align-items: center;
@@ -104,11 +104,8 @@
         }
         .brand-icon-wrapper {
             background: linear-gradient(135deg, rgba(79, 70, 229, 0.1) 0%, rgba(124, 58, 237, 0.1) 100%);
-            width: 42px;
-            height: 42px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            width: 42px; height: 42px;
+            display: flex; align-items: center; justify-content: center;
             border-radius: 12px;
             box-shadow: inset 0 0 10px rgba(79, 70, 229, 0.05);
         }
@@ -134,14 +131,11 @@
 
         /* Login Title branding */
         .auth-brand-title {
-            font-size: 1.75rem;
-            font-weight: 800;
+            font-size: 1.75rem; font-weight: 800;
             background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
             letter-spacing: -0.5px;
-            margin-bottom: 1.5rem;
-            text-align: center;
+            margin-bottom: 1.5rem; text-align: center;
         }
 
         .nav-menu { display: flex; gap: 1.5rem; align-items: center; }
@@ -213,6 +207,61 @@
         .toast.info { background-color: var(--text-main); }
         @keyframes slideIn { from { transform: translateX(120%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
 
+        /* Dashboard Statistics Cards (Image 2 Style) */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        .stat-card {
+            background: var(--surface);
+            padding: 1.5rem;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border);
+            transition: var(--transition);
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        .stat-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); }
+        
+        .stat-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: -0.5rem;
+        }
+        .stat-card-title { font-size: 1.1rem; font-weight: 600; color: var(--text-main); }
+        .stat-card-subtitle { font-size: 0.9rem; color: var(--text-muted); font-weight: 400; margin-top: 0.1rem; }
+        
+        .stat-icon-box {
+            width: 42px; height: 42px;
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.5rem;
+        }
+        /* สีตามภาพที่ 2 */
+        .icon-pending { background: #fffbeb; color: #f59e0b; } /* Yellow */
+        .icon-approved { background: #ecfdf5; color: #10b981; } /* Green */
+        .icon-rejected { background: #fff1f2; color: #f43f5e; } /* Red */
+        
+        .stat-value {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: var(--text-main);
+            line-height: 1;
+            display: flex; align-items: baseline; gap: 0.5rem;
+        }
+        .stat-percent { font-size: 1rem; font-weight: 500; color: var(--text-muted); }
+        
+        .stat-progress-bg { height: 6px; background: #e2e8f0; border-radius: 999px; width: 100%; overflow: hidden; position: relative; }
+        .stat-progress-bar { position: absolute; left: 0; top: 0; height: 100%; border-radius: 999px; transition: width 0.5s ease; }
+        
+        @media (max-width: 1024px) { .stats-grid { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 640px) { .stats-grid { grid-template-columns: 1fr; gap: 1rem; } }
+
         /* Loaders */
         .loader { border: 3px solid rgba(255,255,255,0.3); border-radius: 50%; border-top: 3px solid white; width: 20px; height: 20px; animation: spin 1s linear infinite; display: inline-block; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
@@ -228,67 +277,52 @@
             box-shadow: 0 0 20px rgba(79, 70, 229, 0.2);
         }
 
-        /* Tabs (Modern Pills) */
-        .tabs { display: flex; gap: 0.5rem; background: var(--border); padding: 0.5rem; border-radius: var(--radius-lg); margin-bottom: 2rem; display: inline-flex; }
+        /* Tabs (Moved to Navbar & Styled for dark background) */
+        .tabs { display: flex; gap: 0.25rem; background: transparent; padding: 0; margin-bottom: 0; align-items: center; }
         .tab { 
-            padding: 0.75rem 1.5rem; cursor: pointer; font-weight: 500; color: var(--text-muted); 
+            padding: 0.75rem 1rem; cursor: pointer; font-weight: 500; color: rgba(255, 255, 255, 0.7); /* ปรับสีเทาอ่อน/ขาวจางๆ */
             border-radius: var(--radius-md); transition: var(--transition); display: flex; align-items: center; gap: 0.5rem;
+            white-space: nowrap;
+            font-size: 0.95rem;
         }
-        .tab:hover { color: var(--text-main); }
-        .tab.active { background: var(--surface); color: var(--primary); box-shadow: var(--shadow-sm); }
+        .tab:hover { color: white; background: rgba(255,255,255,0.1); }
+        .tab.active { background: rgba(255,255,255,0.15); color: white; box-shadow: none; }
 
         /* 1.1 & 3 ปรับเปลี่ยนพื้นหลัง Login ให้มี Grid และ Data Path Flow */
         .auth-wrapper { 
             display: flex; justify-content: center; align-items: center; min-height: 100vh; 
             background-color: #050a19; /* Deep Blue */
-            position: relative;
-            padding: 2rem;
-            overflow: hidden;
+            position: relative; padding: 2rem; overflow: hidden;
         }
 
         /* Grid Pattern Overlay */
         .auth-wrapper::after {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
+            content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
             background-image: 
                 linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
                 linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
-            background-size: 40px 40px;
-            pointer-events: none;
-            z-index: 1;
+            background-size: 40px 40px; pointer-events: none; z-index: 1;
         }
 
         /* Data Flow Dots Overlay */
         .auth-wrapper::before {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
+            content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
             background-image: 
                 radial-gradient(circle, #23d5ab 1px, transparent 1.5px),
                 radial-gradient(circle, #7c3aed 1px, transparent 1.5px);
-            background-size: 80px 80px;
-            background-position: 0 0, 40px 40px;
-            animation: dataPathFlow 6s linear infinite;
-            pointer-events: none;
-            z-index: 2;
+            background-size: 80px 80px; background-position: 0 0, 40px 40px;
+            animation: dataPathFlow 6s linear infinite; pointer-events: none; z-index: 2;
         }
 
         .auth-card { 
-            position: relative;
-            z-index: 10; /* ให้ Card อยู่เหนือพื้นหลัง */
-            width: 100%; max-width: 420px; 
+            position: relative; z-index: 10; width: 100%; max-width: 420px; 
             background: rgba(255, 255, 255, 0.9);
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 10px 50px rgba(79, 70, 229, 0.2);
         }
         
         .auth-logo {
-            max-height: 100px;
-            width: auto;
-            margin: 0 auto;
-            display: block;
-            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1));
-            transition: transform 0.3s ease;
+            max-height: 100px; width: auto; margin: 0 auto; display: block;
+            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1)); transition: transform 0.3s ease;
         }
         .auth-logo:hover { transform: scale(1.05); }
 
@@ -317,19 +351,12 @@
             }
             
             .tabs {
-                overflow-x: auto;
-                white-space: nowrap;
-                -webkit-overflow-scrolling: touch;
-                padding-bottom: 0.25rem;
+                overflow-x: auto; white-space: nowrap; -webkit-overflow-scrolling: touch; padding-bottom: 0.25rem;
             }
-            .tabs::-webkit-scrollbar {
-                height: 4px;
-            }
+            .tabs::-webkit-scrollbar { height: 4px; }
             
             .table-container {
-                overflow-x: auto;
-                -webkit-overflow-scrolling: touch;
-                width: 100%;
+                overflow-x: auto; -webkit-overflow-scrolling: touch; width: 100%;
             }
         }
 
@@ -380,10 +407,12 @@
     <div id="auth-view" class="auth-wrapper hidden">
         <div class="card auth-card animate-fade-in">
             <div class="text-center mb-6">
-                <img src="https://kvdc-vetku.com/wp-content/uploads/2026/03/1.png" alt="KVDC Logo" class="auth-logo">
+                <img src="https://kvdc-vetku.com/wp-content/uploads/2026/03/1.png" alt="KVDC Logo" class="auth-logo" onerror="this.src='https://placehold.co/200x100?text=KVDC+Logo'">
             </div>
             
-            <h2 class="auth-brand-title" id="auth-title">เข้าสู่ระบบ IntraFlow</h2>
+            <div class="text-center mb-6" id="auth-title">
+                    <img src="https://kvdc-vetku.com/wp-content/uploads/2026/03/Untitled-design-1.png" alt="IntraFlow" style="max-height: 65px; width: auto;">
+                </div>
             
             <form id="auth-form">
                 <div class="form-group">
@@ -405,32 +434,13 @@
     <div id="app-view" class="hidden">
         <!-- แถบนำทางด้านบน (Branding ใหม่) -->
         <nav>
-            <div class="nav-brand">
-                <div class="brand-icon-wrapper">
-                    <i class="ri-file-copy-2-line"></i>
+            <div style="display: flex; align-items: center; gap: 2rem;">
+                <div class="nav-brand">
+                    <img src="https://kvdc-vetku.com/wp-content/uploads/2026/03/1.png" alt="KVDC Logo" style="max-height: 40px; width: auto; filter: brightness(0) invert(1);">
+                    <span style="height: 25px; width: 1px; background: rgba(255,255,255,0.3);"></span>
+                    <img src="https://kvdc-vetku.com/wp-content/uploads/2026/03/Untitled-design-1.png" alt="IntraFlow" style="max-height: 38px; width: auto;">
                 </div>
-                IntraFlow
-            </div>
-            <div class="nav-menu">
-                <button id="btn-admin-panel" class="btn btn-outline hidden" style="padding: 0.5rem 1rem;">
-                    <i class="ri-settings-3-line"></i> จัดการระบบ
-                </button>
-
-                <div style="display: flex; flex-direction: column; align-items: flex-end; line-height: 1.2;">
-                    <span id="user-info-display" style="font-size: 0.9rem; font-weight: 500;"></span>
-                    <span id="user-role-badge" class="badge badge-role mt-1" style="font-size: 0.7rem; padding: 0.15rem 0.5rem;"></span>
-                </div>
-                <div style="height: 30px; width: 1px; background: var(--border); margin: 0 0.5rem;"></div>
-                <button id="btn-logout" class="btn btn-outline" style="padding: 0.5rem 1rem;">
-                    <i class="ri-logout-box-r-line"></i> ออกจากระบบ
-                </button>
-            </div>
-        </nav>
-
-        <div class="container">
-            <!-- 2.1 ส่วนของแดชบอร์ดหลัก -->
-            <div id="dashboard-section" class="animate-fade-in">
-                <!-- Tabs -->
+                
                 <div class="tabs">
                     <div class="tab active" data-target="tab-list" id="tab-list-btn">
                         <i class="ri-list-check-2"></i> รายการเอกสาร
@@ -438,13 +448,81 @@
                     <div class="tab" data-target="tab-submit" id="tab-submit-btn">
                         <i class="ri-add-circle-line"></i> ยื่นเอกสารใหม่
                     </div>
-                    <div class="tab hidden" data-target="tab-admin" id="tab-admin-btn">
-                        <i class="ri-shield-user-line"></i> Admin Dashboard
                     </div>
+            </div>
+
+            <div class="nav-menu">
+                <button id="btn-admin-panel" class="btn btn-primary hidden" style="padding: 0.5rem 1rem; background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.2); color: white;">
+                    <i class="ri-settings-3-line"></i> Admin
+                </button>
+
+                <div style="display: flex; flex-direction: column; align-items: flex-end; line-height: 1.2;">
+                    <span id="user-info-display" style="font-size: 0.9rem; font-weight: 500;"></span>
+                    <span id="user-role-badge" class="badge badge-role mt-1" style="font-size: 0.7rem; padding: 0.15rem 0.5rem; background: rgba(255,255,255,0.2); color: white;"></span>
                 </div>
+                <div style="height: 30px; width: 1px; background: rgba(255,255,255,0.2); margin: 0 0.5rem;"></div>
+                <button id="btn-logout" class="btn btn-outline btn-icon-only" style="color: white; border-color: rgba(255,255,255,0.3);" title="ออกจากระบบ">
+                    <i class="ri-logout-box-r-line"></i>
+                </button>
+            </div>
+        </nav>
+
+        <div class="container">
+            <!-- 2.1 ส่วนของแดชบอร์ดหลัก -->
+            <div id="dashboard-section" class="animate-fade-in">
 
                 <!-- แท็บ: รายการเอกสาร -->
                 <div id="tab-list" class="tab-content animate-fade-in">
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-card-title">Document Statistics</div>
+                            <div class="stat-card-subtitle">Total Documents</div>
+                            <div class="stat-value" id="stat-total-docs">0</div>
+                        </div>
+                        
+                        <div class="stat-card">
+                            <div class="stat-card-header">
+                                <div class="stat-card-title">Pending</div>
+                                <div class="stat-icon-box icon-pending"><i class="ri-file-search-line"></i></div>
+                            </div>
+                            <div class="stat-value">
+                                <span id="stat-pending-count">0</span>
+                                <span class="stat-percent">(<span id="stat-pending-percent">0</span>%)</span>
+                            </div>
+                            <div class="stat-progress-bg">
+                                <div class="stat-progress-bar" id="stat-pending-bar" style="width: 0%; background: #f59e0b;"></div>
+                            </div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-card-header">
+                                <div class="stat-card-title">Approved</div>
+                                <div class="stat-icon-box icon-approved"><i class="ri-checkbox-circle-line"></i></div>
+                            </div>
+                            <div class="stat-value">
+                                <span id="stat-approved-count">0</span>
+                                <span class="stat-percent">(<span id="stat-approved-percent">0</span>%)</span>
+                            </div>
+                            <div class="stat-progress-bg">
+                                <div class="stat-progress-bar" id="stat-approved-bar" style="width: 0%; background: #10b981;"></div>
+                            </div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-card-header">
+                                <div class="stat-card-title">Rejected</div>
+                                <div class="stat-icon-box icon-rejected"><i class="ri-close-circle-line"></i></div>
+                            </div>
+                            <div class="stat-value">
+                                <span id="stat-rejected-count">0</span>
+                                <span class="stat-percent">(<span id="stat-rejected-percent">0</span>%)</span>
+                            </div>
+                            <div class="stat-progress-bg">
+                                <div class="stat-progress-bar" id="stat-rejected-bar" style="width: 0%; background: #f43f5e;"></div>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="card">
                         <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem;">
                             <h3><i class="ri-folder-open-line mr-2"></i> เอกสารในระบบ</h3>
@@ -921,7 +999,7 @@
                 doc.text(`ชื่อรายการทดสอบที่ยกเลิก : ${docData.cancelTestName || '..........................................'}    test code : ${docData.cancelTestCode || '....................'}`, 22, startY);
                 startY += lineH;
                 drawCheck(startY, docData.newTestName);
-                doc.text(`ชื่อรายการทดสอบที่เพิ่มใหม่ : ${docData.newTestName || '..........................................'}    test code : ${docData.newTestCode || '....................'}`, 22, startY);
+                doc.text(`ชื่อรายการทดสอบที่เพิ่มใหม่ : ${docData.newTestName || '..........................................'}   test code : ${docData.newTestCode || '....................'}`, 22, startY);
                 
                 startY += 15;
                 doc.text(`ลงชื่อ ................................................................ ผู้เสนอขอยกเลิก`, 105, startY);
@@ -988,14 +1066,14 @@
 
         document.getElementById('btn-logout')?.addEventListener('click', () => { signOut(auth); });
 
-        const enterMainApp = (user, role) => {
+        const enterMainApp = (user, role, displayName) => {
             document.getElementById('first-login-modal')?.classList.add('hidden');
             
             const reqEmailEl = document.getElementById('doc-requester-email');
             if (reqEmailEl) reqEmailEl.value = user.email;
             
             const infoDispEl = document.getElementById('user-info-display');
-            if (infoDispEl) infoDispEl.innerText = user.email;
+            if (infoDispEl) infoDispEl.innerText = displayName || user.email;
 
             const roleNames = { 'admin': 'ผู้ดูแลระบบ', 'approver': 'ผู้อนุมัติ', 'user': 'พนักงาน' };
             const roleBadgeEl = document.getElementById('user-role-badge');
@@ -1024,12 +1102,14 @@
             if (user) {
                 currentUser = user;
                 let userFirstLogin = false;
+                let userDisplayName = user.email;
                 
                 try {
                     const userDoc = await getDoc(doc(db, 'users', user.uid));
                     if (userDoc.exists()) {
                         userRole = userDoc.data().role;
                         userFirstLogin = userDoc.data().firstLogin === true;
+                        if (userDoc.data().displayName) userDisplayName = userDoc.data().displayName;
                     } else {
                         userRole = 'user';
                     }
@@ -1041,7 +1121,7 @@
                     document.getElementById('app-view')?.classList.add('hidden');
                     showLoader(false);
                 } else {
-                    enterMainApp(user, userRole);
+                    enterMainApp(user, userRole, userDisplayName);
                 }
             } else {
                 currentUser = null;
@@ -1070,15 +1150,17 @@
                 await updatePassword(currentUser, newPass);
                 await updateDoc(doc(db, 'users', currentUser.uid), { firstLogin: false });
                 
+                let userDisplayName = currentUser.email;
                 const userDocSnap = await getDoc(doc(db, 'users', currentUser.uid));
                 if (userDocSnap.exists()) {
                     userRole = userDocSnap.data().role || 'user';
+                    if (userDocSnap.data().displayName) userDisplayName = userDocSnap.data().displayName;
                 } else {
                     userRole = 'user';
                 }
                 
                 showToast('ตั้งรหัสผ่านใหม่เรียบร้อยแล้ว ยินดีต้อนรับสู่ระบบ', 'success');
-                enterMainApp(currentUser, userRole);
+                enterMainApp(currentUser, userRole, userDisplayName);
             } catch (error) {
                 showToast('อัปเดตรหัสผ่านล้มเหลว: ' + error.message, 'error');
             } finally {
@@ -1087,10 +1169,17 @@
             }
         });
 
-        document.getElementById('btn-cancel-first-login')?.addEventListener('click', () => {
+        document.getElementById('btn-cancel-first-login')?.addEventListener('click', async () => {
             document.getElementById('first-login-form').reset();
             showToast('ข้ามการเปลี่ยนรหัสผ่านชั่วคราว', 'info');
-            enterMainApp(currentUser, userRole);
+            let userDisplayName = currentUser.email;
+            try {
+                const userDocSnap = await getDoc(doc(db, 'users', currentUser.uid));
+                if (userDocSnap.exists() && userDocSnap.data().displayName) {
+                    userDisplayName = userDocSnap.data().displayName;
+                }
+            } catch(e) {}
+            enterMainApp(currentUser, userRole, userDisplayName);
         });
 
         async function loadApproversList() {
@@ -1369,6 +1458,37 @@ ${newDoc.description}
                 snapshot.forEach(docSnap => docsData.push({ id: docSnap.id, ...docSnap.data() }));
                 docsData.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
 
+                // --- 2. อัปเดตข้อมูลแดชบอร์ดด้วยข้อมูลจริง ---
+                const total = docsData.length;
+                let pending = 0, approved = 0, rejected = 0;
+                
+                docsData.forEach(d => {
+                    if (d.status === 'pending') pending++;
+                    else if (d.status === 'approved') approved++;
+                    else if (d.status === 'rejected') rejected++;
+                });
+
+                // คำนวณเปอร์เซ็นต์
+                const pPending = total > 0 ? Math.round((pending / total) * 100) : 0;
+                const pApproved = total > 0 ? Math.round((approved / total) * 100) : 0;
+                const pRejected = total > 0 ? Math.round((rejected / total) * 100) : 0;
+
+                // อัปเดต DOM ตัวเลข
+                document.getElementById('stat-total-docs').innerText = total.toLocaleString();
+                document.getElementById('stat-pending-count').innerText = pending.toLocaleString();
+                document.getElementById('stat-approved-count').innerText = approved.toLocaleString();
+                document.getElementById('stat-rejected-count').innerText = rejected.toLocaleString();
+
+                // อัปเดต DOM เปอร์เซ็นต์
+                document.getElementById('stat-pending-percent').innerText = pPending;
+                document.getElementById('stat-approved-percent').innerText = pApproved;
+                document.getElementById('stat-rejected-percent').innerText = pRejected;
+
+                // อัปเดต DOM Progress Bars
+                document.getElementById('stat-pending-bar').style.width = pPending + '%';
+                document.getElementById('stat-approved-bar').style.width = pApproved + '%';
+                document.getElementById('stat-rejected-bar').style.width = pRejected + '%';
+
                 if (docsData.length === 0) {
                     tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted" style="padding: 3rem;"><i class="ri-inbox-2-line" style="font-size: 2rem; display: block; margin-bottom: 0.5rem;"></i> ไม่มีเอกสารในระบบ</td></tr>';
                 }
@@ -1480,7 +1600,8 @@ ${newDoc.description}
                 if (docData.status !== 'pending') {
                     let icon = docData.status === 'approved' ? '<i class="ri-check-line" style="color: var(--success); font-size: 1.2rem; vertical-align: middle;"></i>' : '<i class="ri-close-line" style="color: var(--danger); font-size: 1.2rem; vertical-align: middle;"></i>';
                     let statusText = docData.status === 'approved' ? 'อนุมัติ' : 'ไม่อนุมัติ';
-                    let logHtml = `${icon} <span style="vertical-align: middle; font-weight: 600;">เอกสารนี้ได้รับการ${statusText}แล้ว เมื่อ ${formatDate(docData.approvedAt)}</span><br><span style="color: var(--text-muted); font-size: 0.9rem; display: inline-block; margin-top: 0.25rem;">ดำเนินการโดย ${docData.approverName || docData.approvedBy}</span>`;
+                    let reasonHtml = docData.status === 'rejected' && docData.rejectReason ? `<br><span style="color: var(--danger); font-size: 0.95rem; display: inline-block; margin-top: 0.5rem; background: #ffe4e6; padding: 0.5rem 1rem; border-radius: 6px;"><strong>เหตุผลที่ไม่อนุมัติ:</strong> ${docData.rejectReason}</span>` : '';
+                    let logHtml = `${icon} <span style="vertical-align: middle; font-weight: 600;">เอกสารนี้ได้รับการ${statusText}แล้ว เมื่อ ${formatDate(docData.approvedAt)}</span><br><span style="color: var(--text-muted); font-size: 0.9rem; display: inline-block; margin-top: 0.25rem;">ดำเนินการโดย ${docData.approverName || docData.approvedBy}</span>${reasonHtml}`;
                     
                     if (docData.isProcessed) {
                         logHtml += `<div class="mt-2"><span class="badge badge-success" style="background: var(--primary-light); color: var(--primary);"><i class="ri-macbook-line"></i> แอดมินดำเนินการในระบบเรียบร้อยแล้ว</span></div>`;
@@ -1522,16 +1643,35 @@ ${newDoc.description}
 
         const processApproval = async (newStatus) => {
             const statusLabel = newStatus === 'approved' ? 'อนุมัติ' : 'ไม่อนุมัติ';
-            if (!confirm(`ยืนยันการ ${statusLabel} เอกสารนี้ ใช่หรือไม่?`)) return;
+            let rejectReason = '';
+
+            // ดักจับและบังคับให้ใส่เหตุผลเมื่อกดไม่อนุมัติ
+            if (newStatus === 'rejected') {
+                rejectReason = prompt(`กรุณาระบุเหตุผลที่ไม่อนุมัติเอกสารนี้:`);
+                if (rejectReason === null) return; // กรณีกดยกเลิก
+                if (rejectReason.trim() === '') {
+                    showToast('ต้องระบุเหตุผลเมื่อไม่อนุมัติเอกสาร', 'error');
+                    return;
+                }
+            } else {
+                if (!confirm(`ยืนยันการ ${statusLabel} เอกสารนี้ ใช่หรือไม่?`)) return;
+            }
             
             showLoader(true);
             try {
-                await updateDoc(doc(db, 'documents', targetDocId), {
+                const updateData = {
                     status: newStatus,
                     approvedAt: serverTimestamp(),
                     approvedBy: currentUser.email,
                     auditLog: `[${newStatus.toUpperCase()}] ดำเนินการโดย ${currentUser.email}`
-                });
+                };
+
+                // บันทึกเหตุผลลงฐานข้อมูลถ้าไม่อนุมัติ
+                if (newStatus === 'rejected') {
+                    updateData.rejectReason = rejectReason.trim();
+                }
+
+                await updateDoc(doc(db, 'documents', targetDocId), updateData);
                 
                 const actionTypeStr = newStatus === 'approved' ? 'APPROVE_DOC_' : 'REJECT_DOC_';
                 await logSystemAction(`${actionTypeStr}${targetDocId}`, currentUser.email, newStatus.toUpperCase());
@@ -1541,9 +1681,9 @@ ${newDoc.description}
                 const baseUrl = window.location.href.split('?')[0];
                 
                 if (newStatus === 'rejected') {
-                    // แจ้งผู้ใช้เฉพาะกรณีถูกปฏิเสธ (ถ้ารอแอดมินดำเนินการจะไม่ส่งซ้ำซ้อน)
+                    // ส่งอีเมลพร้อมเหตุผลเมื่อไม่อนุมัติ
                     const reqSubject = `[IntraFlow] อัปเดตผลการพิจารณาเอกสาร: ไม่อนุมัติ`;
-                    const reqMessage = `เอกสารประเภท ${docData.type} ของคุณได้รับการพิจารณาแล้ว\nผลการพิจารณา: ไม่อนุมัติ\nดำเนินการโดย: ${currentUser.email}`;
+                    const reqMessage = `เอกสารประเภท ${docData.type} ของคุณได้รับการพิจารณาแล้ว\nผลการพิจารณา: ไม่อนุมัติ\nเหตุผล: ${rejectReason.trim()}\nดำเนินการโดย: ${currentUser.email}`;
                     await sendIntraFlowEmail(docData.requesterEmail, reqSubject, reqMessage, baseUrl);
                 }
                 
@@ -1555,14 +1695,7 @@ ${newDoc.description}
                         adminSnapshot.forEach(d => { if (d.data().email) adminEmails.push(d.data().email); });
 
                         const adminSubject = `[IntraFlow - Admin] เอกสารได้รับการอนุมัติ: ${docData.arNumber || docData.type}`;
-                        const adminMessage = `แจ้งเตือนการอนุมัติเอกสารใหม่ในระบบ
-เลขที่เอกสาร: ${docData.arNumber || '-'}
-ประเภท: ${docData.type}
-สถานะ: อนุมัติแล้ว
-ผู้อนุมัติ: ${docData.approverName || currentUser.email}
-วันที่อนุมัติ: ${formatDate(new Date())}
-
-กรุณาตรวจสอบรายละเอียดเพิ่มเติมในระบบ`;
+                        const adminMessage = `แจ้งเตือนการอนุมัติเอกสารใหม่ในระบบ\nเลขที่เอกสาร: ${docData.arNumber || '-'}\nประเภท: ${docData.type}\nสถานะ: อนุมัติแล้ว\nผู้อนุมัติ: ${docData.approverName || currentUser.email}\nวันที่อนุมัติ: ${formatDate(new Date())}\n\nกรุณาตรวจสอบรายละเอียดเพิ่มเติมในระบบ`;
 
                         for (const adminEmail of adminEmails) { await sendIntraFlowEmail(adminEmail, adminSubject, adminMessage, baseUrl); }
                     } catch (err) { console.error(err); }
