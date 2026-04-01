@@ -15,6 +15,7 @@
     <!-- เพิ่ม Script ของ jsPDF และ jsPDF-AutoTable -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
     <!-- ==================== CSS STYLES (Redesigned) ==================== -->
     <style>
@@ -448,6 +449,9 @@
                     <div class="tab" data-target="tab-submit" id="tab-submit-btn">
                         <i class="ri-add-circle-line"></i> ยื่นเอกสารใหม่
                     </div>
+                    <div class="tab" data-target="tab-export" id="tab-export-btn">
+                        <i class="ri-file-excel-2-line"></i> Export
+                    </div>
                     </div>
             </div>
 
@@ -637,14 +641,28 @@
                                 <label style="font-size: 1rem; color: var(--text-main); margin-bottom: 1rem;"><i class="ri-edit-2-line"></i> รายละเอียดการแก้ไข</label>
                                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
                                     <div>
-                                        <label style="color: var(--danger);">รายการทดสอบที่ยกเลิก</label>
-                                        <input type="text" id="doc-cancel-test-name" placeholder="ชื่อรายการทดสอบ" class="mb-4">
-                                        <input type="text" id="doc-cancel-test-code" placeholder="Test Code (ถ้ามี)">
+                                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                                            <label style="color: var(--danger); margin: 0;">รายการทดสอบที่ยกเลิก</label>
+                                            <button type="button" id="btn-add-cancel-test" class="btn btn-outline" style="padding: 0.25rem 0.5rem; font-size: 0.8rem; border-color: var(--danger); color: var(--danger);"><i class="ri-add-line"></i> เพิ่มรายการ</button>
+                                        </div>
+                                        <div id="cancel-test-container">
+                                            <div class="cancel-test-item mb-4" style="background: var(--surface); padding: 1rem; border-radius: var(--radius-md); border: 1px solid var(--border);">
+                                                <input type="text" name="cancel-test-name[]" placeholder="ชื่อรายการทดสอบ" class="mb-2">
+                                                <input type="text" name="cancel-test-code[]" placeholder="Test Code (ถ้ามี)">
+                                            </div>
+                                        </div>
                                     </div>
                                     <div>
-                                        <label style="color: var(--success);">รายการทดสอบที่เพิ่มใหม่ (ถ้ามี)</label>
-                                        <input type="text" id="doc-new-test-name" placeholder="ชื่อรายการทดสอบ" class="mb-4">
-                                        <input type="text" id="doc-new-test-code" placeholder="Test Code (ถ้ามี)">
+                                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                                            <label style="color: var(--success); margin: 0;">รายการทดสอบที่เพิ่มใหม่ (ถ้ามี)</label>
+                                            <button type="button" id="btn-add-new-test" class="btn btn-outline" style="padding: 0.25rem 0.5rem; font-size: 0.8rem; border-color: var(--success); color: var(--success);"><i class="ri-add-line"></i> เพิ่มรายการ</button>
+                                        </div>
+                                        <div id="new-test-container">
+                                            <div class="new-test-item mb-4" style="background: var(--surface); padding: 1rem; border-radius: var(--radius-md); border: 1px solid var(--border);">
+                                                <input type="text" name="new-test-name[]" placeholder="ชื่อรายการทดสอบ" class="mb-2">
+                                                <input type="text" name="new-test-code[]" placeholder="Test Code (ถ้ามี)">
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -661,11 +679,43 @@
                                 </select>
                             </div>
 
-                            <div style="display: flex; justify-content: flex-end; margin-top: 2rem;">
+                            <div style="display: flex; justify-content: flex-end; gap: 1rem; margin-top: 2rem;">
+                                <button type="button" class="btn btn-outline" id="btn-save-draft" style="padding: 0.875rem 2rem; border-color: var(--warning); color: var(--warning);">
+                                    <i class="ri-save-line"></i> บันทึกร่าง
+                                </button>
                                 <button type="submit" class="btn btn-primary" id="btn-submit-doc" style="padding: 0.875rem 2rem;">
                                     <i class="ri-send-plane-fill"></i> ยื่นเอกสารเข้าระบบ
                                 </button>
                             </div>
+                        </form>
+                    </div>
+                </div>
+
+                <div id="tab-export" class="tab-content hidden animate-fade-in">
+                    <div class="card" style="border-top: 4px solid var(--success);">
+                        <h3 class="mb-4"><i class="ri-file-excel-2-line"></i> Export เอกสารเป็น Excel</h3>
+                        <form id="export-excel-form">
+                            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
+                                <div class="form-group">
+                                    <label>ตั้งแต่วันที่</label>
+                                    <input type="date" id="export-start-date">
+                                </div>
+                                <div class="form-group">
+                                    <label>ถึงวันที่</label>
+                                    <input type="date" id="export-end-date">
+                                </div>
+                                <div class="form-group">
+                                    <label>สถานะเอกสาร</label>
+                                    <select id="export-status">
+                                        <option value="all">ทั้งหมด (รวม Draft)</option>
+                                        <option value="pending">รออนุมัติ</option>
+                                        <option value="approved">อนุมัติแล้ว</option>
+                                        <option value="rejected">ไม่อนุมัติ</option>
+                                        <option value="draft">แบบร่าง</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <button type="button" id="btn-export-excel" class="btn btn-success w-100"><i class="ri-download-2-line"></i> ดาวน์โหลดไฟล์ Excel</button>
                         </form>
                     </div>
                 </div>
@@ -763,6 +813,23 @@
                 </div>
             </div>
             
+        </div>
+    </div>
+
+    <div id="custom-confirm-modal" class="modal-overlay hidden">
+        <div class="modal-content text-center">
+            <h3 id="confirm-modal-title" class="mb-4"></h3>
+            <p id="confirm-modal-desc" class="mb-4" style="color: var(--text-muted);"></p>
+            
+            <div id="reject-reason-container" class="form-group text-left hidden">
+                <label>เหตุผลที่ไม่อนุมัติ <span style="color: var(--danger);">*</span></label>
+                <textarea id="reject-reason-input" rows="3" placeholder="โปรดระบุเหตุผลให้ชัดเจน..." class="w-100" style="padding: 0.75rem; border: 1px solid var(--danger); border-radius: var(--radius-md);"></textarea>
+            </div>
+            
+            <div style="display: flex; gap: 1rem; justify-content: center; margin-top: 1.5rem;">
+                <button id="btn-confirm-cancel" class="btn btn-outline" style="flex: 1;">ยกเลิก</button>
+                <button id="btn-confirm-ok" class="btn" style="flex: 1;">ยืนยัน</button>
+            </div>
         </div>
     </div>
 
@@ -1205,10 +1272,11 @@
             }
         }
 
-        const tabs = ['list', 'submit', 'admin'];
+        const tabs = ['list', 'submit', 'export', 'admin'];
         
         document.getElementById('tab-list-btn')?.addEventListener('click', () => switchTab('list'));
         document.getElementById('tab-submit-btn')?.addEventListener('click', () => switchTab('submit'));
+        document.getElementById('tab-export-btn')?.addEventListener('click', () => switchTab('export'));
         document.getElementById('tab-admin-btn')?.addEventListener('click', () => switchTab('admin'));
         document.getElementById('btn-admin-panel')?.addEventListener('click', () => switchTab('admin'));
 
@@ -1229,6 +1297,101 @@
                 if (docDateEl) docDateEl.valueAsDate = new Date();
             }
         }
+
+        // Logic สำหรับการเพิ่มฟิลด์ลบ-เพิ่มรายการทดสอบแบบ Dynamic
+        document.getElementById('btn-add-cancel-test')?.addEventListener('click', () => {
+            const container = document.getElementById('cancel-test-container');
+            const itemHtml = `<div class="cancel-test-item mb-4 animate-fade-in" style="background: var(--surface); padding: 1rem; border-radius: var(--radius-md); border: 1px solid var(--border); position: relative;">
+                <button type="button" class="btn-remove-test" style="position: absolute; right: 10px; top: 10px; background: none; border: none; color: var(--danger); cursor: pointer;"><i class="ri-close-circle-line"></i></button>
+                <input type="text" name="cancel-test-name[]" placeholder="ชื่อรายการทดสอบ" class="mb-2">
+                <input type="text" name="cancel-test-code[]" placeholder="Test Code (ถ้ามี)">
+            </div>`;
+            container.insertAdjacentHTML('beforeend', itemHtml);
+        });
+
+        document.getElementById('btn-add-new-test')?.addEventListener('click', () => {
+            const container = document.getElementById('new-test-container');
+            const itemHtml = `<div class="new-test-item mb-4 animate-fade-in" style="background: var(--surface); padding: 1rem; border-radius: var(--radius-md); border: 1px solid var(--border); position: relative;">
+                <button type="button" class="btn-remove-test" style="position: absolute; right: 10px; top: 10px; background: none; border: none; color: var(--danger); cursor: pointer;"><i class="ri-close-circle-line"></i></button>
+                <input type="text" name="new-test-name[]" placeholder="ชื่อรายการทดสอบ" class="mb-2">
+                <input type="text" name="new-test-code[]" placeholder="Test Code (ถ้ามี)">
+            </div>`;
+            container.insertAdjacentHTML('beforeend', itemHtml);
+        });
+
+        document.addEventListener('click', (e) => {
+            if (e.target.closest('.btn-remove-test')) {
+                e.target.closest('div').remove();
+            }
+        });
+
+        // ฟังก์ชันดึงค่าจาก Input Array
+        const getArrayValues = (name) => Array.from(document.querySelectorAll(`input[name="${name}"]`)).map(el => el.value).filter(val => val.trim() !== '');
+
+        // ฟังก์ชัน Export Excel
+        document.getElementById('btn-export-excel')?.addEventListener('click', async () => {
+            const startDate = document.getElementById('export-start-date').value;
+            const endDate = document.getElementById('export-end-date').value;
+            const status = document.getElementById('export-status').value;
+            
+            showLoader(true);
+            try {
+                let qConstraints = [where('isDeleted', '==', false)];
+                if (status !== 'all') qConstraints.push(where('status', '==', status));
+                
+                const q = query(collection(db, 'documents'), ...qConstraints);
+                const snapshot = await getDocs(q);
+                let exportData = [];
+                
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    const docDate = data.createdAt ? data.createdAt.toDate() : new Date();
+                    
+                    // Filter By Date
+                    if (startDate && new Date(startDate) > docDate) return;
+                    if (endDate) {
+                        let end = new Date(endDate);
+                        end.setHours(23, 59, 59);
+                        if (end < docDate) return;
+                    }
+                    
+                    // แปลง Array เป็น String สำหรับ Excel
+                    const cancelTests = (data.cancelTests || []).map(t => `${t.name} (${t.code})`).join('\n');
+                    const newTests = (data.newTests || []).map(t => `${t.name} (${t.code})`).join('\n');
+
+                    exportData.push({
+                        'วันที่สร้าง': formatDate(data.createdAt),
+                        'สถานะ': data.status,
+                        'ประเภทเอกสาร': data.type,
+                        'ผู้ขออนุมัติ': data.requesterName,
+                        'อีเมลผู้ขอ': data.requesterEmail,
+                        'ผู้อนุมัติ': data.approverName,
+                        'AR Number': data.arNumber,
+                        'สาเหตุที่ยกเลิก': data.cancelReason,
+                        'รายการที่ยกเลิก': cancelTests || data.cancelTestName,
+                        'รายการที่เพิ่มใหม่': newTests || data.newTestName,
+                        'หมายเหตุ': data.description
+                    });
+                });
+
+                if(exportData.length === 0) {
+                    showToast('ไม่พบข้อมูลตามเงื่อนไขที่เลือก', 'error');
+                    showLoader(false);
+                    return;
+                }
+
+                const worksheet = XLSX.utils.json_to_sheet(exportData);
+                const workbook = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(workbook, worksheet, "Documents");
+                XLSX.writeFile(workbook, `Export_Documents_${Date.now()}.xlsx`);
+                
+                showToast('ดาวน์โหลด Excel สำเร็จ', 'success');
+            } catch(e) {
+                showToast('เกิดข้อผิดพลาดในการ Export', 'error');
+                console.error(e);
+            }
+            showLoader(false);
+        });
 
         document.getElementById('doc-cancel-reason-select')?.addEventListener('change', (e) => {
             const otherContainer = document.getElementById('other-reason-container');
@@ -1303,10 +1466,8 @@
         });
 
         // ==================== Submit Logic ====================
-        const submitForm = document.getElementById('submit-doc-form');
-        submitForm?.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const btn = document.getElementById('btn-submit-doc');
+        const processSubmit = async (statusType) => {
+            const btn = document.getElementById(statusType === 'draft' ? 'btn-save-draft' : 'btn-submit-doc');
             if (btn) {
                 btn.innerHTML = '<div class="loader"></div> กำลังบันทึก...';
                 btn.disabled = true;
@@ -1332,15 +1493,14 @@
                 cancelReason: document.getElementById('doc-cancel-reason-select')?.value || '',
                 cancelReasonOther: document.getElementById('doc-cancel-other')?.value || '',
                 
-                cancelTestName: document.getElementById('doc-cancel-test-name')?.value || '',
-                cancelTestCode: document.getElementById('doc-cancel-test-code')?.value || '',
-                newTestName: document.getElementById('doc-new-test-name')?.value || '',
-                newTestCode: document.getElementById('doc-new-test-code')?.value || '',
+                // บันทึกแบบ Array
+                cancelTests: getArrayValues('cancel-test-name[]').map((name, i) => ({ name, code: getArrayValues('cancel-test-code[]')[i] || '' })),
+                newTests: getArrayValues('new-test-name[]').map((name, i) => ({ name, code: getArrayValues('new-test-code[]')[i] || '' })),
                 description: document.getElementById('doc-description')?.value || '',
                 
                 approverEmail: approverSelect?.value || '',
                 approverName: approverNameOnly,
-                status: 'pending',
+                status: statusType, // รับค่า status ('draft' หรือ 'pending')
                 token: crypto.randomUUID(),
                 createdAt: serverTimestamp(),
                 isDeleted: false
@@ -1352,50 +1512,55 @@
                 await logSystemAction(logId, currentUser.email, "SUBMIT_DOCUMENT");
 
                 const baseUrl = window.location.href.split('?')[0]; 
-                const approvalUrl = `${baseUrl}?docId=${docRef.id}&token=${newDoc.token}`;
-                const emailSubject = `[IntraFlow] มีเอกสารรออนุมัติ: ${newDoc.type}`;
                 
-                const reasonText = newDoc.cancelReason === 'อื่นๆ' ? `อื่นๆ (${newDoc.cancelReasonOther})` : newDoc.cancelReason;
-                const emailMessage = `ผู้ขออนุมัติ: ${newDoc.requesterName}
-ประเภทเอกสาร: ${newDoc.type}
-เลขที่คำร้อง (AR Number): ${newDoc.arNumber || '-'}
-วันที่ส่งตัวอย่าง: ${newDoc.receiveDate || '-'}
-ห้องปฏิบัติการ: ${newDoc.labRoom || '-'}
-สาเหตุการยกเลิก: ${reasonText || '-'}
-
-รายละเอียด/หมายเหตุ:
-${newDoc.description}
-
-กรุณาคลิกลิงก์ด้านล่างเพื่อพิจารณาเอกสาร`;
+                // ข้ามการส่งเมลหากเป็นแบบร่าง
+                if (statusType !== 'draft') {
+                    const approvalUrl = `${baseUrl}?docId=${docRef.id}&token=${newDoc.token}`;
+                    const emailSubject = `[IntraFlow] มีเอกสารรออนุมัติ: ${newDoc.type}`;
                 
-                await sendIntraFlowEmail(newDoc.approverEmail, emailSubject, emailMessage, approvalUrl);
-
-                // 1. ส่งอีเมลหา Admin ทุกคนเมื่อยื่นเอกสาร
-                try {
-                    const adminQuery = query(collection(db, 'users'), where('role', '==', 'admin'));
-                    const adminSnapshot = await getDocs(adminQuery);
-                    const adminSubject = `[IntraFlow] แจ้งเตือนแอดมิน: มีเอกสารใหม่รออนุมัติ (${newDoc.type})`;
-                    const adminMsg = `ระบบได้รับเอกสารใหม่\nผู้ขอ: ${newDoc.requesterName}\nประเภท: ${newDoc.type}\nส่งถึงผู้อนุมัติ: ${newDoc.approverName}\n\nกรุณาตรวจสอบในระบบ`;
+                    const reasonText = newDoc.cancelReason === 'อื่นๆ' ? `อื่นๆ (${newDoc.cancelReasonOther})` : newDoc.cancelReason;
+                    const emailMessage = `ผู้ขออนุมัติ: ${newDoc.requesterName}\nประเภทเอกสาร: ${newDoc.type}\nเลขที่คำร้อง (AR Number): ${newDoc.arNumber || '-'}\nวันที่ส่งตัวอย่าง: ${newDoc.receiveDate || '-'}\nห้องปฏิบัติการ: ${newDoc.labRoom || '-'}\nสาเหตุการยกเลิก: ${reasonText || '-'}\n\nรายละเอียด/หมายเหตุ:\n${newDoc.description}\n\nกรุณาคลิกลิงก์ด้านล่างเพื่อพิจารณาเอกสาร`;
                     
-                    adminSnapshot.forEach(async (d) => {
-                        if (d.data().email) {
-                            await sendIntraFlowEmail(d.data().email, adminSubject, adminMsg, baseUrl);
-                        }
-                    });
-                } catch (err) { console.error("Admin Email Error:", err); }
+                    await sendIntraFlowEmail(newDoc.approverEmail, emailSubject, emailMessage, approvalUrl);
 
-                showToast('ส่งเอกสารเข้าสู่ระบบเรียบร้อย!', 'success');
-                submitForm.reset();
+                    // 1. ส่งอีเมลหา Admin ทุกคนเมื่อยื่นเอกสาร
+                    try {
+                        const adminQuery = query(collection(db, 'users'), where('role', '==', 'admin'));
+                        const adminSnapshot = await getDocs(adminQuery);
+                        const adminSubject = `[IntraFlow] แจ้งเตือนแอดมิน: มีเอกสารใหม่รออนุมัติ (${newDoc.type})`;
+                        const adminMsg = `ระบบได้รับเอกสารใหม่\nผู้ขอ: ${newDoc.requesterName}\nประเภท: ${newDoc.type}\nส่งถึงผู้อนุมัติ: ${newDoc.approverName}\n\nกรุณาตรวจสอบในระบบ`;
+                        
+                        adminSnapshot.forEach(async (d) => {
+                            if (d.data().email) {
+                                await sendIntraFlowEmail(d.data().email, adminSubject, adminMsg, baseUrl);
+                            }
+                        });
+                    } catch (err) { console.error("Admin Email Error:", err); }
+                } // ปิด if check draft
+
+                showToast(statusType === 'draft' ? 'บันทึกแบบร่างเรียบร้อย!' : 'ส่งเอกสารเข้าสู่ระบบเรียบร้อย!', 'success');
+                document.getElementById('submit-doc-form').reset();
                 document.getElementById('other-reason-container').classList.add('hidden');
                 switchTab('list');
             } catch (error) {
                 showToast('ไม่สามารถบันทึกได้: ' + error.message, 'error');
             } finally {
-                if (btn) {
-                    btn.innerHTML = '<i class="ri-send-plane-fill"></i> ยื่นเอกสารเข้าระบบ';
-                    btn.disabled = false;
-                }
+                const btnSave = document.getElementById('btn-save-draft');
+                const btnSub = document.getElementById('btn-submit-doc');
+                if (btnSave) { btnSave.innerHTML = '<i class="ri-save-line"></i> บันทึกร่าง'; btnSave.disabled = false; }
+                if (btnSub) { btnSub.innerHTML = '<i class="ri-send-plane-fill"></i> ยื่นเอกสารเข้าระบบ'; btnSub.disabled = false; }
             }
+        };
+
+        const submitForm = document.getElementById('submit-doc-form');
+        submitForm?.addEventListener('submit', (e) => {
+            e.preventDefault();
+            processSubmit('pending');
+        });
+        
+        document.getElementById('btn-save-draft')?.addEventListener('click', (e) => {
+            e.preventDefault();
+            processSubmit('draft');
         });
 
         // ==================== Load Docs Logic ====================
@@ -1641,20 +1806,75 @@ ${newDoc.description}
             showLoader(false);
         }
 
+        // ฟังก์ชันสร้าง Custom Confirm Modal
+        function askConfirmModal(status) {
+            return new Promise((resolve) => {
+                const modal = document.getElementById('custom-confirm-modal');
+                const title = document.getElementById('confirm-modal-title');
+                const desc = document.getElementById('confirm-modal-desc');
+                const reasonContainer = document.getElementById('reject-reason-container');
+                const reasonInput = document.getElementById('reject-reason-input');
+                const btnOk = document.getElementById('btn-confirm-ok');
+                const btnCancel = document.getElementById('btn-confirm-cancel');
+                
+                reasonInput.value = '';
+                
+                if (status === 'approved') {
+                    title.innerHTML = '<i class="ri-check-double-line"></i> ยืนยันการอนุมัติ';
+                    title.style.color = 'var(--success)';
+                    desc.innerText = 'คุณต้องการอนุมัติเอกสารนี้ใช่หรือไม่?';
+                    reasonContainer.classList.add('hidden');
+                    btnOk.className = 'btn btn-success';
+                    btnOk.innerText = 'ยืนยันอนุมัติ';
+                } else {
+                    title.innerHTML = '<i class="ri-close-circle-line"></i> ยืนยันการไม่อนุมัติ';
+                    title.style.color = 'var(--danger)';
+                    desc.innerText = 'โปรดระบุเหตุผลเพื่อแจ้งให้ผู้ขออนุมัติทราบ';
+                    reasonContainer.classList.remove('hidden');
+                    btnOk.className = 'btn btn-danger';
+                    btnOk.innerText = 'ยืนยันไม่อนุมัติ';
+                }
+                
+                modal.classList.remove('hidden');
+                
+                const cleanup = () => {
+                    modal.classList.add('hidden');
+                    btnOk.onclick = null;
+                    btnCancel.onclick = null;
+                };
+                
+                btnCancel.onclick = () => {
+                    cleanup();
+                    resolve(null);
+                };
+                
+                btnOk.onclick = () => {
+                    if (status === 'rejected') {
+                        const reason = reasonInput.value.trim();
+                        if (!reason) {
+                            showToast('กรุณาระบุเหตุผลที่ไม่อนุมัติ', 'error');
+                            return;
+                        }
+                        cleanup();
+                        resolve(reason);
+                    } else {
+                        cleanup();
+                        resolve(true);
+                    }
+                };
+            });
+        }
+
         const processApproval = async (newStatus) => {
             const statusLabel = newStatus === 'approved' ? 'อนุมัติ' : 'ไม่อนุมัติ';
+            
+            // เรียกใช้ Custom Modal
+            const userResponse = await askConfirmModal(newStatus);
+            if (userResponse === null) return; // กรณีกดยกเลิก
+            
             let rejectReason = '';
-
-            // ดักจับและบังคับให้ใส่เหตุผลเมื่อกดไม่อนุมัติ
             if (newStatus === 'rejected') {
-                rejectReason = prompt(`กรุณาระบุเหตุผลที่ไม่อนุมัติเอกสารนี้:`);
-                if (rejectReason === null) return; // กรณีกดยกเลิก
-                if (rejectReason.trim() === '') {
-                    showToast('ต้องระบุเหตุผลเมื่อไม่อนุมัติเอกสาร', 'error');
-                    return;
-                }
-            } else {
-                if (!confirm(`ยืนยันการ ${statusLabel} เอกสารนี้ ใช่หรือไม่?`)) return;
+                rejectReason = userResponse;
             }
             
             showLoader(true);
@@ -1680,25 +1900,31 @@ ${newDoc.description}
                 const docData = currentDocSnap.data();
                 const baseUrl = window.location.href.split('?')[0];
                 
+                // ดึงรายชื่อ Admin ทั้งหมดเพื่อเตรียมส่งอีเมล
+                let adminEmails = [];
+                try {
+                    const adminQuery = query(collection(db, 'users'), where('role', '==', 'admin'));
+                    const adminSnapshot = await getDocs(adminQuery);
+                    adminSnapshot.forEach(d => { if (d.data().email) adminEmails.push(d.data().email); });
+                } catch (err) { console.error(err); }
+                
                 if (newStatus === 'rejected') {
-                    // ส่งอีเมลพร้อมเหตุผลเมื่อไม่อนุมัติ
+                    // 1. กรณีไม่อนุมัติ: ส่งอีเมลหาผู้ใช้งาน (Requester) ทันที
                     const reqSubject = `[IntraFlow] อัปเดตผลการพิจารณาเอกสาร: ไม่อนุมัติ`;
                     const reqMessage = `เอกสารประเภท ${docData.type} ของคุณได้รับการพิจารณาแล้ว\nผลการพิจารณา: ไม่อนุมัติ\nเหตุผล: ${rejectReason.trim()}\nดำเนินการโดย: ${currentUser.email}`;
                     await sendIntraFlowEmail(docData.requesterEmail, reqSubject, reqMessage, baseUrl);
+                    
+                    // 2. กรณีไม่อนุมัติ: ส่งอีเมลหาแอดมิน (Admin) ทันทีเช่นกัน
+                    const adminSubject = `[IntraFlow - Admin] แจ้งเตือนเอกสารไม่อนุมัติ: ${docData.arNumber || docData.type}`;
+                    const adminMessage = `แจ้งเตือนผลการพิจารณาเอกสารในระบบ\nเลขที่เอกสาร: ${docData.arNumber || '-'}\nประเภท: ${docData.type}\nสถานะ: ไม่อนุมัติ\nเหตุผล: ${rejectReason.trim()}\nผู้อนุมัติ: ${docData.approverName || currentUser.email}\nวันที่พิจารณา: ${formatDate(new Date())}\n\nกรุณาตรวจสอบรายละเอียดในระบบ`;
+                    for (const adminEmail of adminEmails) { await sendIntraFlowEmail(adminEmail, adminSubject, adminMessage, baseUrl); }
                 }
                 
                 if (newStatus === 'approved') {
-                    try {
-                        const adminQuery = query(collection(db, 'users'), where('role', '==', 'admin'));
-                        const adminSnapshot = await getDocs(adminQuery);
-                        const adminEmails = [];
-                        adminSnapshot.forEach(d => { if (d.data().email) adminEmails.push(d.data().email); });
-
-                        const adminSubject = `[IntraFlow - Admin] เอกสารได้รับการอนุมัติ: ${docData.arNumber || docData.type}`;
-                        const adminMessage = `แจ้งเตือนการอนุมัติเอกสารใหม่ในระบบ\nเลขที่เอกสาร: ${docData.arNumber || '-'}\nประเภท: ${docData.type}\nสถานะ: อนุมัติแล้ว\nผู้อนุมัติ: ${docData.approverName || currentUser.email}\nวันที่อนุมัติ: ${formatDate(new Date())}\n\nกรุณาตรวจสอบรายละเอียดเพิ่มเติมในระบบ`;
-
-                        for (const adminEmail of adminEmails) { await sendIntraFlowEmail(adminEmail, adminSubject, adminMessage, baseUrl); }
-                    } catch (err) { console.error(err); }
+                    // 3. กรณีอนุมัติ: ส่งอีเมลหาแอดมิน (Admin) อย่างเดียว (ผู้ใช้จะได้รับแจ้งเมื่อแอดมินกด "ดำเนินการแล้ว")
+                    const adminSubject = `[IntraFlow - Admin] เอกสารได้รับการอนุมัติ: ${docData.arNumber || docData.type}`;
+                    const adminMessage = `แจ้งเตือนการอนุมัติเอกสารใหม่ในระบบ\nเลขที่เอกสาร: ${docData.arNumber || '-'}\nประเภท: ${docData.type}\nสถานะ: อนุมัติแล้ว\nผู้อนุมัติ: ${docData.approverName || currentUser.email}\nวันที่อนุมัติ: ${formatDate(new Date())}\n\nกรุณาตรวจสอบและดำเนินการต่อในระบบ`;
+                    for (const adminEmail of adminEmails) { await sendIntraFlowEmail(adminEmail, adminSubject, adminMessage, baseUrl); }
                 }
 
                 showToast(`บันทึกผลการ${statusLabel}สำเร็จ!`, 'success');
