@@ -738,6 +738,7 @@
                                             <th>ชื่อ-นามสกุล</th>
                                             <th>อีเมล</th>
                                             <th>บทบาท (Roles)</th>
+                                            <th>สถานะ</th>
                                             <th style="text-align: right;">จัดการ</th>
                                         </tr>
                                     </thead>
@@ -826,6 +827,13 @@
                 <div class="form-group" id="admin-user-pass-group">
                     <label>รหัสผ่านเริ่มต้น (กรอกเฉพาะเมื่อต้องการเปลี่ยน/เพิ่มใหม่)</label>
                     <input type="password" id="admin-user-pass" placeholder="อย่างน้อย 6 ตัวอักษร">
+                </div>
+                <div class="form-group">
+                    <label>สถานะการใช้งาน</label>
+                    <select id="admin-user-status">
+                        <option value="true">เปิดใช้งานปกติ</option>
+                        <option value="false">ระงับการใช้งาน (ปิดชั่วคราว)</option>
+                    </select>
                 </div>
                 <div class="form-group">
                     <label style="margin-bottom: 0.75rem;">บทบาท (Role) สามารถเลือกได้มากกว่า 1 สิทธิ์</label>
@@ -1184,6 +1192,11 @@
                 try {
                     const userDoc = await getDoc(doc(db, 'users', user.uid));
                     if (userDoc.exists()) {
+                        if (userDoc.data().isActive === false) {
+                            showToast('บัญชีของคุณถูกระงับการใช้งาน โปรดติดต่อผู้ดูแลระบบ', 'error');
+                            await signOut(auth);
+                            return;
+                        }
                         userRoles = userDoc.data().roles || (userDoc.data().role ? [userDoc.data().role] : ['user']);
                         userFirstLogin = userDoc.data().firstLogin === true;
                         if (userDoc.data().displayName) userDisplayName = userDoc.data().displayName;
@@ -1272,8 +1285,9 @@
                     const data = doc.data();
                     // ตรวจสอบว่ามีสิทธิ์ approver หรือไม่ (รองรับทั้งแบบ Array ใหม่ และ String เก่า)
                     const userRolesArray = data.roles || (data.role ? [data.role] : []);
+                    const isActive = data.isActive !== false;
                     
-                    if (userRolesArray.includes('approver')) {
+                    if (userRolesArray.includes('approver') && isActive) {
                         optionsHtml += `<option value="${data.email}">${data.displayName || data.name || 'ไม่ระบุชื่อ'} (${data.email})</option>`;
                         count++;
                     }
@@ -1443,6 +1457,10 @@
                     const roleNames = { 'admin': 'ผู้ดูแลระบบ', 'approver': 'ผู้อนุมัติ', 'user': 'พนักงาน' };
                     const roleText = userRolesArray.map(r => roleNames[r] || r).join(', ');
                     
+                    // จัดการสถานะการใช้งาน (ถ้าไม่มีค่าให้ถือว่าเปิดใช้งาน)
+                    const isActive = data.isActive !== false;
+                    const statusBadge = isActive ? '<span class="badge badge-approved">เปิดใช้งาน</span>' : '<span class="badge badge-rejected">ระงับ</span>';
+                    
                     // แปลง array ให้เก็บใน attribute ง่ายขึ้น
                     const rolesAttr = userRolesArray.join(',');
                     
@@ -1451,8 +1469,9 @@
                             <td>${data.displayName || '-'}</td>
                             <td>${data.email}</td>
                             <td><span class="badge badge-role">${roleText}</span></td>
+                            <td>${statusBadge}</td>
                             <td style="text-align: right; white-space: nowrap;">
-                                <button class="btn btn-outline" onclick="window.editAdminUser('${docSnap.id}', '${data.displayName}', '${data.email}', '${rolesAttr}')" style="padding: 0.25rem 0.5rem; font-size: 0.8rem;"><i class="ri-edit-line"></i></button>
+                                <button class="btn btn-outline" onclick="window.editAdminUser('${docSnap.id}', '${data.displayName}', '${data.email}', '${rolesAttr}', ${isActive})" style="padding: 0.25rem 0.5rem; font-size: 0.8rem;"><i class="ri-edit-line"></i></button>
                                 <button class="btn btn-outline" onclick="window.deleteAdminUser('${docSnap.id}')" style="padding: 0.25rem 0.5rem; font-size: 0.8rem; border-color: var(--danger); color: var(--danger);"><i class="ri-delete-bin-line"></i></button>
                             </td>
                         </tr>
@@ -1467,6 +1486,7 @@
             document.getElementById('admin-user-email').readOnly = false;
             document.getElementById('admin-user-pass-group').classList.remove('hidden');
             document.getElementById('admin-user-pass').required = true;
+            document.getElementById('admin-user-status').value = "true";
             document.getElementById('admin-user-modal-title').innerHTML = '<i class="ri-user-add-line"></i> เพิ่มผู้ใช้งานใหม่';
             document.getElementById('admin-user-modal').classList.remove('hidden');
         });
@@ -1477,6 +1497,7 @@
             const name = document.getElementById('admin-user-name').value;
             const email = document.getElementById('admin-user-email').value;
             const pass = document.getElementById('admin-user-pass').value;
+            const isActive = document.getElementById('admin-user-status').value === "true";
             
             // อ่านค่า Role จาก Checkbox ที่เลือก
             const selectedRoles = Array.from(document.querySelectorAll('input[name="admin-user-roles"]:checked')).map(cb => cb.value);
@@ -1489,13 +1510,13 @@
             btn.disabled = true; btn.innerHTML = 'กำลังบันทึก...';
             try {
                 if (id) {
-                    await updateDoc(doc(db, 'users', id), { displayName: name, roles: selectedRoles });
+                    await updateDoc(doc(db, 'users', id), { displayName: name, roles: selectedRoles, isActive: isActive });
                     showToast('อัปเดตผู้ใช้งานสำเร็จ', 'success');
                 } else {
                     const userCred = await createUserWithEmailAndPassword(secondaryAuth, email, pass);
                     await setDoc(doc(db, 'users', userCred.user.uid), {
                         email: email, roles: selectedRoles, displayName: name, 
-                        firstLogin: true, createdAt: serverTimestamp()
+                        isActive: isActive, firstLogin: true, createdAt: serverTimestamp()
                     });
                     await signOut(secondaryAuth);
                     showToast('เพิ่มบัญชีผู้ใช้สำเร็จ', 'success');
@@ -1507,13 +1528,14 @@
             finally { btn.disabled = false; btn.innerHTML = 'บันทึกข้อมูล'; }
         });
 
-        window.editAdminUser = (id, name, email, rolesString) => {
+        window.editAdminUser = (id, name, email, rolesString, isActive) => {
             document.getElementById('admin-user-id').value = id;
             document.getElementById('admin-user-name').value = name !== 'undefined' ? name : '';
             document.getElementById('admin-user-email').value = email;
             document.getElementById('admin-user-email').readOnly = true;
             document.getElementById('admin-user-pass-group').classList.add('hidden');
             document.getElementById('admin-user-pass').required = false;
+            document.getElementById('admin-user-status').value = isActive !== false ? "true" : "false";
             
             // ตั้งค่า Checkbox กลับไป
             const rolesArr = rolesString.split(',');
@@ -1593,16 +1615,17 @@
                     
                     await sendIntraFlowEmail(newDoc.approverEmail, emailSubject, emailMessage, approvalUrl);
 
-                    // 1. ส่งอีเมลหา Admin ทุกคนเมื่อยื่นเอกสาร
+                    // 1. ส่งอีเมลหา Admin ที่เปิดใช้งานทุกคนเมื่อยื่นเอกสาร
                     try {
-                        const adminQuery = query(collection(db, 'users'), where('role', '==', 'admin'));
-                        const adminSnapshot = await getDocs(adminQuery);
+                        const adminSnapshot = await getDocs(collection(db, 'users'));
                         const adminSubject = `[IntraFlow] แจ้งเตือนแอดมิน: มีเอกสารใหม่รออนุมัติ (${newDoc.type})`;
                         const adminMsg = `ระบบได้รับเอกสารใหม่\nผู้ขอ: ${newDoc.requesterName}\nประเภท: ${newDoc.type}\nส่งถึงผู้อนุมัติ: ${newDoc.approverName}\n\nกรุณาตรวจสอบในระบบ`;
                         
                         adminSnapshot.forEach(async (d) => {
-                            if (d.data().email) {
-                                await sendIntraFlowEmail(d.data().email, adminSubject, adminMsg, baseUrl);
+                            const data = d.data();
+                            const userRolesArray = data.roles || (data.role ? [data.role] : []);
+                            if (userRolesArray.includes('admin') && data.isActive !== false && data.email) {
+                                await sendIntraFlowEmail(data.email, adminSubject, adminMsg, baseUrl);
                             }
                         });
                     } catch (err) { console.error("Admin Email Error:", err); }
@@ -1990,12 +2013,17 @@
                 const docData = currentDocSnap.data();
                 const baseUrl = window.location.href.split('?')[0];
                 
-                // ดึงรายชื่อ Admin ทั้งหมดเพื่อเตรียมส่งอีเมล
+                // ดึงรายชื่อ Admin ที่เปิดใช้งานทั้งหมดเพื่อเตรียมส่งอีเมล
                 let adminEmails = [];
                 try {
-                    const adminQuery = query(collection(db, 'users'), where('role', '==', 'admin'));
-                    const adminSnapshot = await getDocs(adminQuery);
-                    adminSnapshot.forEach(d => { if (d.data().email) adminEmails.push(d.data().email); });
+                    const adminSnapshot = await getDocs(collection(db, 'users'));
+                    adminSnapshot.forEach(d => { 
+                        const data = d.data();
+                        const userRolesArray = data.roles || (data.role ? [data.role] : []);
+                        if (userRolesArray.includes('admin') && data.isActive !== false && data.email) {
+                            adminEmails.push(data.email);
+                        }
+                    });
                 } catch (err) { console.error(err); }
                 
                 if (newStatus === 'rejected') {
