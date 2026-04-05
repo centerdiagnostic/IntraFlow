@@ -722,56 +722,30 @@
 
                 <!-- แท็บ: Admin Dashboard -->
                 <div id="tab-admin" class="tab-content hidden animate-fade-in">
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
-                        <!-- ส่วนจัดการผู้ใช้ใหม่ -->
+                    <div id="admin-subtab-users" class="animate-fade-in">
                         <div class="card" style="border-top: 4px solid var(--primary);">
-                            <h3 class="mb-4"><i class="ri-user-add-line"></i> เพิ่มผู้ใช้งานใหม่</h3>
-                            <form id="admin-add-user-form">
-                                <div class="form-group">
-                                    <label>ชื่อ-นามสกุล</label>
-                                    <input type="text" id="admin-new-user-name" required placeholder="นายตัวอย่าง ดีงาม">
-                                </div>
-                                <div class="form-group">
-                                    <label>อีเมลผู้ใช้งาน</label>
-                                    <input type="email" id="admin-new-user-email" required placeholder="user@company.com">
-                                </div>
-                                <div class="form-group">
-                                    <label>รหัสผ่านเริ่มต้น</label>
-                                    <input type="password" id="admin-new-user-pass" required placeholder="อย่างน้อย 6 ตัวอักษร" minlength="6">
-                                </div>
-                                <div class="form-group">
-                                    <label>บทบาท (Role)</label>
-                                    <select id="admin-new-user-role" required>
-                                        <option value="user">พนักงานทั่วไป (User)</option>
-                                        <option value="approver">ผู้อนุมัติ (Approver)</option>
-                                        <option value="admin">ผู้ดูแลระบบ (Admin)</option>
-                                    </select>
-                                </div>
-                                <button type="submit" class="btn btn-primary w-100" id="btn-admin-add-user">เพิ่มผู้ใช้งานเข้าสู่ระบบ</button>
-                            </form>
-                        </div>
-
-                        <!-- ส่วนจัดการรายชื่อผู้อนุมัติ -->
-                        <div class="card" style="border-top: 4px solid var(--success);">
-                            <h3 class="mb-4"><i class="ri-shield-check-line"></i> เพิ่มรายชื่อผู้อนุมัติ</h3>
-                            <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.5rem;">
-                                รายชื่อนี้จะปรากฏใน Dropdown ของหน้ายื่นเอกสาร
-                            </p>
-                            <form id="admin-add-approver-form">
-                                <div class="form-group">
-                                    <label>ชื่อ-นามสกุล / ตำแหน่ง</label>
-                                    <input type="text" id="admin-approver-name" required placeholder="น.สพ. ตัวอย่าง (ผู้อำนวยการ)">
-                                </div>
-                                <div class="form-group">
-                                    <label>อีเมลสำหรับรับแจ้งเตือนอนุมัติ</label>
-                                    <input type="email" id="admin-approver-email" required placeholder="director@company.com">
-                                </div>
-                                <button type="submit" class="btn btn-success w-100" id="btn-admin-add-approver">บันทึกรายชื่อผู้อนุมัติ</button>
-                            </form>
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                                <h3><i class="ri-group-line"></i> รายชื่อผู้ใช้งานและผู้อนุมัติ</h3>
+                                <button id="btn-show-add-user" class="btn btn-success"><i class="ri-user-add-line"></i> เพิ่มผู้ใช้งาน</button>
+                            </div>
+                            <div class="table-container">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>ชื่อ-นามสกุล</th>
+                                            <th>อีเมล</th>
+                                            <th>บทบาท (Roles)</th>
+                                            <th style="text-align: right;">จัดการ</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="admin-users-table-body">
+                                        <tr><td colspan="4" class="text-center text-muted">กำลังโหลดข้อมูล...</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
                 </div>
-
             </div>
 
             <!-- 2.2 ส่วนของหน้าพิจารณาอนุมัติ -->
@@ -833,7 +807,39 @@
         </div>
     </div>
 
-    <!-- ==================== JAVASCRIPT & FIREBASE INTEGRATION ==================== -->
+    <div id="admin-user-modal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <h3 class="mb-4" id="admin-user-modal-title"><i class="ri-user-settings-line"></i> เพิ่ม/แก้ไขผู้ใช้งาน</h3>
+            <form id="admin-user-form">
+                <input type="hidden" id="admin-user-id">
+                <div class="form-group">
+                    <label>ชื่อ-นามสกุล</label>
+                    <input type="text" id="admin-user-name" required placeholder="นายตัวอย่าง ดีงาม">
+                </div>
+                <div class="form-group">
+                    <label>อีเมลผู้ใช้งาน</label>
+                    <input type="email" id="admin-user-email" required placeholder="user@company.com">
+                </div>
+                <div class="form-group" id="admin-user-pass-group">
+                    <label>รหัสผ่านเริ่มต้น (กรอกเฉพาะเมื่อต้องการเปลี่ยน/เพิ่มใหม่)</label>
+                    <input type="password" id="admin-user-pass" placeholder="อย่างน้อย 6 ตัวอักษร">
+                </div>
+                <div class="form-group">
+                    <label style="margin-bottom: 0.75rem;">บทบาท (Role) สามารถเลือกได้มากกว่า 1 สิทธิ์</label>
+                    <div style="display: flex; flex-direction: column; gap: 0.5rem; background: var(--background); padding: 1rem; border-radius: var(--radius-md); border: 1px solid var(--border);">
+                        <label style="display: flex; align-items: center; gap: 0.5rem; margin: 0; cursor: pointer; color: var(--text-main);"><input type="checkbox" name="admin-user-roles" value="user" style="width: 18px; height: 18px;"> พนักงานทั่วไป (User)</label>
+                        <label style="display: flex; align-items: center; gap: 0.5rem; margin: 0; cursor: pointer; color: var(--text-main);"><input type="checkbox" name="admin-user-roles" value="approver" style="width: 18px; height: 18px;"> ผู้อนุมัติ (Approver)</label>
+                        <label style="display: flex; align-items: center; gap: 0.5rem; margin: 0; cursor: pointer; color: var(--text-main);"><input type="checkbox" name="admin-user-roles" value="admin" style="width: 18px; height: 18px;"> ผู้ดูแลระบบ (Admin)</label>
+                    </div>
+                </div>
+                <div style="display: flex; gap: 1rem;">
+                    <button type="button" class="btn btn-outline w-100 btn-close-modal">ยกเลิก</button>
+                    <button type="submit" class="btn btn-primary w-100" id="btn-save-user">บันทึกข้อมูล</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { 
@@ -842,7 +848,7 @@
         } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { 
             getFirestore, collection, addDoc, getDocs, getDoc, doc, updateDoc, 
-            query, where, serverTimestamp, onSnapshot, setDoc
+            query, where, serverTimestamp, onSnapshot, setDoc, deleteDoc, or
         } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // ==================== ตั้งค่า EmailJS ====================
@@ -887,7 +893,7 @@
 
         // Global State
         let currentUser = null;
-        let userRole = 'user';
+        let userRoles = ['user'];
         let unsubscribeDocs = null;
         let currentApprovalDocData = null;
 
@@ -1133,7 +1139,7 @@
 
         document.getElementById('btn-logout')?.addEventListener('click', () => { signOut(auth); });
 
-        const enterMainApp = (user, role, displayName) => {
+        const enterMainApp = (user, roles, displayName) => {
             document.getElementById('first-login-modal')?.classList.add('hidden');
             
             const reqEmailEl = document.getElementById('doc-requester-email');
@@ -1143,10 +1149,11 @@
             if (infoDispEl) infoDispEl.innerText = displayName || user.email;
 
             const roleNames = { 'admin': 'ผู้ดูแลระบบ', 'approver': 'ผู้อนุมัติ', 'user': 'พนักงาน' };
+            const rolesText = roles.map(r => roleNames[r] || r).join(', ');
             const roleBadgeEl = document.getElementById('user-role-badge');
-            if (roleBadgeEl) roleBadgeEl.innerHTML = `<i class="ri-shield-user-line"></i> ${roleNames[role] || 'พนักงาน'}`;
+            if (roleBadgeEl) roleBadgeEl.innerHTML = `<i class="ri-shield-user-line"></i> ${rolesText || 'พนักงาน'}`;
 
-            if (role === 'admin') {
+            if (roles.includes('admin')) {
                 document.getElementById('btn-admin-panel')?.classList.remove('hidden');
                 document.getElementById('tab-admin-btn')?.classList.remove('hidden');
             } else {
@@ -1174,11 +1181,11 @@
                 try {
                     const userDoc = await getDoc(doc(db, 'users', user.uid));
                     if (userDoc.exists()) {
-                        userRole = userDoc.data().role;
+                        userRoles = userDoc.data().roles || (userDoc.data().role ? [userDoc.data().role] : ['user']);
                         userFirstLogin = userDoc.data().firstLogin === true;
                         if (userDoc.data().displayName) userDisplayName = userDoc.data().displayName;
                     } else {
-                        userRole = 'user';
+                        userRoles = ['user'];
                     }
                 } catch(e) { console.error(e); }
 
@@ -1188,7 +1195,7 @@
                     document.getElementById('app-view')?.classList.add('hidden');
                     showLoader(false);
                 } else {
-                    enterMainApp(user, userRole, userDisplayName);
+                    enterMainApp(user, userRoles, userDisplayName);
                 }
             } else {
                 currentUser = null;
@@ -1246,7 +1253,7 @@
                     userDisplayName = userDocSnap.data().displayName;
                 }
             } catch(e) {}
-            enterMainApp(currentUser, userRole, userDisplayName);
+            enterMainApp(currentUser, userRoles, userDisplayName);
         });
 
         async function loadApproversList() {
@@ -1254,20 +1261,28 @@
             if (!selectEl) return;
             
             try {
-                const approverSnapshot = await getDocs(collection(db, 'approver_list'));
+                const snapshot = await getDocs(collection(db, 'users'));
                 let optionsHtml = '<option value="" disabled selected>-- เลือกผู้อนุมัติ --</option>';
+                let count = 0;
                 
-                approverSnapshot.forEach((doc) => {
+                snapshot.forEach((doc) => {
                     const data = doc.data();
-                    optionsHtml += `<option value="${data.email}">${data.name} (${data.email})</option>`;
+                    // ตรวจสอบว่ามีสิทธิ์ approver หรือไม่ (รองรับทั้งแบบ Array ใหม่ และ String เก่า)
+                    const userRolesArray = data.roles || (data.role ? [data.role] : []);
+                    
+                    if (userRolesArray.includes('approver')) {
+                        optionsHtml += `<option value="${data.email}">${data.displayName || data.name || 'ไม่ระบุชื่อ'} (${data.email})</option>`;
+                        count++;
+                    }
                 });
                 
-                if (approverSnapshot.empty) {
+                if (count === 0) {
                     optionsHtml = '<option value="" disabled selected>-- ไม่มีรายชื่อผู้อนุมัติในระบบ --</option>';
                 }
                 
                 selectEl.innerHTML = optionsHtml;
             } catch (error) {
+                console.error(error);
                 selectEl.innerHTML = '<option value="" disabled selected>-- โหลดข้อมูลผู้อนุมัติไม่สำเร็จ --</option>';
             }
         }
@@ -1295,6 +1310,9 @@
             if (target === 'submit') {
                 const docDateEl = document.getElementById('doc-date');
                 if (docDateEl) docDateEl.valueAsDate = new Date();
+            }
+            if (target === 'admin') {
+                if(typeof loadAdminUsers === 'function') loadAdminUsers();
             }
         }
 
@@ -1402,68 +1420,117 @@
             }
         });
 
-        // 1. Admin เพิ่มผู้ใช้งานใหม่ (พร้อมบันทึก displayName)
-        document.getElementById('admin-add-user-form')?.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const btn = document.getElementById('btn-admin-add-user');
-            const name = document.getElementById('admin-new-user-name').value;
-            const email = document.getElementById('admin-new-user-email').value;
-            const pass = document.getElementById('admin-new-user-pass').value;
-            const role = document.getElementById('admin-new-user-role').value;
-
-            btn.disabled = true;
-            btn.innerHTML = '<div class="loader"></div> กำลังเพิ่มผู้ใช้...';
-
-            try {
-                const userCred = await createUserWithEmailAndPassword(secondaryAuth, email, pass);
-                await setDoc(doc(db, 'users', userCred.user.uid), {
-                    email: email,
-                    role: role,
-                    displayName: name, 
-                    firstLogin: true, 
-                    createdAt: serverTimestamp()
-                });
-                await signOut(secondaryAuth);
-                
-                await logSystemAction(`CREATE_USER_${Date.now()}`, currentUser.email, `Created user: ${email} (${role})`);
-                showToast(`เพิ่มบัญชีผู้ใช้ ${name} เรียบร้อยแล้ว`, 'success');
-                e.target.reset();
-            } catch (error) {
-                showToast(`เพิ่มผู้ใช้ไม่สำเร็จ: ${error.message}`, 'error');
-            } finally {
-                btn.disabled = false;
-                btn.innerHTML = 'เพิ่มผู้ใช้งานเข้าสู่ระบบ';
-            }
+        // ==================== Admin Management Logic ====================
+        document.querySelectorAll('.btn-close-modal').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.getElementById('admin-user-modal').classList.add('hidden');
+            });
         });
 
-        // 2. Admin เพิ่มผู้อนุมัติ
-        document.getElementById('admin-add-approver-form')?.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const btn = document.getElementById('btn-admin-add-approver');
-            const name = document.getElementById('admin-approver-name').value;
-            const email = document.getElementById('admin-approver-email').value;
-
-            btn.disabled = true;
-            btn.innerHTML = '<div class="loader"></div> กำลังบันทึก...';
-
+        window.loadAdminUsers = async () => {
+            const tbody = document.getElementById('admin-users-table-body');
+            if (!tbody) return;
+            tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted">กำลังโหลดข้อมูล...</td></tr>';
             try {
-                await addDoc(collection(db, 'approver_list'), {
-                    name: name,
-                    email: email,
-                    createdAt: serverTimestamp()
+                const snapshot = await getDocs(collection(db, 'users'));
+                tbody.innerHTML = '';
+                snapshot.forEach(docSnap => {
+                    const data = docSnap.data();
+                    const userRolesArray = data.roles || (data.role ? [data.role] : ['user']);
+                    const roleNames = { 'admin': 'ผู้ดูแลระบบ', 'approver': 'ผู้อนุมัติ', 'user': 'พนักงาน' };
+                    const roleText = userRolesArray.map(r => roleNames[r] || r).join(', ');
+                    
+                    // แปลง array ให้เก็บใน attribute ง่ายขึ้น
+                    const rolesAttr = userRolesArray.join(',');
+                    
+                    tbody.innerHTML += `
+                        <tr>
+                            <td>${data.displayName || '-'}</td>
+                            <td>${data.email}</td>
+                            <td><span class="badge badge-role">${roleText}</span></td>
+                            <td style="text-align: right; white-space: nowrap;">
+                                <button class="btn btn-outline" onclick="window.editAdminUser('${docSnap.id}', '${data.displayName}', '${data.email}', '${rolesAttr}')" style="padding: 0.25rem 0.5rem; font-size: 0.8rem;"><i class="ri-edit-line"></i></button>
+                                <button class="btn btn-outline" onclick="window.deleteAdminUser('${docSnap.id}')" style="padding: 0.25rem 0.5rem; font-size: 0.8rem; border-color: var(--danger); color: var(--danger);"><i class="ri-delete-bin-line"></i></button>
+                            </td>
+                        </tr>
+                    `;
                 });
-                
-                await logSystemAction(`ADD_APPROVER_${Date.now()}`, currentUser.email, `Added approver: ${name}`);
-                showToast(`บันทึกผู้อนุมัติ ${name} สำเร็จ!`, 'success');
-                e.target.reset();
-                loadApproversList(); 
-            } catch (error) {
-                showToast(`เกิดข้อผิดพลาด: ${error.message}`, 'error');
-            } finally {
-                btn.disabled = false;
-                btn.innerHTML = 'บันทึกรายชื่อผู้อนุมัติ';
-            }
+            } catch (error) { tbody.innerHTML = '<tr><td colspan="4" class="text-center text-danger">โหลดข้อมูลผิดพลาด</td></tr>'; }
+        }
+
+        document.getElementById('btn-show-add-user')?.addEventListener('click', () => {
+            document.getElementById('admin-user-form').reset();
+            document.getElementById('admin-user-id').value = '';
+            document.getElementById('admin-user-email').readOnly = false;
+            document.getElementById('admin-user-pass-group').classList.remove('hidden');
+            document.getElementById('admin-user-pass').required = true;
+            document.getElementById('admin-user-modal-title').innerHTML = '<i class="ri-user-add-line"></i> เพิ่มผู้ใช้งานใหม่';
+            document.getElementById('admin-user-modal').classList.remove('hidden');
         });
+
+        document.getElementById('admin-user-form')?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('admin-user-id').value;
+            const name = document.getElementById('admin-user-name').value;
+            const email = document.getElementById('admin-user-email').value;
+            const pass = document.getElementById('admin-user-pass').value;
+            
+            // อ่านค่า Role จาก Checkbox ที่เลือก
+            const selectedRoles = Array.from(document.querySelectorAll('input[name="admin-user-roles"]:checked')).map(cb => cb.value);
+            if (selectedRoles.length === 0) {
+                showToast('กรุณาเลือกบทบาทอย่างน้อย 1 สิทธิ์', 'error');
+                return;
+            }
+
+            const btn = document.getElementById('btn-save-user');
+            btn.disabled = true; btn.innerHTML = 'กำลังบันทึก...';
+            try {
+                if (id) {
+                    await updateDoc(doc(db, 'users', id), { displayName: name, roles: selectedRoles });
+                    showToast('อัปเดตผู้ใช้งานสำเร็จ', 'success');
+                } else {
+                    const userCred = await createUserWithEmailAndPassword(secondaryAuth, email, pass);
+                    await setDoc(doc(db, 'users', userCred.user.uid), {
+                        email: email, roles: selectedRoles, displayName: name, 
+                        firstLogin: true, createdAt: serverTimestamp()
+                    });
+                    await signOut(secondaryAuth);
+                    showToast('เพิ่มบัญชีผู้ใช้สำเร็จ', 'success');
+                }
+                document.getElementById('admin-user-modal').classList.add('hidden');
+                loadAdminUsers();
+                loadApproversList(); // โหลดใหม่ทันทีเผื่อมีการแก้คนเป็น approver
+            } catch (error) { showToast(`ผิดพลาด: ${error.message}`, 'error'); } 
+            finally { btn.disabled = false; btn.innerHTML = 'บันทึกข้อมูล'; }
+        });
+
+        window.editAdminUser = (id, name, email, rolesString) => {
+            document.getElementById('admin-user-id').value = id;
+            document.getElementById('admin-user-name').value = name !== 'undefined' ? name : '';
+            document.getElementById('admin-user-email').value = email;
+            document.getElementById('admin-user-email').readOnly = true;
+            document.getElementById('admin-user-pass-group').classList.add('hidden');
+            document.getElementById('admin-user-pass').required = false;
+            
+            // ตั้งค่า Checkbox กลับไป
+            const rolesArr = rolesString.split(',');
+            document.querySelectorAll('input[name="admin-user-roles"]').forEach(cb => {
+                cb.checked = rolesArr.includes(cb.value);
+            });
+
+            document.getElementById('admin-user-modal-title').innerHTML = '<i class="ri-user-settings-line"></i> แก้ไขผู้ใช้งาน';
+            document.getElementById('admin-user-modal').classList.remove('hidden');
+        };
+
+        window.deleteAdminUser = async (id) => {
+            if(!confirm('ยืนยันการลบผู้ใช้งานนี้ออกจากระบบ?')) return;
+            try {
+                await deleteDoc(doc(db, 'users', id));
+                showToast('ลบข้อมูลผู้ใช้สำเร็จ', 'success');
+                loadAdminUsers();
+                loadApproversList(); // อัปเดต dropdown ถ้าลบ Approver
+            } catch(e) { showToast('ลบข้อมูลไม่สำเร็จ', 'error'); }
+        };
 
         // ==================== Submit Logic ====================
         const processSubmit = async (statusType) => {
@@ -1606,8 +1673,19 @@
             showLoader(true);
 
             let qConstraints = [where('isDeleted', '==', false)];
-            if (userRole === 'user') qConstraints.push(where('requesterEmail', '==', currentUser.email));
-            else if (userRole === 'approver') qConstraints.push(where('approverEmail', '==', currentUser.email));
+            
+            if (!userRoles.includes('admin')) {
+                if (userRoles.includes('approver') && userRoles.includes('user')) {
+                    qConstraints.push(or(
+                        where('requesterEmail', '==', currentUser.email), 
+                        where('approverEmail', '==', currentUser.email)
+                    ));
+                } else if (userRoles.includes('approver')) {
+                    qConstraints.push(where('approverEmail', '==', currentUser.email));
+                } else {
+                    qConstraints.push(where('requesterEmail', '==', currentUser.email));
+                }
+            }
 
             const statusVal = document.getElementById('filter-status')?.value || 'all';
             if (statusVal !== 'all') qConstraints.push(where('status', '==', statusVal));
@@ -1664,7 +1742,7 @@
                     // เปลี่ยนจากลิงก์ <a> เป็นปุ่ม <button> เพื่อรองรับ SPA Routing
                     let actionHtml = `<button class="btn btn-outline btn-view-doc" data-id="${d.id}" data-token="${d.token}" style="padding: 0.35rem 0.75rem; font-size: 0.85rem;"><i class="ri-eye-line"></i> ดูข้อมูล</button>`;
                     
-                    if (userRole === 'approver' && d.status === 'pending') {
+                    if (userRoles.includes('approver') && d.status === 'pending' && currentUser.email === d.approverEmail) {
                         actionHtml = `<button class="btn btn-primary btn-view-doc" data-id="${d.id}" data-token="${d.token}" style="padding: 0.35rem 0.75rem; font-size: 0.85rem;"><i class="ri-edit-box-line"></i> พิจารณา</button>`;
                     }
 
@@ -1745,8 +1823,16 @@
                     <div style="background: var(--background); padding: 1.5rem; border-radius: var(--radius-md); margin-bottom: 1.5rem; border: 1px solid var(--border);">
                         <h4 style="margin-bottom: 0.75rem; color: var(--text-main);"><i class="ri-edit-2-line"></i> รายละเอียดการแก้ไข</h4>
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                            <div><span style="color: var(--danger); font-size: 0.85rem;">รายการทดสอบที่ยกเลิก</span><br><strong>${docData.cancelTestName || '-'}</strong> (Code: ${docData.cancelTestCode || '-'})</div>
-                            <div><span style="color: var(--success); font-size: 0.85rem;">รายการทดสอบที่เพิ่มใหม่</span><br><strong>${docData.newTestName || '-'}</strong> (Code: ${docData.newTestCode || '-'})</div>
+                            <div><span style="color: var(--danger); font-size: 0.85rem;">รายการทดสอบที่ยกเลิก</span><br>
+                                ${(docData.cancelTests && docData.cancelTests.length > 0) 
+                                    ? docData.cancelTests.map(t => `<strong>${t.name}</strong> (Code: ${t.code || '-'})`).join('<br>') 
+                                    : `<strong>${docData.cancelTestName || '-'}</strong> (Code: ${docData.cancelTestCode || '-'})`}
+                            </div>
+                            <div><span style="color: var(--success); font-size: 0.85rem;">รายการทดสอบที่เพิ่มใหม่</span><br>
+                                ${(docData.newTests && docData.newTests.length > 0) 
+                                    ? docData.newTests.map(t => `<strong>${t.name}</strong> (Code: ${t.code || '-'})`).join('<br>') 
+                                    : `<strong>${docData.newTestName || '-'}</strong> (Code: ${docData.newTestCode || '-'})`}
+                            </div>
                         </div>
                     </div>
 
@@ -1773,7 +1859,7 @@
                     }
                     if (logMsg) logMsg.innerHTML = logHtml;
 
-                    if (docData.status === 'approved' && userRole === 'admin' && !docData.isProcessed) {
+                    if (docData.status === 'approved' && userRoles.includes('admin') && !docData.isProcessed) {
                         actionsDiv?.classList.remove('hidden');
                         document.getElementById('btn-do-approve')?.classList.add('hidden');
                         document.getElementById('btn-do-reject')?.classList.add('hidden');
@@ -1783,7 +1869,7 @@
                         actionsDiv?.classList.add('hidden');
                         logMsg?.classList.remove('hidden');
                     }
-                } else if (currentUser.email !== docData.approverEmail && userRole !== 'admin') {
+                } else if (currentUser.email !== docData.approverEmail && !userRoles.includes('admin')) {
                     actionsDiv?.classList.add('hidden');
                     logMsg?.classList.remove('hidden');
                     if (logMsg) logMsg.innerHTML = `<i class="ri-shield-keyhole-line" style="color: var(--danger); font-size: 1.5rem;"></i><br><span style="color: var(--danger); font-weight: 500;">ไม่อนุญาตให้เข้าถึง</span><br><span style="color: var(--text-muted); font-size: 0.9rem;">คุณไม่ได้รับสิทธิ์ให้พิจารณาเอกสารฉบับนี้</span>`;
