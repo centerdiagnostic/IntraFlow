@@ -114,6 +114,7 @@
             -webkit-text-fill-color: initial;
             background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
             -webkit-background-clip: text;
+            background-clip: text;
             -webkit-text-fill-color: transparent;
             font-size: 1.6rem;
         }
@@ -134,7 +135,9 @@
         .auth-brand-title {
             font-size: 1.75rem; font-weight: 800;
             background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            -webkit-background-clip: text; 
+            background-clip: text; 
+            -webkit-text-fill-color: transparent;
             letter-spacing: -0.5px;
             margin-bottom: 1.5rem; text-align: center;
         }
@@ -1665,6 +1668,7 @@
         function initDashboard() {
             document.getElementById('dashboard-section')?.classList.remove('hidden');
             document.getElementById('approval-section')?.classList.add('hidden');
+            switchTab('list'); // บังคับรีเซ็ตกลับไปที่แท็บรายการเอกสารเสมอเมื่อเข้าสู่ระบบ
             loadDocuments();
         }
 
