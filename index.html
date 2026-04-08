@@ -982,7 +982,14 @@
                 });
 
                 if (!response.ok) {
-                    throw new Error('การสร้าง PDF จากเซิร์ฟเวอร์ล้มเหลว');
+                    let errorDetail = '';
+                    try {
+                        errorDetail = await response.text();
+                        console.error("[Backend Error Log]:", errorDetail);
+                    } catch (e) {
+                        console.error("ไม่สามารถอ่านข้อความ Error จาก Backend ได้");
+                    }
+                    throw new Error(`เซิร์ฟเวอร์ล้มเหลว (500) โปรดเช็ค Render Logs`);
                 }
 
                 const blob = await response.blob();
