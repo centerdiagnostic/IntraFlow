@@ -51,6 +51,14 @@ app.post('/api/export-pdf', async (req, res) => {
         const appDate = parseDate(docData.approvedAt);
         const procDate = parseDate(docData.processedAt);
 
+        const renderSign = (sigBase64, name) => {
+            if (sigBase64) return `<img src="${sigBase64}" style="max-height: 40px; max-width: 180px; vertical-align: bottom; margin: 0 5px;">`;
+            return `<span class="sign-line" style="color: #000;">${name || ''}</span>`;
+        };
+        const reqSignHtml = renderSign(docData.requesterSignature, docData.requesterName);
+        const appSignHtml = (docData.status === 'approved' || docData.status === 'rejected') ? renderSign(docData.approverSignature, docData.approverName) : '';
+        const procSignHtml = docData.isProcessed ? renderSign(docData.processedBySignature, docData.processedByName || docData.processedBy) : '';
+
         const htmlContent = `
         <!DOCTYPE html>
         <html lang="th">
@@ -159,7 +167,7 @@ app.post('/api/export-pdf', async (req, res) => {
             
             <div class="sign-requester" style="margin-top: 30px; margin-bottom: 30px;">
                 <div class="sign-box">
-                    ลงชื่อ <span class="sign-line" style="color: #000;">${docData.requesterName || ''}</span> ผู้เสนอขอยกเลิก<br>
+                    ลงชื่อ ${reqSignHtml} ผู้เสนอขอยกเลิก<br>
                     <div style="margin-top: 4px;">( ${docData.requesterName || '.......................................................'} )</div>
                     <div style="margin-top: 2px;">วันที่ขอแก้ไข ${reqDate}</div>
                 </div>
@@ -174,7 +182,7 @@ app.post('/api/export-pdf', async (req, res) => {
                             <div class="checkbox-item"><div class="box">${docData.status === 'rejected' ? '✓' : ''}</div> ไม่อนุมัติให้ดำเนินการ เนื่องจาก <span style="border-bottom: 1px dotted #000; flex: 1; margin-left: 5px; padding-left: 5px;">${docData.rejectReason || ''}</span></div>
                         </div>
                         <div class="sign-box" style="margin-top: 15px;">
-                            ลงชื่อ <span class="sign-line" style="color: #000;">${docData.status === 'approved' || docData.status === 'rejected' ? (docData.approverName || '') : ''}</span><br>
+                            ลงชื่อ ${appSignHtml}<br>
                             <div style="margin-top: 4px;">( ${docData.approverName || '.......................................................'} )</div>
                             <div style="margin-top: 2px;">ผู้อำนวยการศูนย์ชันสูตรโรคสัตว์ กำแพงแสน</div>
                             <div style="margin-top: 2px;">วันที่ ${docData.status === 'pending' ? '......../......../........' : appDate}</div>
@@ -183,7 +191,7 @@ app.post('/api/export-pdf', async (req, res) => {
                     <div>
                         <div class="section-title" style="margin-top: 0;">5. บันทึกข้อมูลลงระบบเรียบร้อยแล้ว</div>
                         <div class="sign-box" style="margin-top: 50px;">
-                            ลงชื่อ <span class="sign-line" style="color: #000;">${docData.isProcessed ? (docData.processedByName || docData.processedBy || '') : ''}</span><br>
+                            ลงชื่อ ${procSignHtml}<br>
                             <div style="margin-top: 4px;">( ${docData.isProcessed ? (docData.processedByName || docData.processedBy || '') : '.......................................................'} )</div>
                             <div style="margin-top: 2px;">ผู้ดำเนินการแก้ไขในระบบ</div>
                             <div style="margin-top: 2px;">วันที่ ${docData.isProcessed ? procDate : '......../......../........'}</div>
