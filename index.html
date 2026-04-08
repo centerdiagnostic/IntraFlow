@@ -840,6 +840,11 @@
                     <input type="password" id="admin-user-pass" placeholder="อย่างน้อย 6 ตัวอักษร">
                 </div>
                 <div class="form-group">
+                    <label>ลายเซ็น (อัปโหลดรูปภาพ .png, .jpg)</label>
+                    <input type="file" id="admin-user-signature" accept="image/png, image/jpeg" style="padding: 0.5rem; background: var(--surface);">
+                    <div id="signature-preview" style="margin-top: 10px; min-height: 50px; border: 1px dashed var(--border); border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; color: var(--text-muted); font-size: 0.85rem; padding: 0.5rem;">ยังไม่มีลายเซ็น</div>
+                </div>
+                <div class="form-group">
                     <label>สถานะการใช้งาน</label>
                     <select id="admin-user-status">
                         <option value="true">เปิดใช้งานปกติ</option>
@@ -918,6 +923,22 @@
         let userRoles = ['user'];
         let unsubscribeDocs = null;
         let currentApprovalDocData = null;
+        let currentSignatureBase64 = "";
+
+        document.getElementById('admin-user-signature')?.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    currentSignatureBase64 = event.target.result;
+                    document.getElementById('signature-preview').innerHTML = `<img src="${currentSignatureBase64}" style="max-height: 50px; object-fit: contain;">`;
+                };
+                reader.readAsDataURL(file);
+            } else {
+                currentSignatureBase64 = "";
+                document.getElementById('signature-preview').innerHTML = "ยังไม่มีลายเซ็น";
+            }
+        });
 
         // Route Check (SPA Routing)
         const urlParams = new URLSearchParams(window.location.search);
@@ -1401,6 +1422,9 @@
             document.getElementById('admin-user-pass-group').classList.remove('hidden');
             document.getElementById('admin-user-pass').required = true;
             document.getElementById('admin-user-status').value = "true";
+            currentSignatureBase64 = "";
+            document.getElementById('signature-preview').innerHTML = "ยังไม่มีลายเซ็น";
+            document.getElementById('admin-user-signature').value = "";
             document.getElementById('admin-user-modal-title').innerHTML = '<i class="ri-user-add-line"></i> เพิ่มผู้ใช้งานใหม่';
             document.getElementById('admin-user-modal').classList.remove('hidden');
         });
@@ -1424,12 +1448,14 @@
             btn.disabled = true; btn.innerHTML = 'กำลังบันทึก...';
             try {
                 if (id) {
-                    await updateDoc(doc(db, 'users', id), { displayName: name, roles: selectedRoles, isActive: isActive });
+                    const updateData = { displayName: name, roles: selectedRoles, isActive: isActive };
+                    if (currentSignatureBase64) updateData.signature = currentSignatureBase64;
+                    await updateDoc(doc(db, 'users', id), updateData);
                     showToast('อัปเดตผู้ใช้งานสำเร็จ', 'success');
                 } else {
                     const userCred = await createUserWithEmailAndPassword(secondaryAuth, email, pass);
                     await setDoc(doc(db, 'users', userCred.user.uid), {
-                        email: email, roles: selectedRoles, displayName: name, 
+                        email: email, roles: selectedRoles, displayName: name, signature: currentSignatureBase64,
                         isActive: isActive, firstLogin: true, createdAt: serverTimestamp()
                     });
                     await signOut(secondaryAuth);
@@ -1442,8 +1468,19 @@
             finally { btn.disabled = false; btn.innerHTML = 'บันทึกข้อมูล'; }
         });
 
-        window.editAdminUser = (id, name, email, rolesString, isActive) => {
+        window.editAdminUser = async (id, name, email, rolesString, isActive) => {
             document.getElementById('admin-user-id').value = id;
+            try {
+                const docSnap = await getDoc(doc(db, 'users', id));
+                if (docSnap.exists() && docSnap.data().signature) {
+                    currentSignatureBase64 = docSnap.data().signature;
+                    document.getElementById('signature-preview').innerHTML = `<img src="${currentSignatureBase64}" style="max-height: 50px; object-fit: contain;">`;
+                } else {
+                    currentSignatureBase64 = "";
+                    document.getElementById('signature-preview').innerHTML = "ยังไม่มีลายเซ็น";
+                }
+            } catch(e) {}
+            document.getElementById('admin-user-signature').value = "";
             document.getElementById('admin-user-name').value = name !== 'undefined' ? name : '';
             document.getElementById('admin-user-email').value = email;
             document.getElementById('admin-user-email').readOnly = true;
@@ -1482,8 +1519,15 @@
             const approverSelect = document.getElementById('doc-approver-select');
             const selectedApproverText = approverSelect?.options[approverSelect.selectedIndex]?.text || '';
             const approverNameOnly = selectedApproverText.split(' (')[0];
+            
+            let userSig = '';
+            try {
+                const userDocSnap = await getDoc(doc(db, 'users', currentUser.uid));
+                if (userDocSnap.exists()) userSig = userDocSnap.data().signature || '';
+            } catch(e) {}
 
             const newDoc = {
+                requesterSignature: userSig,
                 requesterName: document.getElementById('doc-requester-name')?.value || '',
                 requesterEmail: (currentUser?.email || '').toLowerCase().trim(),
                 type: document.getElementById('doc-type')?.value || '',
@@ -1910,8 +1954,15 @@
             
             showLoader(true);
             try {
+                let userSig = '';
+                try {
+                    const userDocSnap = await getDoc(doc(db, 'users', currentUser.uid));
+                    if (userDocSnap.exists()) userSig = userDocSnap.data().signature || '';
+                } catch(e) {}
+
                 const updateData = {
                     status: newStatus,
+                    approverSignature: userSig,
                     approvedAt: serverTimestamp(),
                     approvedBy: currentUser.email,
                     auditLog: `[${newStatus.toUpperCase()}] ดำเนินการโดย ${currentUser.email}`
@@ -1986,11 +2037,17 @@
                     currentAdminName = userDocSnap.data().displayName;
                 }
 
+                let userSig = '';
+                if (userDocSnap.exists() && userDocSnap.data().signature) {
+                    userSig = userDocSnap.data().signature;
+                }
+
                 await updateDoc(doc(db, 'documents', targetDocId), {
                     isProcessed: true,
                     processedAt: serverTimestamp(),
                     processedBy: currentUser.email,
-                    processedByName: currentAdminName // ส่งชื่อนี้ไปให้ server.js ใช้สร้าง PDF
+                    processedByName: currentAdminName,
+                    processedBySignature: userSig
                 });
 
                 await logSystemAction(`PROCESS_DOC_${targetDocId}`, currentUser.email, 'ADMIN_PROCESSED');
