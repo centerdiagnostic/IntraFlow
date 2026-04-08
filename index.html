@@ -1048,14 +1048,39 @@
             }
         };
 
-        document.getElementById('btn-download-pdf')?.addEventListener('click', () => {
-            if (currentApprovalDocData) window.generatePDF(currentApprovalDocData, 'download');
-            else showToast("ไม่สามารถสร้าง PDF ได้ในขณะนี้ ข้อมูลไม่สมบูรณ์", "error");
+        // ฟังก์ชันดึงลายเซ็นที่ขาดหายไปสำหรับเอกสารเก่า
+        async function prepareDocDataWithSignatures(docData) {
+            let preparedData = { ...docData };
+            try {
+                const fetchSig = async (email) => {
+                    if(!email) return '';
+                    const q = query(collection(db, 'users'), where('email', '==', email));
+                    const snap = await getDocs(q);
+                    if(!snap.empty) return snap.docs[0].data().signature || '';
+                    return '';
+                };
+
+                if (!preparedData.requesterSignature) preparedData.requesterSignature = await fetchSig(preparedData.requesterEmail);
+                if (!preparedData.approverSignature && preparedData.approverEmail) preparedData.approverSignature = await fetchSig(preparedData.approverEmail);
+                if (!preparedData.processedBySignature && preparedData.processedBy) preparedData.processedBySignature = await fetchSig(preparedData.processedBy);
+            } catch(e) { console.error("Error fetching signatures", e); }
+            return preparedData;
+        }
+
+        document.getElementById('btn-download-pdf')?.addEventListener('click', async () => {
+            if (currentApprovalDocData) {
+                showLoader(true);
+                const fullData = await prepareDocDataWithSignatures(currentApprovalDocData);
+                window.generatePDF(fullData, 'download');
+            } else showToast("ไม่สามารถสร้าง PDF ได้ในขณะนี้ ข้อมูลไม่สมบูรณ์", "error");
         });
 
-        document.getElementById('btn-preview-pdf')?.addEventListener('click', () => {
-            if (currentApprovalDocData) window.generatePDF(currentApprovalDocData, 'preview');
-            else showToast("ไม่สามารถดึงพรีวิวได้ ข้อมูลไม่สมบูรณ์", "error");
+        document.getElementById('btn-preview-pdf')?.addEventListener('click', async () => {
+            if (currentApprovalDocData) {
+                showLoader(true);
+                const fullData = await prepareDocDataWithSignatures(currentApprovalDocData);
+                window.generatePDF(fullData, 'preview');
+            } else showToast("ไม่สามารถดึงพรีวิวได้ ข้อมูลไม่สมบูรณ์", "error");
         });
 
         document.querySelector('.btn-close-preview')?.addEventListener('click', () => {
