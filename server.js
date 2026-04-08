@@ -18,7 +18,15 @@ app.post('/api/export-pdf', async (req, res) => {
     let browser;
     
     try {
-        browser = await puppeteer.launch({ headless: 'new' });
+        // เพิ่มคำสั่งปิด Sandbox เพื่อให้รันบน Cloud/Linux ได้
+        browser = await puppeteer.launch({ 
+            headless: 'new',
+            args: [
+                '--no-sandbox',
+                '--disable-setuid-sandbox',
+                '--disable-dev-shm-usage'
+            ]
+        });
         const page = await browser.newPage();
 
         // จัดการข้อมูล Array รายการทดสอบให้แสดงผลเป็น Text
