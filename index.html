@@ -759,7 +759,8 @@
                         <h2 style="margin: 0;"><i class="ri-mail-check-line"></i> พิจารณาอนุมัติ</h2>
                         <div style="display: flex; gap: 1rem; align-items: center;">
                             <span id="approve-view-status" class="badge"></span>
-                            <button id="btn-download-pdf" type="button" class="btn btn-outline" style="padding: 0.5rem 1rem; background: var(--primary-light); color: var(--primary); border: none;"><i class="ri-file-pdf-line"></i> ดาวน์โหลด PDF</button>
+                            <button id="btn-preview-pdf" type="button" class="btn btn-outline" style="padding: 0.5rem 1rem; border-color: var(--primary); color: var(--primary);"><i class="ri-eye-line"></i> พรีวิว</button>
+                            <button id="btn-download-pdf" type="button" class="btn btn-outline" style="padding: 0.5rem 1rem; background: var(--primary-light); color: var(--primary); border: none;"><i class="ri-file-download-line"></i> ดาวน์โหลด</button>
                         </div>
                     </div>
                     
@@ -808,6 +809,16 @@
                 <button id="btn-confirm-cancel" class="btn btn-outline" style="flex: 1;">ยกเลิก</button>
                 <button id="btn-confirm-ok" class="btn" style="flex: 1;">ยืนยัน</button>
             </div>
+        </div>
+    </div>
+
+    <div id="pdf-preview-modal" class="modal-overlay hidden">
+        <div class="modal-content" style="max-width: 900px; width: 95%; height: 90vh; display: flex; flex-direction: column; padding: 1.5rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <h3 style="margin: 0; color: var(--primary);"><i class="ri-file-search-line"></i> พรีวิวเอกสาร</h3>
+                <button type="button" class="btn btn-outline btn-close-preview" style="padding: 0.35rem 0.75rem;"><i class="ri-close-line"></i> ปิดพรีวิว</button>
+            </div>
+            <iframe id="pdf-preview-frame" style="flex: 1; border: 1px solid var(--border); border-radius: var(--radius-md); width: 100%; background: #f1f5f9;"></iframe>
         </div>
     </div>
 
@@ -970,7 +981,7 @@
         }
 
         // ==================== PDF Generation ====================
-        window.generatePDF = async function(docData) {
+        window.generatePDF = async function(docData, action = 'download') {
             showLoader(true);
             try {
                 // ปรับ URL นี้ให้ตรงกับ Endpoint Node.js Backend ของคุณ
@@ -994,14 +1005,20 @@
 
                 const blob = await response.blob();
                 const url = window.URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `Cancel_Test_${docData.arNumber || Date.now()}.pdf`;
-                document.body.appendChild(a);
-                a.click();
-                a.remove();
-                window.URL.revokeObjectURL(url);
-                showToast("ดาวน์โหลดไฟล์ PDF สำเร็จ", "success");
+                
+                if (action === 'preview') {
+                    document.getElementById('pdf-preview-frame').src = url;
+                    document.getElementById('pdf-preview-modal').classList.remove('hidden');
+                } else {
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `Cancel_Test_${docData.arNumber || Date.now()}.pdf`;
+                    document.body.appendChild(a);
+                    a.click();
+                    a.remove();
+                    window.URL.revokeObjectURL(url);
+                    showToast("ดาวน์โหลดไฟล์ PDF สำเร็จ", "success");
+                }
             } catch (error) {
                 console.error(error);
                 showToast("ไม่สามารถสร้าง PDF ได้: " + error.message, "error");
@@ -1011,8 +1028,19 @@
         };
 
         document.getElementById('btn-download-pdf')?.addEventListener('click', () => {
-            if (currentApprovalDocData) window.generatePDF(currentApprovalDocData);
+            if (currentApprovalDocData) window.generatePDF(currentApprovalDocData, 'download');
             else showToast("ไม่สามารถสร้าง PDF ได้ในขณะนี้ ข้อมูลไม่สมบูรณ์", "error");
+        });
+
+        document.getElementById('btn-preview-pdf')?.addEventListener('click', () => {
+            if (currentApprovalDocData) window.generatePDF(currentApprovalDocData, 'preview');
+            else showToast("ไม่สามารถดึงพรีวิวได้ ข้อมูลไม่สมบูรณ์", "error");
+        });
+
+        document.querySelector('.btn-close-preview')?.addEventListener('click', () => {
+            document.getElementById('pdf-preview-modal').classList.add('hidden');
+            // คืนหน่วยความจำและเคลียร์ iframe เมื่อปิด
+            setTimeout(() => { document.getElementById('pdf-preview-frame').src = ''; }, 300);
         });
 
         // ==================== Auth & Security Logic ====================
