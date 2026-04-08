@@ -1450,7 +1450,7 @@
 
             const newDoc = {
                 requesterName: document.getElementById('doc-requester-name')?.value || '',
-                requesterEmail: currentUser?.email || '',
+                requesterEmail: (currentUser?.email || '').toLowerCase().trim(),
                 type: document.getElementById('doc-type')?.value || '',
                 date: document.getElementById('doc-date')?.value || '',
                 
@@ -1469,7 +1469,7 @@
                 newTests: getArrayValues('new-test-name[]').map((name, i) => ({ name, code: getArrayValues('new-test-code[]')[i] || '' })),
                 description: document.getElementById('doc-description')?.value || '',
                 
-                approverEmail: approverSelect?.value || '',
+                approverEmail: (approverSelect?.value || '').toLowerCase().trim(),
                 approverName: approverNameOnly,
                 status: statusType, // รับค่า status ('draft' หรือ 'pending')
                 token: crypto.randomUUID(),
@@ -1581,15 +1581,16 @@
             let qConstraints = [where('isDeleted', '==', false)];
             
             if (!userRoles.includes('admin')) {
+                const safeUserEmail = (currentUser?.email || '').toLowerCase().trim();
                 if (userRoles.includes('approver') && userRoles.includes('user')) {
                     qConstraints.push(or(
-                        where('requesterEmail', '==', currentUser.email), 
-                        where('approverEmail', '==', currentUser.email)
+                        where('requesterEmail', '==', safeUserEmail), 
+                        where('approverEmail', '==', safeUserEmail)
                     ));
                 } else if (userRoles.includes('approver')) {
-                    qConstraints.push(where('approverEmail', '==', currentUser.email));
+                    qConstraints.push(where('approverEmail', '==', safeUserEmail));
                 } else {
-                    qConstraints.push(where('requesterEmail', '==', currentUser.email));
+                    qConstraints.push(where('requesterEmail', '==', safeUserEmail));
                 }
             }
 
@@ -1648,7 +1649,10 @@
                     // เปลี่ยนจากลิงก์ <a> เป็นปุ่ม <button> เพื่อรองรับ SPA Routing
                     let actionHtml = `<button class="btn btn-outline btn-view-doc" data-id="${d.id}" data-token="${d.token}" style="padding: 0.35rem 0.75rem; font-size: 0.85rem;"><i class="ri-eye-line"></i> ดูข้อมูล</button>`;
                     
-                    if (userRoles.includes('approver') && d.status === 'pending' && currentUser.email === d.approverEmail) {
+                    const safeUserEmail = (currentUser?.email || '').toLowerCase().trim();
+                    const safeApproverEmail = (d.approverEmail || '').toLowerCase().trim();
+                    
+                    if (userRoles.includes('approver') && d.status === 'pending' && safeUserEmail === safeApproverEmail) {
                         actionHtml = `<button class="btn btn-primary btn-view-doc" data-id="${d.id}" data-token="${d.token}" style="padding: 0.35rem 0.75rem; font-size: 0.85rem;"><i class="ri-edit-box-line"></i> พิจารณา</button>`;
                     }
 
@@ -1775,7 +1779,7 @@
                         actionsDiv?.classList.add('hidden');
                         logMsg?.classList.remove('hidden');
                     }
-                } else if (currentUser.email !== docData.approverEmail && !userRoles.includes('admin')) {
+                } else if ((currentUser?.email || '').toLowerCase().trim() !== (docData.approverEmail || '').toLowerCase().trim() && !userRoles.includes('admin')) {
                     actionsDiv?.classList.add('hidden');
                     logMsg?.classList.remove('hidden');
                     if (logMsg) logMsg.innerHTML = `<i class="ri-shield-keyhole-line" style="color: var(--danger); font-size: 1.5rem;"></i><br><span style="color: var(--danger); font-weight: 500;">ไม่อนุญาตให้เข้าถึง</span><br><span style="color: var(--text-muted); font-size: 0.9rem;">คุณไม่ได้รับสิทธิ์ให้พิจารณาเอกสารฉบับนี้</span>`;
