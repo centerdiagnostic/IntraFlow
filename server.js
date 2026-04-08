@@ -81,7 +81,7 @@ app.post('/api/export-pdf', async (req, res) => {
                 .logo { width: 85px; height: auto; }
                 .header-title { font-size: 20px; font-weight: bold; margin-bottom: 5px; }
                 .header-subtitle { 
-                    font-size: 13.5px; 
+                    font-size: 11px; 
                     margin: 0 0 2px 0; 
                     white-space: nowrap; 
                     overflow: hidden; 
