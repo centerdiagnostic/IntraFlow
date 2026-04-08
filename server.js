@@ -20,11 +20,14 @@ app.post('/api/export-pdf', async (req, res) => {
     try {
         // เพิ่มคำสั่งปิด Sandbox เพื่อให้รันบน Cloud/Linux ได้
         browser = await puppeteer.launch({ 
-            headless: 'new',
+            headless: true,
+            executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || puppeteer.executablePath(),
             args: [
                 '--no-sandbox',
                 '--disable-setuid-sandbox',
-                '--disable-dev-shm-usage'
+                '--disable-dev-shm-usage',
+                '--disable-gpu',
+                '--no-zygote'
             ]
         });
         const page = await browser.newPage();
