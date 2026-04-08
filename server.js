@@ -80,7 +80,12 @@ app.post('/api/export-pdf', async (req, res) => {
                 .logo-cell { width: 90px; padding-right: 15px; }
                 .logo { width: 85px; height: auto; }
                 .header-title { font-size: 20px; font-weight: bold; margin-bottom: 5px; }
-                .header-subtitle { font-size: 15px; margin: 0 0 2px 0; }
+                .header-subtitle { 
+                    font-size: 13.5px; 
+                    margin: 0 0 2px 0; 
+                    white-space: nowrap; 
+                    overflow: hidden; 
+                }
                 
                 .section-header { display: flex; justify-content: space-between; align-items: flex-end; margin-top: 15px; margin-bottom: 8px; }
                 .section-title { font-weight: bold; font-size: 17px; margin: 0; }
