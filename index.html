@@ -973,149 +973,27 @@
         window.generatePDF = async function(docData) {
             showLoader(true);
             try {
-                const { jsPDF } = window.jspdf;
-                const doc = new jsPDF();
-                
-                // 1. โหลดฟอนต์
-                const fetchFontAsBase64 = async (url) => {
-                    const response = await fetch(url);
-                    const buffer = await response.arrayBuffer();
-                    let binary = '';
-                    const bytes = new Uint8Array(buffer);
-                    for (let i = 0; i < bytes.byteLength; i++) { binary += String.fromCharCode(bytes[i]); }
-                    return window.btoa(binary);
-                };
-                const normalFontB64 = await fetchFontAsBase64('https://cdn.jsdelivr.net/npm/font-th-sarabun-new@1.0.0/fonts/THSarabunNew-webfont.ttf');
-                const boldFontB64 = await fetchFontAsBase64('https://cdn.jsdelivr.net/npm/font-th-sarabun-new@1.0.0/fonts/THSarabunNew_bold-webfont.ttf');
-                doc.addFileToVFS('THSarabunNew.ttf', normalFontB64);
-                doc.addFileToVFS('THSarabunNew-Bold.ttf', boldFontB64);
-                doc.addFont('THSarabunNew.ttf', 'THSarabunNew', 'normal');
-                doc.addFont('THSarabunNew-Bold.ttf', 'THSarabunNew', 'bold');
-                
-                // 2. โหลดโลโก้
-                const fetchImageAsBase64 = async (url) => {
-                    try {
-                        const response = await fetch(url);
-                        const blob = await response.blob();
-                        return new Promise((resolve) => {
-                            const reader = new FileReader();
-                            reader.onloadend = () => resolve(reader.result);
-                            reader.readAsDataURL(blob);
-                        });
-                    } catch(e) { return null; }
-                };
-                const logoB64 = await fetchImageAsBase64('https://kvdc-vetku.com/wp-content/uploads/2026/03/1.png');
+                // ปรับ URL นี้ให้ตรงกับ Endpoint Node.js Backend ของคุณ
+                const response = await fetch('http://localhost:3000/api/export-pdf', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(docData)
+                });
 
-                doc.setFont('THSarabunNew', 'normal');
-
-                // --- เริ่มวาด PDF ---
-                if(logoB64) {
-                    doc.addImage(logoB64, 'PNG', 15, 10, 20, 20); 
+                if (!response.ok) {
+                    throw new Error('การสร้าง PDF จากเซิร์ฟเวอร์ล้มเหลว');
                 }
-                
-                doc.setFontSize(20);
-                doc.text("แบบฟอร์มคำขอยกเลิกรายการทดสอบ (Cancel Test)", 40, 20);
-                doc.setFontSize(14);
-                doc.text(`เลขที่คำร้อง AR: ${docData.arNumber || '............................'}`, 195, 20, { align: 'right' });
-                
-                doc.setLineWidth(0.5);
-                doc.line(15, 28, 195, 28);
-                
-                doc.setFontSize(12);
-                doc.text("หน่วยงานชันสูตรโรคสัตว์ กำแพงแสน ศูนย์วิจัยและบริการวิชาการทางสัตวแพทย์ คณะสัตวแพทยศาสตร์ มหาวิทยาลัยเกษตรศาสตร์ วิทยาเขตกำแพงแสน", 15, 33);
-                doc.text("Kamphaengsaen Veterinary Diagnostic Center, Faculty of Veterinary Medicine, Kasetsart University", 15, 38);
-                
-                let startY = 48;
-                const lineH = 7; 
-                
-                doc.setFontSize(15);
-                doc.setFont('THSarabunNew', 'bold');
-                doc.text("1. รายการทดสอบที่ต้องการขอยกเลิก", 15, startY);
-                doc.setFont('THSarabunNew', 'normal');
-                startY += lineH;
-                
-                const labelX = 15;
-                const colonX = 45;
-                const dataX = 48;
-                
-                doc.text("วันที่ส่งตัวอย่าง", labelX, startY); doc.text(":", colonX, startY); doc.text(`${docData.receiveDate || '...........................................'}`, dataX, startY); startY += lineH;
-                doc.text("ห้องปฏิบัติการ", labelX, startY); doc.text(":", colonX, startY); doc.text(`${docData.labRoom || '...........................................'}`, dataX, startY); startY += lineH;
-                doc.text("หมายเลข folder", labelX, startY); doc.text(":", colonX, startY); doc.text(`${docData.folderNumber || '...........................................'}`, dataX, startY); startY += lineH;
-                doc.text("เลขที่ใบเสร็จรับเงิน", labelX, startY); doc.text(":", colonX, startY); doc.text(`${docData.receiptNumber || '...........................................'}`, dataX, startY); startY += lineH;
-                doc.text("เลขที่ใบแจ้งหนี้", labelX, startY); doc.text(":", colonX, startY); doc.text(`${docData.invoiceNumber || '...........................................'}`, dataX, startY); startY += lineH;
-                
-                startY += 6;
-                doc.setFont('THSarabunNew', 'bold');
-                doc.text("2. เหตุผลในการยกเลิกรายการทดสอบ", 15, startY);
-                doc.setFont('THSarabunNew', 'normal');
-                startY += lineH;
-                
-                const drawCheck = (y, isChecked) => {
-                    doc.rect(15, y - 4, 4, 4);
-                    if(isChecked) doc.text("/", 15.5, y);
-                };
-                
-                drawCheck(startY, docData.cancelReason === 'ลูกค้าขอยกเลิก');
-                doc.text("ลูกค้าขอยกเลิก", 22, startY); startY += lineH;
-                
-                drawCheck(startY, docData.cancelReason === 'ตัวอย่างไม่สมบูรณ์ / ไม่เป็นไปตามเกณฑ์');
-                doc.text("ตัวอย่างไม่สมบูรณ์ / ไม่เป็นไปตามเกณฑ์", 22, startY); startY += lineH;
-                
-                drawCheck(startY, docData.cancelReason === 'ข้อมูลตัวอย่างไม่ถูกต้อง');
-                doc.text("ข้อมูลตัวอย่างไม่ถูกต้อง", 22, startY); startY += lineH;
-                
-                drawCheck(startY, docData.cancelReason === 'ทดสอบซ้ำ / รายการซ้ำ');
-                doc.text("ทดสอบซ้ำ / รายการซ้ำ", 22, startY); startY += lineH;
-                
-                drawCheck(startY, docData.cancelReason === 'อื่นๆ');
-                let otherTxt = docData.cancelReason === 'อื่นๆ' ? (docData.cancelReasonOther || '.............................................') : '.............................................';
-                doc.text(`อื่น ๆ (ระบุ) : ${otherTxt}`, 22, startY); 
-                startY += lineH;
-                doc.text(`รายละเอียดเพิ่มเติม : ${docData.description || '-'}`, 15, startY);
-                
-                startY += 8;
-                doc.setFont('THSarabunNew', 'bold');
-                doc.text("3. โดยขอให้แก้ไขรายละเอียดดังนี้", 15, startY);
-                doc.setFont('THSarabunNew', 'normal');
-                startY += lineH;
-                
-                drawCheck(startY, docData.cancelTestName);
-                doc.text(`ชื่อรายการทดสอบที่ยกเลิก : ${docData.cancelTestName || '..........................................'}    test code : ${docData.cancelTestCode || '....................'}`, 22, startY);
-                startY += lineH;
-                drawCheck(startY, docData.newTestName);
-                doc.text(`ชื่อรายการทดสอบที่เพิ่มใหม่ : ${docData.newTestName || '..........................................'}   test code : ${docData.newTestCode || '....................'}`, 22, startY);
-                
-                startY += 15;
-                doc.text(`ลงชื่อ ................................................................ ผู้เสนอขอยกเลิก`, 105, startY);
-                doc.text(`( ${docData.requesterName || '........................................'} )`, 140, startY + lineH, { align: 'center' });
-                doc.text(`วันที่ขอแก้ไข ......../......../........`, 140, startY + (lineH*2), { align: 'center' });
-                
-                startY += 25; 
-                doc.setFont('THSarabunNew', 'bold');
-                doc.text("4. ผู้อนุมัติ", 15, startY);
-                doc.text("5. บันทึกข้อมูลลงระบบบัญชีเรียบร้อยแล้ว", 105, startY);
-                doc.setFont('THSarabunNew', 'normal');
-                startY += lineH;
-                
-                doc.rect(15, startY-4, 4, 4); 
-                doc.text("อนุมัติให้ดำเนินการได้", 22, startY);
-                startY += lineH;
-                doc.rect(15, startY-4, 4, 4); 
-                doc.text("ไม่อนุมัติให้ดำเนินการ เนื่องจาก ..........................................................................................", 22, startY);
-                
-                startY += 15;
-                doc.text(`ลงชื่อ ................................................................`, 15, startY);
-                doc.text(`( ${docData.approverName || '........................................................'} )`, 45, startY + lineH, { align: 'center' });
-                doc.text(`ผู้อำนวยการศูนย์ชันสูตรโรคสัตว์ กำแพงแสน`, 45, startY + (lineH*2), { align: 'center' });
-                doc.text(`วันที่ ......../......../........`, 45, startY + (lineH*3), { align: 'center' });
-                
-                doc.text(`ลงชื่อ ................................................................`, 115, startY);
-                doc.text(`( ................................................................. )`, 145, startY + lineH, { align: 'center' });
-                doc.text(`นักวิชาการเงินและบัญชี`, 145, startY + (lineH*2), { align: 'center' });
-                doc.text(`วันที่ ......../......../........`, 145, startY + (lineH*3), { align: 'center' });
 
-                doc.save(`Cancel_Test_${docData.arNumber || Date.now()}.pdf`);
-                showToast("สร้างไฟล์ PDF สำเร็จ", "success");
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `Cancel_Test_${docData.arNumber || Date.now()}.pdf`;
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                window.URL.revokeObjectURL(url);
+                showToast("ดาวน์โหลดไฟล์ PDF สำเร็จ", "success");
             } catch (error) {
                 console.error(error);
                 showToast("ไม่สามารถสร้าง PDF ได้: " + error.message, "error");
@@ -2061,10 +1939,18 @@
             if (!confirm(`ยืนยันว่าคุณได้ดำเนินการตามเอกสารนี้เรียบร้อยแล้ว?`)) return;
             showLoader(true);
             try {
+                // ดึงชื่อแอดมินจาก collection users เพื่อไปบันทึกใน documents
+                let currentAdminName = currentUser.email;
+                const userDocSnap = await getDoc(doc(db, 'users', currentUser.uid));
+                if (userDocSnap.exists() && userDocSnap.data().displayName) {
+                    currentAdminName = userDocSnap.data().displayName;
+                }
+
                 await updateDoc(doc(db, 'documents', targetDocId), {
                     isProcessed: true,
                     processedAt: serverTimestamp(),
-                    processedBy: currentUser.email
+                    processedBy: currentUser.email,
+                    processedByName: currentAdminName // ส่งชื่อนี้ไปให้ server.js ใช้สร้าง PDF
                 });
 
                 await logSystemAction(`PROCESS_DOC_${targetDocId}`, currentUser.email, 'ADMIN_PROCESSED');
