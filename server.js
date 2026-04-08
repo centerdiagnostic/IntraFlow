@@ -11,7 +11,9 @@ app.use(cors({
     methods: ['GET', 'POST', 'OPTIONS', 'PUT', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization', 'Accept']
 }));
-app.use(express.json());
+// ขยาย limit เป็น 50mb เพื่อรองรับการส่งภาพลายเซ็น Base64 ขนาดใหญ่
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 app.post('/api/export-pdf', async (req, res) => {
     const docData = req.body;
