@@ -54,7 +54,10 @@ app.post('/api/export-pdf', async (req, res) => {
         const procDate = parseDate(docData.processedAt);
 
         const renderSign = (sigBase64, name) => {
-            if (sigBase64) return `<img src="${sigBase64}" style="max-height: 40px; max-width: 180px; vertical-align: bottom; margin: 0 5px;">`;
+            // ปรับขนาดใหม่: บังคับกล่องขนาด กว้าง 180px สูง 70px (ใหญ่ขึ้นเกือบ 2 เท่า)
+            // ใช้ object-fit: contain เพื่อให้ลายเซ็นจัดกึ่งกลางและไม่บิดเบี้ยว ไม่ว่าจะอัปโหลดขนาดไหนมา
+            // ปรับ margin เพื่อให้ลายเซ็นวางทับเส้นประได้สวยงาม
+            if (sigBase64) return `<img src="${sigBase64}" style="width: 180px; height: 70px; object-fit: contain; vertical-align: bottom; margin: -10px 5px 0 5px;">`;
             return `<span class="sign-line" style="color: #000;">${name || ''}</span>`;
         };
         const reqSignHtml = renderSign(docData.requesterSignature, docData.requesterName);
