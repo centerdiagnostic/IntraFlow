@@ -863,6 +863,7 @@
                         <label style="display: flex; align-items: center; gap: 0.5rem; margin: 0; cursor: pointer; color: var(--text-main);"><input type="checkbox" name="admin-user-roles" value="user" style="width: 18px; height: 18px;"> พนักงานทั่วไป (User)</label>
                         <label style="display: flex; align-items: center; gap: 0.5rem; margin: 0; cursor: pointer; color: var(--text-main);"><input type="checkbox" name="admin-user-roles" value="approver" style="width: 18px; height: 18px;"> ผู้อนุมัติ (Approver)</label>
                         <label style="display: flex; align-items: center; gap: 0.5rem; margin: 0; cursor: pointer; color: var(--text-main);"><input type="checkbox" name="admin-user-roles" value="admin" style="width: 18px; height: 18px;"> ผู้ดูแลระบบ (Admin)</label>
+                        <label style="display: flex; align-items: center; gap: 0.5rem; margin: 0; cursor: pointer; color: var(--text-main);"><input type="checkbox" name="admin-user-roles" value="responder" style="width: 18px; height: 18px;"> เจ้าหน้าที่ตอบผล (Responder)</label>
                     </div>
                 </div>
                 <div style="display: flex; gap: 1rem;">
@@ -1147,7 +1148,7 @@
             const infoDispEl = document.getElementById('user-info-display');
             if (infoDispEl) infoDispEl.innerText = displayName || user.email;
 
-            const roleNames = { 'admin': 'ผู้ดูแลระบบ', 'approver': 'ผู้อนุมัติ', 'user': 'พนักงาน' };
+            const roleNames = { 'admin': 'ผู้ดูแลระบบ', 'approver': 'ผู้อนุมัติ', 'user': 'พนักงาน', 'responder': 'เจ้าหน้าที่ตอบผล' };
             const rolesText = roles.map(r => roleNames[r] || r).join(', ');
             const roleBadgeEl = document.getElementById('user-role-badge');
             if (roleBadgeEl) roleBadgeEl.innerHTML = `<i class="ri-shield-user-line"></i> ${rolesText || 'พนักงาน'}`;
@@ -1442,7 +1443,7 @@
                 snapshot.forEach(docSnap => {
                     const data = docSnap.data();
                     const userRolesArray = data.roles || (data.role ? [data.role] : ['user']);
-                    const roleNames = { 'admin': 'ผู้ดูแลระบบ', 'approver': 'ผู้อนุมัติ', 'user': 'พนักงาน' };
+                    const roleNames = { 'admin': 'ผู้ดูแลระบบ', 'approver': 'ผู้อนุมัติ', 'user': 'พนักงาน', 'responder': 'เจ้าหน้าที่ตอบผล' };
                     const roleText = userRolesArray.map(r => roleNames[r] || r).join(', ');
                     
                     // จัดการสถานะการใช้งาน (ถ้าไม่มีค่าให้ถือว่าเปิดใช้งาน)
@@ -1627,20 +1628,20 @@
                     
                     await sendIntraFlowEmail(newDoc.approverEmail, emailSubject, emailMessage, approvalUrl);
 
-                    // 1. ส่งอีเมลหา Admin ที่เปิดใช้งานทุกคนเมื่อยื่นเอกสาร
+                    // 1. ส่งอีเมลหา Admin และ เจ้าหน้าที่ตอบผล ที่เปิดใช้งานทุกคนเมื่อยื่นเอกสาร
                     try {
                         const adminSnapshot = await getDocs(collection(db, 'users'));
-                        const adminSubject = `[IntraFlow] แจ้งเตือนแอดมิน: มีเอกสารใหม่รออนุมัติ (${newDoc.type})`;
-                        const adminMsg = `ระบบได้รับเอกสารใหม่\nผู้ขอ: ${newDoc.requesterName}\nประเภท: ${newDoc.type}\nส่งถึงผู้อนุมัติ: ${newDoc.approverName}\n\nกรุณาตรวจสอบในระบบ`;
+                        const notifySubject = `[IntraFlow] แจ้งเตือน: มีเอกสารใหม่เข้าระบบ (${newDoc.type})`;
+                        const notifyMsg = `ระบบได้รับเอกสารใหม่\nผู้ขอ: ${newDoc.requesterName}\nประเภท: ${newDoc.type}\nส่งถึงผู้อนุมัติ: ${newDoc.approverName}\n\nกรุณาตรวจสอบในระบบ`;
                         
                         adminSnapshot.forEach(async (d) => {
                             const data = d.data();
                             const userRolesArray = data.roles || (data.role ? [data.role] : []);
-                            if (userRolesArray.includes('admin') && data.isActive !== false && data.email) {
-                                await sendIntraFlowEmail(data.email, adminSubject, adminMsg, baseUrl);
+                            if ((userRolesArray.includes('admin') || userRolesArray.includes('responder')) && data.isActive !== false && data.email) {
+                                await sendIntraFlowEmail(data.email, notifySubject, notifyMsg, baseUrl);
                             }
                         });
-                    } catch (err) { console.error("Admin Email Error:", err); }
+                    } catch (err) { console.error("Notify Email Error:", err); }
                 } // ปิด if check draft
 
                 showToast(statusType === 'draft' ? 'บันทึกแบบร่างเรียบร้อย!' : 'ส่งเอกสารเข้าสู่ระบบเรียบร้อย!', 'success');
@@ -1714,7 +1715,7 @@
 
             let qConstraints = [where('isDeleted', '==', false)];
             
-            if (!userRoles.includes('admin')) {
+            if (!userRoles.includes('admin') && !userRoles.includes('responder')) {
                 const safeUserEmail = (currentUser?.email || '').toLowerCase().trim();
                 if (userRoles.includes('approver') && userRoles.includes('user')) {
                     qConstraints.push(or(
@@ -1913,16 +1914,19 @@
                         actionsDiv?.classList.add('hidden');
                         logMsg?.classList.remove('hidden');
                     }
-                } else if ((currentUser?.email || '').toLowerCase().trim() !== (docData.approverEmail || '').toLowerCase().trim() && !userRoles.includes('admin')) {
-                    actionsDiv?.classList.add('hidden');
-                    logMsg?.classList.remove('hidden');
-                    if (logMsg) logMsg.innerHTML = `<i class="ri-shield-keyhole-line" style="color: var(--danger); font-size: 1.5rem;"></i><br><span style="color: var(--danger); font-weight: 500;">ไม่อนุญาตให้เข้าถึง</span><br><span style="color: var(--text-muted); font-size: 0.9rem;">คุณไม่ได้รับสิทธิ์ให้พิจารณาเอกสารฉบับนี้</span>`;
-                } else {
+                } else if ((currentUser?.email || '').toLowerCase().trim() === (docData.approverEmail || '').toLowerCase().trim()) {
                     actionsDiv?.classList.remove('hidden');
                     document.getElementById('btn-do-approve')?.classList.remove('hidden');
                     document.getElementById('btn-do-reject')?.classList.remove('hidden');
                     document.getElementById('btn-do-process')?.classList.add('hidden');
                     logMsg?.classList.add('hidden');
+                } else if (userRoles.includes('admin') || userRoles.includes('responder')) {
+                    actionsDiv?.classList.add('hidden');
+                    logMsg?.classList.add('hidden');
+                } else {
+                    actionsDiv?.classList.add('hidden');
+                    logMsg?.classList.remove('hidden');
+                    if (logMsg) logMsg.innerHTML = `<i class="ri-shield-keyhole-line" style="color: var(--danger); font-size: 1.5rem;"></i><br><span style="color: var(--danger); font-weight: 500;">ไม่อนุญาตให้เข้าถึง</span><br><span style="color: var(--text-muted); font-size: 0.9rem;">คุณไม่ได้รับสิทธิ์ให้เข้าถึงเอกสารฉบับนี้</span>`;
                 }
             } catch (error) {
                 const contentEl = document.getElementById('approval-content');
