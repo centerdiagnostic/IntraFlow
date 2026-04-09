@@ -670,6 +670,12 @@
                                 </div>
                             </div>
 
+                            <div class="form-group" style="background: var(--background); padding: 1.5rem; border-radius: var(--radius-md); border: 1px solid var(--border); margin-bottom: 1.5rem;">
+                                <label style="font-size: 1rem; color: var(--text-main); margin-bottom: 0.5rem;"><i class="ri-attachment-2"></i> แนบไฟล์เอกสารเพิ่มเติม</label>
+                                <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem;">รองรับไฟล์ PDF, JPG, PNG ขนาดไม่เกิน 5MB</p>
+                                <input type="file" id="doc-attachment" accept=".pdf, image/jpeg, image/png" style="padding: 0.5rem; background: var(--surface);">
+                            </div>
+
                             <div class="form-group">
                                 <label>รายละเอียดเพิ่มเติม / หมายเหตุ</label>
                                 <textarea id="doc-description" rows="3" placeholder="ระบุเหตุผลและรายละเอียดเพิ่มเติมให้ชัดเจน..."></textarea>
@@ -924,6 +930,28 @@
         let unsubscribeDocs = null;
         let currentApprovalDocData = null;
         let currentSignatureBase64 = "";
+        let currentAttachmentBase64 = "";
+
+        // ตรวจสอบขนาดไฟล์แนบและแปลงเป็น Base64
+        document.getElementById('doc-attachment')?.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const maxSize = 5 * 1024 * 1024; // จำกัดขนาดที่ 5MB
+                if (file.size > maxSize) {
+                    showToast('ไฟล์มีขนาดใหญ่เกินไป (จำกัดไม่เกิน 5MB)', 'error');
+                    e.target.value = ""; // เคลียร์ค่า input
+                    currentAttachmentBase64 = "";
+                    return;
+                }
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    currentAttachmentBase64 = event.target.result;
+                };
+                reader.readAsDataURL(file);
+            } else {
+                currentAttachmentBase64 = "";
+            }
+        });
 
         document.getElementById('admin-user-signature')?.addEventListener('change', function(e) {
             const file = e.target.files[0];
@@ -1572,6 +1600,7 @@
                 cancelTests: getArrayValues('cancel-test-name[]').map((name, i) => ({ name, code: getArrayValues('cancel-test-code[]')[i] || '' })),
                 newTests: getArrayValues('new-test-name[]').map((name, i) => ({ name, code: getArrayValues('new-test-code[]')[i] || '' })),
                 description: document.getElementById('doc-description')?.value || '',
+                attachmentBase64: currentAttachmentBase64,
                 
                 approverEmail: (approverSelect?.value || '').toLowerCase().trim(),
                 approverName: approverNameOnly,
@@ -1617,6 +1646,7 @@
                 showToast(statusType === 'draft' ? 'บันทึกแบบร่างเรียบร้อย!' : 'ส่งเอกสารเข้าสู่ระบบเรียบร้อย!', 'success');
                 document.getElementById('submit-doc-form').reset();
                 document.getElementById('other-reason-container').classList.add('hidden');
+                currentAttachmentBase64 = ""; // เคลียร์ไฟล์แนบหลังจากส่งข้อมูล
                 switchTab('list');
             } catch (error) {
                 showToast('ไม่สามารถบันทึกได้: ' + error.message, 'error');
