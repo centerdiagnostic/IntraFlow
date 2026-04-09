@@ -1632,7 +1632,7 @@
                     try {
                         const adminSnapshot = await getDocs(collection(db, 'users'));
                         const notifySubject = `[IntraFlow] แจ้งเตือน: มีเอกสารใหม่เข้าระบบ (${newDoc.type})`;
-                        const notifyMsg = `ระบบได้รับเอกสารใหม่\nผู้ขอ: ${newDoc.requesterName}\nประเภท: ${newDoc.type}\nส่งถึงผู้อนุมัติ: ${newDoc.approverName}\n\nกรุณาตรวจสอบในระบบ`;
+                        const notifyMsg = `ระบบได้รับเอกสารใหม่\nผู้ขอ: ${newDoc.requesterName}\nประเภท: ${newDoc.type}\nห้องปฏิบัติการ: ${newDoc.labRoom || '-'}\nหมายเลข Folder: ${newDoc.folderNumber || '-'}\nเลขที่ใบเสร็จรับเงิน: ${newDoc.receiptNumber || '-'}\nเลขที่ใบแจ้งหนี้: ${newDoc.invoiceNumber || '-'}\nส่งถึงผู้อนุมัติ: ${newDoc.approverName}\n\nกรุณาตรวจสอบในระบบ`;
                         
                         adminSnapshot.forEach(async (d) => {
                             const data = d.data();
