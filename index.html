@@ -1230,16 +1230,15 @@
                 await updateDoc(doc(db, 'users', currentUser.uid), { firstLogin: false });
                 
                 let userDisplayName = currentUser.email;
+                let currentUserRoles = ['user'];
                 const userDocSnap = await getDoc(doc(db, 'users', currentUser.uid));
                 if (userDocSnap.exists()) {
-                    userRole = userDocSnap.data().role || 'user';
+                    currentUserRoles = userDocSnap.data().roles || (userDocSnap.data().role ? [userDocSnap.data().role] : ['user']);
                     if (userDocSnap.data().displayName) userDisplayName = userDocSnap.data().displayName;
-                } else {
-                    userRole = 'user';
                 }
                 
                 showToast('ตั้งรหัสผ่านใหม่เรียบร้อยแล้ว ยินดีต้อนรับสู่ระบบ', 'success');
-                enterMainApp(currentUser, userRole, userDisplayName);
+                enterMainApp(currentUser, currentUserRoles, userDisplayName);
             } catch (error) {
                 showToast('อัปเดตรหัสผ่านล้มเหลว: ' + error.message, 'error');
             } finally {
