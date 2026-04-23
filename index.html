@@ -532,34 +532,52 @@
 
                     <div class="card">
                         <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem;">
-                            <h3><i class="ri-folder-open-line mr-2"></i> เอกสารในระบบ</h3>
-                            <div style="display: flex; align-items: center; gap: 0.5rem;">
-                                <label style="margin: 0; font-size: 0.9rem;"><i class="ri-filter-3-line"></i> กรองสถานะ:</label>
-                                <select id="filter-status" style="width: auto; padding: 0.5rem 1rem; border-radius: 999px;">
-                                    <option value="all">ทั้งหมด</option>
-                                    <option value="pending">รออนุมัติ</option>
-                                    <option value="approved">อนุมัติแล้ว</option>
-                                    <option value="rejected">ไม่อนุมัติ</option>
-                                </select>
+                                <h3><i class="ri-folder-open-line mr-2"></i> เอกสารในระบบ</h3>
+                                <div style="display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;">
+                                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                        <label style="margin: 0; font-size: 0.9rem;"><i class="ri-list-ordered"></i> แสดง:</label>
+                                        <select id="rows-per-page" style="width: auto; padding: 0.5rem; border-radius: var(--radius-md); outline: none; border: 1px solid var(--border);">
+                                            <option value="10">10 รายการ</option>
+                                            <option value="20">20 รายการ</option>
+                                            <option value="30">30 รายการ</option>
+                                            <option value="50">50 รายการ</option>
+                                        </select>
+                                    </div>
+                                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                        <label style="margin: 0; font-size: 0.9rem;"><i class="ri-filter-3-line"></i> กรองสถานะ:</label>
+                                        <select id="filter-status" style="width: auto; padding: 0.5rem 1rem; border-radius: 999px;">
+                                            <option value="all">ทั้งหมด</option>
+                                            <option value="pending">รออนุมัติ</option>
+                                            <option value="approved">อนุมัติแล้ว</option>
+                                            <option value="rejected">ไม่อนุมัติ</option>
+                                            <option value="draft">แบบร่าง</option>
+                                        </select>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                        <div class="table-container">
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th>วันที่สร้าง</th>
-                                        <th style="white-space: nowrap;">ผู้ขออนุมัติ</th>
-                                        <th style="white-space: nowrap;">ผู้อนุมัติ</th>
-                                        <th>สถานะ</th>
-                                        <th style="text-align: center; white-space: nowrap;">แอดมินดำเนินการ</th>
-                                        <th style="text-align: right;">จัดการ</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="document-table-body">
-                                    <!-- สร้างแถวข้อมูลด้วย JavaScript -->
-                                </tbody>
-                            </table>
-                        </div>
+                            <div class="table-container">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>วันที่สร้าง</th>
+                                            <th style="white-space: nowrap;">ผู้ขออนุมัติ</th>
+                                            <th style="white-space: nowrap;">ผู้อนุมัติ</th>
+                                            <th>สถานะ</th>
+                                            <th style="text-align: center; white-space: nowrap;">แอดมินดำเนินการ</th>
+                                            <th style="text-align: right;">จัดการ</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="document-table-body">
+                                        </tbody>
+                                </table>
+                            </div>
+                            <div id="pagination-controls" style="display: flex; justify-content: space-between; align-items: center; margin-top: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+                                <div style="font-size: 0.9rem; color: var(--text-muted);" id="pagination-info">กำลังโหลดข้อมูล...</div>
+                                <div style="display: flex; gap: 0.5rem;">
+                                    <button id="btn-prev-page" class="btn btn-outline" style="padding: 0.35rem 0.85rem;"><i class="ri-arrow-left-s-line"></i> ก่อนหน้า</button>
+                                    <button id="btn-next-page" class="btn btn-outline" style="padding: 0.35rem 0.85rem;">ถัดไป <i class="ri-arrow-right-s-line"></i></button>
+                                </div>
+                            </div>
                     </div>
                 </div>
 
@@ -724,10 +742,27 @@
                                     </select>
                                 </div>
                             </div>
-                            <button type="button" id="btn-export-excel" class="btn btn-success w-100"><i class="ri-download-2-line"></i> ดาวน์โหลดไฟล์ Excel</button>
+                            <button type="button" id="btn-preview-export" class="btn btn-primary w-100"><i class="ri-search-eye-line"></i> ดูตัวอย่างข้อมูล</button>
                         </form>
+                        
+                        <div id="export-preview-container" class="hidden mt-6 animate-fade-in">
+                            <h4 class="mb-4" style="color: var(--text-main);"><i class="ri-table-line"></i> ตัวอย่างข้อมูลที่จะส่งออก (<span id="export-preview-count">0</span> รายการ)</h4>
+                            <div class="table-container mb-4" style="max-height: 400px; overflow-y: auto;">
+                                <table style="font-size: 0.85rem;">
+                                    <thead>
+                                        <tr>
+                                            <th>วันที่สร้าง</th>
+                                            <th>ผู้ขออนุมัติ</th>
+                                            <th>ประเภทเอกสาร</th>
+                                            <th>สถานะ</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="export-preview-body"></tbody>
+                                </table>
+                            </div>
+                            <button type="button" id="btn-export-excel" class="btn btn-success w-100"><i class="ri-download-2-line"></i> ยืนยันดาวน์โหลดไฟล์ Excel</button>
+                        </div>
                     </div>
-                </div>
 
                 <!-- แท็บ: Admin Dashboard -->
                 <div id="tab-admin" class="tab-content hidden animate-fade-in">
@@ -932,6 +967,11 @@
         let currentApprovalDocData = null;
         let currentSignatureBase64 = "";
         let currentAttachmentBase64 = "";
+        
+        // สำหรับ Pagination & Export
+        let globalDocsData = [];
+        let currentPage = 1;
+        let exportDataReady = [];
 
         // ตรวจสอบขนาดไฟล์แนบและแปลงเป็น Base64
         document.getElementById('doc-attachment')?.addEventListener('change', function(e) {
@@ -1351,8 +1391,81 @@
         // ฟังก์ชันดึงค่าจาก Input Array
         const getArrayValues = (name) => Array.from(document.querySelectorAll(`input[name="${name}"]`)).map(el => el.value).filter(val => val.trim() !== '');
 
-        // ฟังก์ชัน Export Excel
-        document.getElementById('btn-export-excel')?.addEventListener('click', async () => {
+        // ระบบ Pagination Rendering
+        window.renderDocumentTable = () => {
+            const tbody = document.getElementById('document-table-body');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+            
+            const rowsPerPage = parseInt(document.getElementById('rows-per-page')?.value || 10);
+            const totalDocs = globalDocsData.length;
+            const totalPages = Math.ceil(totalDocs / rowsPerPage) || 1;
+            
+            if (currentPage > totalPages) currentPage = totalPages;
+            if (currentPage < 1) currentPage = 1;
+            
+            const startIdx = (currentPage - 1) * rowsPerPage;
+            const endIdx = startIdx + rowsPerPage;
+            const currentDocs = globalDocsData.slice(startIdx, endIdx);
+            
+            const pageInfo = document.getElementById('pagination-info');
+            if (pageInfo) {
+                pageInfo.innerText = `แสดง ${totalDocs === 0 ? 0 : startIdx + 1} - ${Math.min(endIdx, totalDocs)} จากทั้งหมด ${totalDocs} รายการ`;
+            }
+            
+            const btnPrev = document.getElementById('btn-prev-page');
+            const btnNext = document.getElementById('btn-next-page');
+            if (btnPrev) btnPrev.disabled = currentPage === 1 || totalDocs === 0;
+            if (btnNext) btnNext.disabled = currentPage === totalPages || totalDocs === 0;
+
+            if (currentDocs.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted" style="padding: 3rem;"><i class="ri-inbox-2-line" style="font-size: 2rem; display: block; margin-bottom: 0.5rem;"></i> ไม่มีเอกสารในระบบ</td></tr>';
+                return;
+            }
+
+            currentDocs.forEach(d => {
+                const tr = document.createElement('tr');
+                let actionHtml = `<button class="btn btn-outline btn-view-doc" data-id="${d.id}" data-token="${d.token}" style="padding: 0.35rem 0.65rem; font-size: 0.85rem; margin-right: 0.25rem;"><i class="ri-eye-line"></i> ดูข้อมูล</button>`;
+                
+                const safeUserEmail = (currentUser?.email || '').toLowerCase().trim();
+                const safeApproverEmail = (d.approverEmail || '').toLowerCase().trim();
+                
+                if (userRoles.includes('approver') && d.status === 'pending' && safeUserEmail === safeApproverEmail) {
+                    actionHtml = `<button class="btn btn-primary btn-view-doc" data-id="${d.id}" data-token="${d.token}" style="padding: 0.35rem 0.65rem; font-size: 0.85rem; margin-right: 0.25rem;"><i class="ri-edit-box-line"></i> พิจารณา</button>`;
+                }
+
+                // สิทธิ์การลบ: แอดมินลบได้หมด, User ลบได้เฉพาะ Draft ตัวเอง
+                if (userRoles.includes('admin') || (d.status === 'draft' && safeUserEmail === (d.requesterEmail || '').toLowerCase().trim())) {
+                    actionHtml += `<button class="btn btn-outline btn-delete-doc" data-id="${d.id}" style="padding: 0.35rem 0.5rem; font-size: 0.85rem; border-color: var(--danger); color: var(--danger);"><i class="ri-delete-bin-line"></i></button>`;
+                }
+
+                let adminCheckboxHtml = `<span style="color: var(--text-muted); font-size: 0.85rem; display: flex; justify-content: center;">-</span>`;
+                if (d.status === 'approved') {
+                    let isChecked = d.isProcessed ? 'checked' : '';
+                    adminCheckboxHtml = `
+                        <div style="display: flex; justify-content: center; align-items: center; height: 100%;">
+                            <input type="checkbox" disabled ${isChecked} style="width: 18px; height: 18px; accent-color: var(--primary); cursor: not-allowed; opacity: 1;">
+                        </div>
+                    `;
+                }
+
+                tr.innerHTML = `
+                    <td style="color: var(--text-muted); font-size: 0.85rem; white-space: nowrap; vertical-align: top;">${formatDate(d.createdAt)}</td>
+                    <td style="white-space: nowrap; vertical-align: top;">
+                        <div style="font-weight: 500;">${d.requesterName}</div>
+                        <div style="color: var(--text-muted); font-size: 0.8rem;">${d.requesterEmail}</div>
+                    </td>
+                    <td style="font-size: 0.9rem; white-space: nowrap; vertical-align: top;">${d.approverName || d.approverEmail}</td>
+                    <td style="white-space: nowrap; vertical-align: top;">${getStatusBadgeHtml(d.status)}</td>
+                    <td style="vertical-align: top;">${adminCheckboxHtml}</td>
+                    <td style="text-align: right; white-space: nowrap; vertical-align: top;">${actionHtml}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        };
+
+        // ฟังก์ชัน Export Excel (แก้ไขให้เป็น Preview และ Confirm)
+        document.getElementById('btn-preview-export')?.addEventListener('click', async () => {
             const startDate = document.getElementById('export-start-date').value;
             const endDate = document.getElementById('export-end-date').value;
             const status = document.getElementById('export-status').value;
@@ -1364,13 +1477,12 @@
                 
                 const q = query(collection(db, 'documents'), ...qConstraints);
                 const snapshot = await getDocs(q);
-                let exportData = [];
+                let tempData = [];
                 
-                snapshot.forEach(doc => {
-                    const data = doc.data();
+                snapshot.forEach(docSnap => {
+                    const data = docSnap.data();
                     const docDate = data.createdAt ? data.createdAt.toDate() : new Date();
                     
-                    // Filter By Date
                     if (startDate && new Date(startDate) > docDate) return;
                     if (endDate) {
                         let end = new Date(endDate);
@@ -1378,11 +1490,10 @@
                         if (end < docDate) return;
                     }
                     
-                    // แปลง Array เป็น String สำหรับ Excel
                     const cancelTests = (data.cancelTests || []).map(t => `${t.name} (${t.code})`).join('\n');
                     const newTests = (data.newTests || []).map(t => `${t.name} (${t.code})`).join('\n');
 
-                    exportData.push({
+                    tempData.push({
                         'วันที่สร้าง': formatDate(data.createdAt),
                         'สถานะ': data.status,
                         'ประเภทเอกสาร': data.type,
@@ -1397,23 +1508,49 @@
                     });
                 });
 
-                if(exportData.length === 0) {
+                exportDataReady = tempData;
+                const tbody = document.getElementById('export-preview-body');
+                tbody.innerHTML = '';
+                
+                if(exportDataReady.length === 0) {
                     showToast('ไม่พบข้อมูลตามเงื่อนไขที่เลือก', 'error');
-                    showLoader(false);
-                    return;
+                    document.getElementById('export-preview-container').classList.add('hidden');
+                } else {
+                    document.getElementById('export-preview-count').innerText = exportDataReady.length;
+                    exportDataReady.forEach(item => {
+                        tbody.innerHTML += `
+                            <tr>
+                                <td>${item['วันที่สร้าง']}</td>
+                                <td>${item['ผู้ขออนุมัติ']}</td>
+                                <td>${item['ประเภทเอกสาร']}</td>
+                                <td>${getStatusBadgeHtml(item['สถานะ'])}</td>
+                            </tr>
+                        `;
+                    });
+                    document.getElementById('export-preview-container').classList.remove('hidden');
                 }
+            } catch(e) {
+                showToast('เกิดข้อผิดพลาดในการเตรียมข้อมูล', 'error');
+                console.error(e);
+            }
+            showLoader(false);
+        });
 
-                const worksheet = XLSX.utils.json_to_sheet(exportData);
+        document.getElementById('btn-export-excel')?.addEventListener('click', async () => {
+            if (!exportDataReady || exportDataReady.length === 0) {
+                showToast('ไม่มีข้อมูลสำหรับ Export', 'error');
+                return;
+            }
+            try {
+                const worksheet = XLSX.utils.json_to_sheet(exportDataReady);
                 const workbook = XLSX.utils.book_new();
                 XLSX.utils.book_append_sheet(workbook, worksheet, "Documents");
                 XLSX.writeFile(workbook, `Export_Documents_${Date.now()}.xlsx`);
-                
                 showToast('ดาวน์โหลด Excel สำเร็จ', 'success');
             } catch(e) {
                 showToast('เกิดข้อผิดพลาดในการ Export', 'error');
                 console.error(e);
             }
-            showLoader(false);
         });
 
         document.getElementById('doc-cancel-reason-select')?.addEventListener('change', (e) => {
@@ -1670,9 +1807,41 @@
         });
 
         // ==================== Load Docs Logic ====================
-        document.getElementById('filter-status')?.addEventListener('change', () => loadDocuments());
+        document.getElementById('filter-status')?.addEventListener('change', () => { currentPage = 1; loadDocuments(); });
+        document.getElementById('rows-per-page')?.addEventListener('change', () => { currentPage = 1; window.renderDocumentTable(); });
+        
+        document.getElementById('btn-prev-page')?.addEventListener('click', () => {
+            if (currentPage > 1) { currentPage--; window.renderDocumentTable(); }
+        });
+        document.getElementById('btn-next-page')?.addEventListener('click', () => {
+            const rowsPerPage = parseInt(document.getElementById('rows-per-page')?.value || 10);
+            const totalPages = Math.ceil(globalDocsData.length / rowsPerPage);
+            if (currentPage < totalPages) { currentPage++; window.renderDocumentTable(); }
+        });
+
+        // ฟังก์ชันลบเอกสาร
+        window.deleteDocument = async (docId) => {
+            if(!confirm('ยืนยันการลบเอกสารนี้? (การลบจะไม่สามารถกู้คืนได้)')) return;
+            try {
+                showLoader(true);
+                await updateDoc(doc(db, 'documents', docId), { isDeleted: true });
+                showToast('ลบเอกสารเรียบร้อยแล้ว', 'success');
+            } catch (error) {
+                showToast('ไม่สามารถลบได้: ' + error.message, 'error');
+            } finally {
+                showLoader(false);
+            }
+        };
 
         document.getElementById('document-table-body')?.addEventListener('click', (e) => {
+            const deleteBtn = e.target.closest('.btn-delete-doc');
+            if (deleteBtn) {
+                e.preventDefault();
+                e.stopPropagation();
+                window.deleteDocument(deleteBtn.getAttribute('data-id'));
+                return;
+            }
+
             const btn = e.target.closest('.btn-view-doc');
             if (btn) {
                 e.preventDefault();
@@ -1773,51 +1942,8 @@
                 document.getElementById('stat-approved-bar').style.width = pApproved + '%';
                 document.getElementById('stat-rejected-bar').style.width = pRejected + '%';
 
-                if (docsData.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted" style="padding: 3rem;"><i class="ri-inbox-2-line" style="font-size: 2rem; display: block; margin-bottom: 0.5rem;"></i> ไม่มีเอกสารในระบบ</td></tr>';
-                }
-
-                docsData.forEach(d => {
-                    const tr = document.createElement('tr');
-                    
-                    // เปลี่ยนจากลิงก์ <a> เป็นปุ่ม <button> เพื่อรองรับ SPA Routing
-                    let actionHtml = `<button class="btn btn-outline btn-view-doc" data-id="${d.id}" data-token="${d.token}" style="padding: 0.35rem 0.75rem; font-size: 0.85rem;"><i class="ri-eye-line"></i> ดูข้อมูล</button>`;
-                    
-                    const safeUserEmail = (currentUser?.email || '').toLowerCase().trim();
-                    const safeApproverEmail = (d.approverEmail || '').toLowerCase().trim();
-                    
-                    if (userRoles.includes('approver') && d.status === 'pending' && safeUserEmail === safeApproverEmail) {
-                        actionHtml = `<button class="btn btn-primary btn-view-doc" data-id="${d.id}" data-token="${d.token}" style="padding: 0.35rem 0.75rem; font-size: 0.85rem;"><i class="ri-edit-box-line"></i> พิจารณา</button>`;
-                    }
-
-                    // สร้าง Checkbox สำหรับแสดงสถานะแอดมินดำเนินการ
-                    let adminCheckboxHtml = `<span style="color: var(--text-muted); font-size: 0.85rem; display: flex; justify-content: center;">-</span>`;
-                    if (d.status === 'approved') {
-                        let isChecked = d.isProcessed ? 'checked' : '';
-                        adminCheckboxHtml = `
-                            <div style="display: flex; justify-content: center; align-items: center; height: 100%;">
-                                <input type="checkbox" disabled ${isChecked} style="width: 18px; height: 18px; accent-color: var(--primary); cursor: not-allowed; opacity: 1;">
-                            </div>
-                        `;
-                    }
-
-                    tr.innerHTML = `
-                        <td style="color: var(--text-muted); font-size: 0.85rem; white-space: nowrap; vertical-align: top;">${formatDate(d.createdAt)}</td>
-                        <td style="white-space: nowrap; vertical-align: top;">
-                            <div style="font-weight: 500;">${d.requesterName}</div>
-                            <div style="color: var(--text-muted); font-size: 0.8rem;">${d.requesterEmail}</div>
-                        </td>
-                        <td style="font-size: 0.9rem; white-space: nowrap; vertical-align: top;">${d.approverName || d.approverEmail}</td>
-                        <td style="white-space: nowrap; vertical-align: top;">
-                            ${getStatusBadgeHtml(d.status)}
-                        </td>
-                        <td style="vertical-align: top;">
-                            ${adminCheckboxHtml}
-                        </td>
-                        <td style="text-align: right; white-space: nowrap; vertical-align: top;">${actionHtml}</td>
-                    `;
-                    tbody.appendChild(tr);
-                });
+                globalDocsData = docsData;
+                window.renderDocumentTable();
                 showLoader(false);
             }, (error) => {
                 showToast("พบปัญหาในการดึงข้อมูลจากเซิร์ฟเวอร์", "error");
