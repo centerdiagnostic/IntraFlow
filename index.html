@@ -459,7 +459,7 @@
             </div>
 
             <div class="nav-menu">
-                <button id="btn-admin-panel" class="btn btn-primary hidden" style="padding: 0.5rem 1rem; background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.2); color: white;">
+                <button id="tab-admin-btn" class="btn btn-primary hidden" style="padding: 0.5rem 1rem; background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.2); color: white;">
                     <i class="ri-settings-3-line"></i> Admin
                 </button>
 
@@ -763,7 +763,7 @@
                             <button type="button" id="btn-export-excel" class="btn btn-success w-100"><i class="ri-download-2-line"></i> ยืนยันดาวน์โหลดไฟล์ Excel</button>
                         </div>
                     </div>
-
+                    </div>
                 <!-- แท็บ: Admin Dashboard -->
                 <div id="tab-admin" class="tab-content hidden animate-fade-in">
                     <div id="admin-subtab-users" class="animate-fade-in">
@@ -1016,14 +1016,18 @@
         const isApprovalRoute = targetDocId && targetToken;
 
         // ==================== Utilities ====================
+        let loaderTimeout1, loaderTimeout2;
         function showLoader(show) {
             const loader = document.getElementById('global-loader');
+            if (!loader) return;
+            clearTimeout(loaderTimeout1);
+            clearTimeout(loaderTimeout2);
             if (show) {
                 loader.style.display = 'flex';
-                setTimeout(() => loader.style.opacity = '1', 10);
+                loaderTimeout1 = setTimeout(() => loader.style.opacity = '1', 10);
             } else {
                 loader.style.opacity = '0';
-                setTimeout(() => loader.style.display = 'none', 300);
+                loaderTimeout2 = setTimeout(() => loader.style.display = 'none', 300);
             }
         }
 
@@ -1194,11 +1198,9 @@
             if (roleBadgeEl) roleBadgeEl.innerHTML = `<i class="ri-shield-user-line"></i> ${rolesText || 'พนักงาน'}`;
 
             if (roles.includes('admin')) {
-                document.getElementById('btn-admin-panel')?.classList.remove('hidden');
-                document.getElementById('tab-admin-btn')?.classList.remove('hidden');
+                document.getElementById('tab-admin-btn').classList.remove('hidden');
             } else {
-                document.getElementById('btn-admin-panel')?.classList.add('hidden');
-                document.getElementById('tab-admin-btn')?.classList.add('hidden');
+                document.getElementById('tab-admin-btn').classList.add('hidden');
             }
 
             document.getElementById('auth-view')?.classList.add('hidden');
@@ -1206,10 +1208,12 @@
 
             loadApproversList(); 
 
-            if (isApprovalRoute) initApprovalView();
-            else initDashboard();
-            
-            showLoader(false);
+            if (isApprovalRoute) {
+                initApprovalView();
+            } else {
+                initDashboard();
+            }
+            // ถอด showLoader(false) ออก ป้องกัน Loading หายก่อนหน้าอนุมัติจะโหลดเสร็จ
         };
 
         onAuthStateChanged(auth, async (user) => {
@@ -1341,6 +1345,18 @@
         document.getElementById('btn-admin-panel')?.addEventListener('click', () => switchTab('admin'));
 
         function switchTab(target) {
+            // บังคับสลับกลับมาหน้า Dashboard เสมอเมื่อกดเมนูด้านบน
+            const dash = document.getElementById('dashboard-section');
+            const approvalSec = document.getElementById('approval-section');
+            if (dash) {
+                dash.classList.remove('hidden');
+                dash.style.removeProperty('display');
+            }
+            if (approvalSec) {
+                approvalSec.classList.add('hidden');
+                approvalSec.style.setProperty('display', 'none', 'important');
+            }
+
             tabs.forEach(t => {
                 const btn = document.getElementById(`tab-${t}-btn`);
                 const content = document.getElementById(`tab-${t}`);
@@ -1952,13 +1968,50 @@
         }
 
         async function initApprovalView() {
-            document.getElementById('dashboard-section')?.classList.add('hidden');
-            document.getElementById('approval-section')?.classList.remove('hidden');
+            console.log("-> เริ่มโหลดหน้าพิจารณาเอกสาร...", { targetDocId, targetToken });
+            window.scrollTo(0, 0);
+
+            if (!targetDocId) {
+                console.error("Error: ไม่พบ targetDocId สำหรับดึงข้อมูล");
+                showToast("ข้อมูลเอกสารไม่สมบูรณ์ โปรดลองใหม่อีกครั้ง", "error");
+                initDashboard();
+                return;
+            }
+
+            const dash = document.getElementById('dashboard-section');
+            if (dash) {
+                dash.classList.add('hidden');
+                dash.style.setProperty('display', 'none', 'important');
+            }
+
+            const approvalSection = document.getElementById('approval-section');
+            if (approvalSection) {
+                approvalSection.classList.remove('hidden');
+                approvalSection.style.removeProperty('display'); // ลบล้างการซ่อนที่อาจตกค้าง
+                approvalSection.style.setProperty('display', 'block', 'important');
+                approvalSection.style.setProperty('opacity', '1', 'important');
+
+                // ใส่ Loading รอไว้ในบัตรเลย 
+                const contentEl = document.getElementById('approval-content');
+                if (contentEl) {
+                    contentEl.innerHTML = `<div class="text-center" style="padding: 3rem;"><div class="loader" style="border-top-color: var(--primary); border-right-color: var(--primary); border-bottom-color: var(--primary); width: 40px; height: 40px; border-width: 4px;"></div><p class="mt-4" style="color: var(--text-muted);">กำลังเชื่อมต่อข้อมูล...</p></div>`;
+                }
+            }
+
             showLoader(true);
 
             try {
                 const docRef = doc(db, 'documents', targetDocId);
-                const docSnap = await getDoc(docRef);
+                
+                // เพิ่ม Timeout ตัดการทำงานหาก Firebase ค้างจากปัญหา Network (เช่น QUIC Error)
+                const getDocWithTimeout = (ref, timeoutMs = 15000) => {
+                    return Promise.race([
+                        getDoc(ref),
+                        new Promise((_, reject) => setTimeout(() => reject(new Error("การเชื่อมต่อใช้เวลานานเกินไป โปรดตรวจสอบสัญญาณอินเทอร์เน็ตของคุณอีกครั้ง")), timeoutMs))
+                    ]);
+                };
+                
+                const docSnap = await getDocWithTimeout(docRef, 15000);
 
                 if (!docSnap.exists()) throw new Error("ไม่พบเอกสาร หรือถูกลบไปแล้ว");
                 const docData = docSnap.data();
@@ -2056,9 +2109,13 @@
             } catch (error) {
                 const contentEl = document.getElementById('approval-content');
                 if (contentEl) contentEl.innerHTML = `
-                    <div style="text-align: center; padding: 3rem; color: var(--danger);">
-                        <i class="ri-error-warning-line" style="font-size: 3rem; margin-bottom: 1rem; display: block;"></i>
-                        <h3 style="color: var(--danger);">${error.message}</h3>
+                    <div style="text-align: center; padding: 3rem; background: var(--surface); border-radius: var(--radius-md); border: 1px solid var(--border);">
+                        <i class="ri-wifi-off-line" style="font-size: 4rem; margin-bottom: 1rem; display: block; color: var(--text-muted);"></i>
+                        <h3 style="color: var(--danger); margin-bottom: 1rem;">ดึงข้อมูลไม่สำเร็จ หรือการเชื่อมต่อล้มเหลว</h3>
+                        <p style="color: var(--text-muted); margin-bottom: 1.5rem;">${error.message}</p>
+                        <button onclick="window.location.reload()" class="btn btn-primary" style="padding: 0.75rem 2rem;">
+                            <i class="ri-refresh-line"></i> รีเฟรชหน้าจออีกครั้ง
+                        </button>
                     </div>`;
                 document.getElementById('approval-actions')?.classList.add('hidden');
             }
@@ -2237,7 +2294,14 @@
                 await logSystemAction(`PROCESS_DOC_${targetDocId}`, currentUser.email, 'ADMIN_PROCESSED');
 
                 // ส่งอีเมลแจ้งผู้ใช้งาน
-                const docSnap = await getDoc(doc(db, 'documents', targetDocId));
+               const docSnap = await getDoc(doc(db,'documents',targetDocId));
+
+                if (!docSnap.exists()) {
+                    showToast('ไม่พบข้อมูลเอกสาร', 'error');
+                    initDashboard();
+                    return;
+                }
+
                 const docData = docSnap.data();
                 const baseUrl = window.location.href.split('?')[0];
 
@@ -2252,7 +2316,10 @@
                 showLoader(false);
             }
         });
-
+            window.addEventListener('error', function(e){
+                console.error('Global Error:', e.message);
+                alert('ระบบพบข้อผิดพลาด: ' + e.message);
+        });
     </script>
 </body>
 </html>
