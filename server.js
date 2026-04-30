@@ -230,6 +230,226 @@ app.post('/api/export-pdf', async (req, res) => {
     }
 });
 
+app.post('/api/export-temp-log', async (req, res) => {
+    console.log("--> เริ่มกระบวนการสร้าง PDF อุณหภูมิ:", req.body.eq?.name);
+    const { eq, logs, thMonth, chartBase64, year, month, userMap = {} } = req.body;
+    let browser;
+    try {
+        browser = await puppeteer.launch({ 
+            headless: true,
+            executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || puppeteer.executablePath(),
+            args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage', '--disable-gpu', '--no-zygote']
+        });
+        const page = await browser.newPage();
+
+        let thDays = '';
+        for(let i=1; i<=31; i++) thDays += `<th class="col-day">${i}</th>`;
+
+        const rows = [
+            { key: 'm-val', label: 'เช้า (ค่าจริง)' },
+            { key: 'm-adj', label: 'เช้า (±ค่าแก้)' },
+            { key: 'm-user', label: 'ผู้บันทึก (เช้า)' },
+            { key: 'a-val', label: 'บ่าย (ค่าจริง)' },
+            { key: 'a-adj', label: 'บ่าย (±ค่าแก้)' },
+            { key: 'a-user', label: 'ผู้บันทึก (บ่าย)' }
+        ];
+
+        let trs = '';
+        rows.forEach(r => {
+            trs += `<tr><td class="col-label">${r.label}</td>`;
+            for(let i=1; i<=31; i++) {
+                const dateStr = `${year}-${month}-${i.toString().padStart(2, '0')}`;
+                const dailyLogs = logs.filter(l => l.dateKey === dateStr || l.timestamp.startsWith(dateStr));
+                const logMorning = dailyLogs.find(l => l.shift === 'เช้า' || (!l.shift && l.timestamp.includes('T0')));
+                const logAfternoon = dailyLogs.find(l => l.shift === 'บ่าย');
+                
+                // ฟังก์ชันช่วยดึงชื่อหรือลายเซ็น
+                const getUserDisplay = (email) => {
+                    if (!email) return '';
+                    const u = userMap[email];
+                    if (u && u.signature) return `<img src="${u.signature}" style="height: 12px; max-width: 100%; object-fit: contain;">`;
+                    if (u && u.name) return u.name.split(' ')[0]; // ถ้าไม่มีรูป เอาแค่ชื่อตัวแรก
+                    return email.split('@')[0].substring(0, 8); // เผื่อกรณีข้อมูลเก่าที่ไม่มีชื่อ
+                };
+
+                let cellVal = '';
+                if(r.key === 'm-val' && logMorning) cellVal = logMorning.value;
+                if(r.key === 'm-user' && logMorning) cellVal = getUserDisplay(logMorning.createdBy);
+                if(r.key === 'a-val' && logAfternoon) cellVal = logAfternoon.value;
+                if(r.key === 'a-user' && logAfternoon) cellVal = getUserDisplay(logAfternoon.createdBy);
+                
+                trs += `<td class="col-day">${cellVal}</td>`;
+            }
+            trs += `</tr>`;
+        });
+
+        const htmlContent = `
+        <!DOCTYPE html>
+        <html lang="th">
+        <head>
+            <meta charset="UTF-8">
+            <style>
+                @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@400;700&display=swap');
+                
+                /* ใช้ Flexbox คุมความสูงหน้ากระดาษ (98vh) เพื่อจัดการตำแหน่งของแต่ละส่วนได้อิสระ */
+                body { 
+                    font-family: 'Sarabun', sans-serif; 
+                    margin: 0;
+                    padding: 15px 20px; 
+                    box-sizing: border-box; 
+                    color: #000; 
+                    line-height: 1.2; 
+                    width: 100%; 
+                    height: 98vh; 
+                    display: flex;
+                    flex-direction: column;
+                }
+                
+                /* ส่วนหัว (Header) ตามต้นฉบับเป๊ะ */
+                .header-wrap { 
+                    display: flex; 
+                    justify-content: space-between; 
+                    border-bottom: 2px solid #000; 
+                    padding-bottom: 8px; 
+                    margin-bottom: 12px; 
+                }
+                .header-left { display: flex; align-items: flex-start; gap: 15px; }
+                .ku-logo { color: #006666; font-size: 42px; font-weight: bold; line-height: 0.8; font-family: Arial, sans-serif; letter-spacing: -1px; }
+                .header-text-container { padding-top: 2px; }
+                .title-text { font-size: 16px; font-weight: bold; margin: 0 0 4px 0; }
+                .subtitle-text { font-size: 10px; margin: 0 0 2px 0; }
+                .subtitle-eng { font-size: 9px; margin: 0; color: #333; }
+                
+                /* ส่วนข้อมูลอุปกรณ์ (Info Row) ทำเส้นจุดประเลียนแบบฟอร์ม */
+                .info-row { display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 15px; width: 100%; gap: 10px; }
+                .info-item { display: flex; align-items: flex-end; flex: 1; white-space: nowrap; }
+                .info-dot-line { border-bottom: 1px dotted #000; flex: 1; margin: 0 5px; text-align: center; font-weight: bold; padding-bottom: 1px; overflow: hidden; text-overflow: ellipsis; }
+                
+                /* ตาราง (Table) */
+                table { width: 100%; border-collapse: collapse; table-layout: fixed; margin-bottom: 10px; }
+                th, td { border: 1px solid #000; text-align: center; vertical-align: middle; padding: 2px 0; overflow: hidden; }
+                .col-label { width: 10%; text-align: left; padding-left: 4px; font-size: 9px; }
+                .col-day { width: 2.9%; font-size: 8px; font-weight: normal; }
+                
+                /* สร้างเส้นทแยงมุม วันที่/เวลา */
+                .diag-cell { position: relative; padding: 0; }
+                .diag-svg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; }
+                .diag-date { position: absolute; top: 1px; right: 2px; font-size: 8px; z-index: 2; }
+                .diag-time { position: absolute; bottom: 1px; left: 2px; font-size: 8px; z-index: 2; }
+
+                /* ส่วนกราฟ (Chart) ให้ขยายกลืนกินพื้นที่ว่างทั้งหมด (flex-grow: 1) */
+                .chart-section {
+                    flex-grow: 1; 
+                    display: flex;
+                    flex-direction: column;
+                    margin-bottom: 15px;
+                }
+                .chart-title { font-size: 11px; font-weight: bold; margin-bottom: 5px; }
+                .chart-container {
+                    flex-grow: 1;
+                    border: 1px solid #000;
+                    width: 100%;
+                    position: relative;
+                }
+                /* ให้รูปภาพเต็มพื้นที่ของ Container ที่ขยายแล้ว */
+                .chart-container img {
+                    position: absolute;
+                    top: 0; left: 0; width: 100%; height: 100%;
+                    object-fit: contain;
+                }
+
+                /* ส่วนลายเซ็นผู้ตรวจสอบ (Footer) จะถูกดันลงไปล่างสุดโดยอัตโนมัติ */
+                .footer { text-align: right; font-size: 12px; margin-right: 20px; }
+            </style>
+        </head>
+        <body>
+            <div class="header-wrap">
+                <div class="header-left">
+                    <div class="ku-logo">KU</div>
+                    <div class="header-text-container">
+                        <h1 class="title-text">บันทึกอุณหภูมิเครื่องมือ</h1>
+                        <p class="subtitle-text">หน่วยงานชันสูตรโรคสัตว์ กำแพงแสน ศูนย์วิจัยและบริการวิชาการทางสัตวแพทย์ ม.เกษตรศาสตร์ วิทยาเขตกำแพงแสน</p>
+                        <p class="subtitle-eng">Kamphaengsaen Veterinary Diagnostic Center, Faculty of Veterinary Medicine, Kasetsart University</p>
+                    </div>
+                </div>
+                <div style="font-size: 10px; align-self: flex-start;">F6.4-0603-10/Rev.01/17-08-63</div>
+            </div>
+
+            <div class="info-row">
+                <div class="info-item" style="flex: 2.5;">
+                    <span>เครื่องมือ</span>
+                    <div class="info-dot-line">${eq.name}</div>
+                </div>
+                <div class="info-item" style="flex: 1.5;">
+                    <span>รหัสเครื่องมือ</span>
+                    <div class="info-dot-line">${eq.assetNumber || '-'}</div>
+                </div>
+                <div class="info-item" style="flex: 1.5;">
+                    <span>ช่วงอุณหภูมิที่ใช้งาน</span>
+                    <div class="info-dot-line">${eq.operatingValue || '-'}</div>
+                    <span>°C</span>
+                </div>
+                <div class="info-item" style="flex: 1;">
+                    <span>ค่าแก้</span>
+                    <div class="info-dot-line">-</div>
+                </div>
+                <div class="info-item" style="flex: 1.5;">
+                    <span>ประจำเดือน</span>
+                    <div class="info-dot-line">${thMonth}</div>
+                </div>
+            </div>
+
+            <table>
+                <tr>
+                    <th class="col-label diag-cell">
+                        <svg class="diag-svg" preserveAspectRatio="none" viewBox="0 0 100 100"><line x1="0" y1="0" x2="100" y2="100" stroke="black" stroke-width="1" vector-effect="non-scaling-stroke"/></svg>
+                        <span class="diag-date">วันที่</span>
+                        <span class="diag-time">เวลา</span>
+                    </th>
+                    ${thDays}
+                </tr>
+                ${trs}
+            </table>
+
+            <div class="chart-section">
+                <div class="chart-title">อุณหภูมิ (°C)</div>
+                <div class="chart-container">
+                    ${chartBase64 ? `<img src="${chartBase64}">` : ''}
+                </div>
+            </div>
+
+            <div class="footer">
+                ผู้ตรวจสอบ ..............................................................<br><br>......../......../........
+            </div>
+        </body>
+        </html>`;
+
+        await page.setContent(htmlContent, { waitUntil: 'networkidle0' });
+        
+        console.log("--> เริ่มแปลง PDF แนวนอน...");
+        const pdfBuffer = await page.pdf({ 
+            format: 'A4',
+            landscape: true,
+            printBackground: true,
+            margin: { top: '5mm', right: '5mm', bottom: '5mm', left: '5mm' } // ลด Margin ลงเพื่อไม่ให้ตารางล้นขอบ
+        });
+
+        console.log("--> สร้าง PDF สำเร็จ ส่งกลับเป็น Base64");
+        // บังคับแปลง Uint8Array ให้เป็น Buffer ก่อนแปลง Base64 (สำคัญสำหรับ Puppeteer รุ่นใหม่)
+        const validBase64 = Buffer.from(pdfBuffer).toString('base64');
+        res.status(200).json({
+            filename: `Report_${eq.id}_${year}_${month}.pdf`,
+            pdfBase64: validBase64
+        });
+
+    } catch (error) {
+        console.error('--> Error ในการสร้าง PDF:', error);
+        res.status(500).json({ error: 'เกิดข้อผิดพลาดในการสร้างไฟล์ PDF' });
+    } finally {
+        if (browser) await browser.close();
+    }
+});
+
 app.listen(port, () => {
     console.log(`Backend Server รันสำเร็จแล้วที่ http://localhost:${port}`);
     console.log(`พร้อมรับคำสั่ง Export PDF จากหน้าเว็บ!`);
