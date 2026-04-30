@@ -614,7 +614,7 @@
                             <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.5rem;">
                                 <div class="form-group">
                                     <label>เลขที่คำร้อง (AR Number)</label>
-                                    <input type="text" id="doc-ar-number" required placeholder="เช่น AR26-0001">
+                                    <input type="text" id="doc-ar-number" readonly placeholder="ระบบจะสร้างให้อัตโนมัติเมื่อบันทึก" style="background-color: #f1f5f9; cursor: not-allowed; color: var(--text-muted);">
                                 </div>
                                 <div class="form-group">
                                     <label>วันที่ส่งตัวอย่าง</label>
@@ -917,7 +917,7 @@
         } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { 
             getFirestore, collection, addDoc, getDocs, getDoc, doc, updateDoc, 
-            query, where, serverTimestamp, onSnapshot, setDoc, deleteDoc, or
+            query, where, serverTimestamp, onSnapshot, setDoc, deleteDoc, or, orderBy, limit
         } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // ==================== ตั้งค่า EmailJS ====================
@@ -1441,18 +1441,23 @@
 
             currentDocs.forEach(d => {
                 const tr = document.createElement('tr');
-                let actionHtml = `<button class="btn btn-outline btn-view-doc" data-id="${d.id}" data-token="${d.token}" style="padding: 0.35rem 0.65rem; font-size: 0.85rem; margin-right: 0.25rem;"><i class="ri-eye-line"></i> ดูข้อมูล</button>`;
+                tr.style.cursor = 'pointer';
+                tr.dataset.id = d.id;
+                tr.dataset.token = d.token;
+                tr.title = "คลิกเพื่อดูข้อมูลเอกสาร";
+
+                let actionHtml = ``; // นำปุ่มดูข้อมูลออกตามความต้องการ
                 
                 const safeUserEmail = (currentUser?.email || '').toLowerCase().trim();
                 const safeApproverEmail = (d.approverEmail || '').toLowerCase().trim();
                 
                 if (userRoles.includes('approver') && d.status === 'pending' && safeUserEmail === safeApproverEmail) {
-                    actionHtml = `<button class="btn btn-primary btn-view-doc" data-id="${d.id}" data-token="${d.token}" style="padding: 0.35rem 0.65rem; font-size: 0.85rem; margin-right: 0.25rem;"><i class="ri-edit-box-line"></i> พิจารณา</button>`;
+                    actionHtml += `<button class="btn btn-primary btn-approve-doc" data-id="${d.id}" data-token="${d.token}" style="padding: 0.35rem 0.65rem; font-size: 0.85rem; margin-right: 0.25rem; position: relative; z-index: 2;"><i class="ri-edit-box-line"></i> พิจารณา</button>`;
                 }
 
                 // สิทธิ์การลบ: แอดมินลบได้หมด, User ลบได้เฉพาะ Draft ตัวเอง
                 if (userRoles.includes('admin') || (d.status === 'draft' && safeUserEmail === (d.requesterEmail || '').toLowerCase().trim())) {
-                    actionHtml += `<button class="btn btn-outline btn-delete-doc" data-id="${d.id}" style="padding: 0.35rem 0.5rem; font-size: 0.85rem; border-color: var(--danger); color: var(--danger);"><i class="ri-delete-bin-line"></i></button>`;
+                    actionHtml += `<button class="btn btn-outline btn-delete-doc" data-id="${d.id}" style="padding: 0.35rem 0.5rem; font-size: 0.85rem; border-color: var(--danger); color: var(--danger); position: relative; z-index: 2;"><i class="ri-delete-bin-line"></i></button>`;
                 }
 
                 let adminCheckboxHtml = `<span style="color: var(--text-muted); font-size: 0.85rem; display: flex; justify-content: center;">-</span>`;
@@ -1732,6 +1737,44 @@
                 if (userDocSnap.exists()) userSig = userDocSnap.data().signature || '';
             } catch(e) {}
 
+            // สร้างเลข AR อัตโนมัติและเช็คเพื่อใช้เป็น Document ID (ห้ามซ้ำเด็ดขาด)
+            let generatedArNumber = "";
+            let docRef = null;
+            let isUnique = false;
+            
+            try {
+                const qAr = query(collection(db, 'documents'), orderBy('createdAt', 'desc'), limit(1));
+                const lastDocSnap = await getDocs(qAr);
+                let nextArNum = 1;
+                
+                if (!lastDocSnap.empty) {
+                    const lastData = lastDocSnap.docs[0].data();
+                    if (lastData.arNumber) {
+                        const lastNum = parseInt(lastData.arNumber.replace(/\D/g, '')) || 0;
+                        nextArNum = lastNum + 1;
+                    }
+                }
+
+                const currentYear = new Date().getFullYear().toString().slice(-2); // เช่น 26
+                
+                // ลูปตรวจสอบจนกว่าจะได้ ID ที่ไม่มีในฐานข้อมูล
+                while (!isUnique) {
+                    generatedArNumber = `AR${currentYear}-${String(nextArNum).padStart(4, '0')}`;
+                    docRef = doc(db, 'documents', generatedArNumber);
+                    const checkSnap = await getDoc(docRef);
+                    
+                    if (!checkSnap.exists()) {
+                        isUnique = true; // พบ ID ว่าง ให้ทำต่อ
+                    } else {
+                        nextArNum++; // หาก ID ซ้ำ ให้บวกเพิ่มแล้วเช็คใหม่
+                    }
+                }
+            } catch(e) {
+                console.error("Error generating unique AR Number:", e);
+                generatedArNumber = `AR-ERR-${String(Date.now()).slice(-4)}`;
+                docRef = doc(db, 'documents', generatedArNumber);
+            }
+
             const newDoc = {
                 requesterSignature: userSig,
                 requesterName: document.getElementById('doc-requester-name')?.value || '',
@@ -1739,7 +1782,7 @@
                 type: document.getElementById('doc-type')?.value || '',
                 date: document.getElementById('doc-date')?.value || '',
                 
-                arNumber: document.getElementById('doc-ar-number')?.value || '',
+                arNumber: generatedArNumber,
                 receiveDate: document.getElementById('doc-receive-date')?.value || '',
                 labRoom: document.getElementById('doc-lab-room')?.value || '',
                 folderNumber: document.getElementById('doc-folder-number')?.value || '',
@@ -1764,8 +1807,9 @@
             };
 
             try {
-                const docRef = await addDoc(collection(db, 'documents'), newDoc);
-                const logId = `SUBMIT_DOC_${newDoc.arNumber ? newDoc.arNumber : docRef.id}`;
+                // เปลี่ยนจากการใช้ addDoc สุ่ม ID เป็น setDoc เพื่อกำหนด ID ตาม AR Number
+                await setDoc(docRef, newDoc);
+                const logId = `SUBMIT_DOC_${docRef.id}`;
                 await logSystemAction(logId, currentUser.email, "SUBMIT_DOCUMENT");
 
                 const baseUrl = window.location.href.split('?')[0]; 
@@ -1858,11 +1902,12 @@
                 return;
             }
 
-            const btn = e.target.closest('.btn-view-doc');
-            if (btn) {
+            // เมื่อคลิกที่พื้นที่ใดๆ ของแถว (หรือปุ่มพิจารณา) ให้เปิดดูเอกสาร
+            const row = e.target.closest('tr');
+            if (row && row.dataset.id) {
                 e.preventDefault();
-                const docId = btn.getAttribute('data-id');
-                const token = btn.getAttribute('data-token');
+                const docId = row.dataset.id;
+                const token = row.dataset.token;
                 
                 targetDocId = docId;
                 targetToken = token;
@@ -2142,6 +2187,13 @@
                     reasonContainer.classList.add('hidden');
                     btnOk.className = 'btn btn-success';
                     btnOk.innerText = 'ยืนยันอนุมัติ';
+                } else if (status === 'processed') {
+                    title.innerHTML = '<i class="ri-macbook-line"></i> ยืนยันการดำเนินการ';
+                    title.style.color = 'var(--primary)';
+                    desc.innerText = 'ยืนยันว่าคุณได้ดำเนินการตามเอกสารนี้เรียบร้อยแล้วใช่หรือไม่?';
+                    reasonContainer.classList.add('hidden');
+                    btnOk.className = 'btn btn-primary';
+                    btnOk.innerText = 'ยืนยันดำเนินการ';
                 } else {
                     title.innerHTML = '<i class="ri-close-circle-line"></i> ยืนยันการไม่อนุมัติ';
                     title.style.color = 'var(--danger)';
@@ -2268,7 +2320,8 @@
 
         // 3. จัดการปุ่มดำเนินการโดยแอดมิน
         document.getElementById('btn-do-process')?.addEventListener('click', async () => {
-            if (!confirm(`ยืนยันว่าคุณได้ดำเนินการตามเอกสารนี้เรียบร้อยแล้ว?`)) return;
+            const userResponse = await askConfirmModal('processed');
+            if (userResponse === null) return;
             showLoader(true);
             try {
                 // ดึงชื่อแอดมินจาก collection users เพื่อไปบันทึกใน documents
