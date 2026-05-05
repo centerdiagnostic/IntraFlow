@@ -272,10 +272,13 @@ app.post('/api/export-temp-log', async (req, res) => {
                     return email.split('@')[0].substring(0, 8); // เผื่อกรณีข้อมูลเก่าที่ไม่มีชื่อ
                 };
 
+                const corr = parseFloat(eq.correctionValue) || 0;
                 let cellVal = '';
                 if(r.key === 'm-val' && logMorning) cellVal = logMorning.value;
+                if(r.key === 'm-adj' && logMorning) cellVal = parseFloat((parseFloat(logMorning.value) + corr).toFixed(2));
                 if(r.key === 'm-user' && logMorning) cellVal = getUserDisplay(logMorning.createdBy);
                 if(r.key === 'a-val' && logAfternoon) cellVal = logAfternoon.value;
+                if(r.key === 'a-adj' && logAfternoon) cellVal = parseFloat((parseFloat(logAfternoon.value) + corr).toFixed(2));
                 if(r.key === 'a-user' && logAfternoon) cellVal = getUserDisplay(logAfternoon.createdBy);
                 
                 trs += `<td class="col-day">${cellVal}</td>`;
@@ -391,7 +394,7 @@ app.post('/api/export-temp-log', async (req, res) => {
                 </div>
                 <div class="info-item" style="flex: 1;">
                     <span>ค่าแก้</span>
-                    <div class="info-dot-line">-</div>
+                    <div class="info-dot-line">${eq.correctionValue ? (eq.correctionValue > 0 ? '+' + eq.correctionValue : eq.correctionValue) : '-'}</div>
                 </div>
                 <div class="info-item" style="flex: 1.5;">
                     <span>ประจำเดือน</span>
