@@ -450,6 +450,132 @@ app.post('/api/export-temp-log', async (req, res) => {
     }
 });
 
+app.post('/api/export-usage-log', async (req, res) => {
+    console.log("--> เริ่มกระบวนการสร้าง PDF Usage Log:", req.body.eq?.name);
+    const { eq, logs } = req.body;
+    let browser;
+    try {
+        browser = await puppeteer.launch({ 
+            headless: true,
+            executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || puppeteer.executablePath(),
+            args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage', '--disable-gpu', '--no-zygote']
+        });
+        const page = await browser.newPage();
+
+        const formatDateTime = (iso) => {
+            if (!iso) return '-';
+            const d = new Date(iso);
+            return d.toLocaleDateString('th-TH', { year: '2-digit', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+        };
+
+        let trs = '';
+        logs.forEach((l, index) => {
+            trs += `
+                <tr>
+                    <td class="text-center">${index + 1}</td>
+                    <td>${formatDateTime(l.start)}</td>
+                    <td>${formatDateTime(l.end)}</td>
+                    <td>${l.name || '-'}</td>
+                    <td>${l.purpose || '-'}</td>
+                    <td class="text-center">${l.count || 1}</td>
+                </tr>
+            `;
+        });
+
+        const htmlContent = `
+        <!DOCTYPE html>
+        <html lang="th">
+        <head>
+            <meta charset="UTF-8">
+            <style>
+                @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@400;700&display=swap');
+                body { 
+                    font-family: 'Sarabun', sans-serif; 
+                    margin: 0; padding: 30px 40px; 
+                    color: #000; line-height: 1.4; 
+                }
+                .header-wrap { 
+                    display: flex; justify-content: space-between; align-items: flex-start;
+                    border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 20px; 
+                }
+                .header-left { display: flex; align-items: center; gap: 15px; }
+                .ku-logo { color: #006666; font-size: 50px; font-weight: bold; line-height: 0.8; font-family: Arial, sans-serif; letter-spacing: -1px; margin-top: 5px;}
+                .title-text { font-size: 20px; font-weight: bold; margin: 0; }
+                .subtitle-text { font-size: 13px; margin: 2px 0 0 0; }
+                
+                .info-grid {
+                    display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; font-size: 14px;
+                }
+                .info-item span { font-weight: bold; width: 120px; display: inline-block; }
+                
+                table { width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 13px; }
+                th { background-color: #f2f2f2; font-weight: bold; padding: 8px; border: 1px solid #000; text-align: center; }
+                td { padding: 6px 8px; border: 1px solid #000; vertical-align: top; }
+                .text-center { text-align: center; }
+                
+                .footer { text-align: right; font-size: 12px; margin-top: 30px; color: #555; }
+            </style>
+        </head>
+        <body>
+            <div class="header-wrap">
+                <div class="header-left">
+                    <div class="ku-logo">KU</div>
+                    <div>
+                        <div class="title-text">รายงานประวัติการใช้งานเครื่องมือ (Usage Logbook)</div>
+                        <div class="subtitle-text">ศูนย์ชันสูตรโรคสัตว์ กำแพงแสน มหาวิทยาลัยเกษตรศาสตร์</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="info-grid">
+                <div class="info-item"><span>ชื่อเครื่องมือ:</span> ${eq.name}</div>
+                <div class="info-item"><span>หมายเลขครุภัณฑ์:</span> ${eq.assetNumber || '-'}</div>
+                <div class="info-item"><span>สถานที่ติดตั้ง:</span> ${eq.location || '-'}</div>
+                <div class="info-item"><span>พิมพ์รายงานเมื่อ:</span> ${new Date().toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric' })}</div>
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 6%;">ลำดับ</th>
+                        <th style="width: 17%;">เริ่มใช้งาน</th>
+                        <th style="width: 17%;">สิ้นสุดใช้งาน</th>
+                        <th style="width: 24%;">ชื่อผู้ใช้งาน</th>
+                        <th style="width: 28%;">วัตถุประสงค์</th>
+                        <th style="width: 8%;">จำนวน(คน)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${trs}
+                </tbody>
+            </table>
+        </body>
+        </html>`;
+
+        await page.setContent(htmlContent, { waitUntil: 'networkidle0' });
+        
+        console.log("--> เริ่มแปลง PDF Usage Log...");
+        const pdfBuffer = await page.pdf({ 
+            format: 'A4',
+            printBackground: true,
+            margin: { top: '10mm', right: '10mm', bottom: '15mm', left: '10mm' }
+        });
+
+        console.log("--> สร้าง PDF สำเร็จ ส่งกลับเป็น Base64");
+        const validBase64 = Buffer.from(pdfBuffer).toString('base64');
+        res.status(200).json({
+            filename: `UsageLog_${eq.id}_${Date.now()}.pdf`,
+            pdfBase64: validBase64
+        });
+
+    } catch (error) {
+        console.error('--> Error ในการสร้าง PDF Usage Log:', error);
+        res.status(500).json({ error: 'เกิดข้อผิดพลาดในการสร้างไฟล์ PDF' });
+    } finally {
+        if (browser) await browser.close();
+    }
+});
+
 app.listen(port, () => {
     console.log(`Backend Server รันสำเร็จแล้วที่ http://localhost:${port}`);
     console.log(`พร้อมรับคำสั่ง Export PDF จากหน้าเว็บ!`);
