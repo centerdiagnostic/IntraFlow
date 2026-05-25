@@ -408,6 +408,48 @@
     </div>
 
     <!-- 1. หน้าต่างเข้าสู่ระบบ (ถอดระบบลงทะเบียน และปรับปรุงสไตล์หัวข้อ) -->
+    <div id="public-view" class="auth-wrapper hidden" style="padding: 1rem;">
+        <div class="card auth-card animate-fade-in" style="max-width: 600px; width: 100%; padding: 2rem 1.5rem; margin: auto; border-radius: 20px;">
+            <div class="text-center mb-6">
+                <img src="https://kvdc-vetku.com/wp-content/uploads/2026/03/1.png" alt="KVDC Logo" class="auth-logo" style="max-height: 80px;">
+            </div>
+            <h3 class="text-center mb-4" style="color: var(--primary); font-size: 1.3rem;">แบบฟอร์มส่งคำร้อง (สำหรับลูกค้า)</h3>
+            <form id="public-request-form">
+                <div class="form-group">
+                    <label>เลขคำร้องที่ต้องการแก้ไข <span style="color: var(--danger);">*</span></label>
+                    <input type="text" id="public-req-id" required placeholder="ระบุเลขคำร้อง" style="padding: 1rem; font-size: 1rem;">
+                </div>
+                <div class="form-group">
+                    <label>ชื่อลูกค้า / หน่วยงาน <span style="color: var(--danger);">*</span></label>
+                    <input type="text" id="public-req-name" required placeholder="ระบุชื่อ" style="padding: 1rem; font-size: 1rem;">
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div class="form-group">
+                        <label>เบอร์โทรศัพท์ <span style="color: var(--danger);">*</span></label>
+                        <input type="tel" id="public-req-phone" required placeholder="ระบุเบอร์โทรศัพท์" style="padding: 1rem; font-size: 1rem;">
+                    </div>
+                    <div class="form-group">
+                        <label>อีเมล <span style="color: var(--danger);">*</span></label>
+                        <input type="email" id="public-req-email" required placeholder="ระบุอีเมล" style="padding: 1rem; font-size: 1rem;">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>รายละเอียดที่ต้องการแก้ไข <span style="color: var(--danger);">*</span></label>
+                    <textarea id="public-req-detail" rows="4" required placeholder="ระบุรายละเอียด..." style="padding: 1rem; font-size: 1rem; resize: vertical;"></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary w-100" id="btn-submit-public-req" style="padding: 1rem; font-size: 1.1rem; border-radius: 12px;">
+                    ส่งคำร้อง <i class="ri-send-plane-fill"></i>
+                </button>
+            </form>
+            <div id="public-success-msg" class="hidden text-center mt-4 p-4" style="background: var(--success); color: white; border-radius: var(--radius-md);">
+                <i class="ri-checkbox-circle-line" style="font-size: 3rem;"></i>
+                <h4 class="mt-2" style="color: white; font-size: 1.2rem;">ส่งคำร้องเรียบร้อยแล้ว</h4>
+                <p style="font-size: 0.95rem; margin-top: 0.5rem;">ระบบได้รับคำร้องของท่านเรียบร้อยแล้ว ขอบคุณครับ</p>
+                <button type="button" class="btn mt-4 w-100" style="background: rgba(255,255,255,0.2); color: white; padding: 1rem; font-size: 1rem; border-radius: 12px;" onclick="window.location.reload()">ส่งคำร้องใหม่</button>
+            </div>
+        </div>
+    </div>
+
     <div id="auth-view" class="auth-wrapper hidden">
         <div class="card auth-card animate-fade-in">
             <div class="text-center mb-6">
@@ -451,6 +493,9 @@
                     </div>
                     <div class="tab" data-target="tab-submit" id="tab-submit-btn">
                         <i class="ri-add-circle-line"></i> ยื่นเอกสารใหม่
+                    </div>
+                    <div class="tab" data-target="tab-customer-req" id="tab-customer-req-btn">
+                        <i class="ri-user-received-2-line"></i> คำร้องลูกค้า
                     </div>
                     <div class="tab" data-target="tab-export" id="tab-export-btn">
                         <i class="ri-file-excel-2-line"></i> Export
@@ -582,6 +627,35 @@
                 </div>
 
                 <!-- แท็บ: ฟอร์มยื่นเอกสารใหม่ -->
+                <div id="tab-customer-req" class="tab-content hidden animate-fade-in">
+                    <div class="card" style="border-top: 4px solid var(--warning);">
+                        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem;">
+                            <h3 style="margin: 0;"><i class="ri-user-received-2-line"></i> รายการคำร้องจากลูกค้า</h3>
+                            <button id="btn-copy-public-link" class="btn btn-outline" style="border-color: var(--primary); color: var(--primary);">
+                                <i class="ri-links-line"></i> คัดลอกลิงก์ฟอร์มสำหรับลูกค้า
+                            </button>
+                        </div>
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th style="white-space: nowrap;">วันที่ส่ง</th>
+                                        <th style="white-space: nowrap;">เลขคำร้อง</th>
+                                        <th style="white-space: nowrap;">รหัสระบบ</th>
+                                        <th style="white-space: nowrap;">ชื่อลูกค้า/หน่วยงาน</th>
+                                        <th style="white-space: nowrap;">ข้อมูลติดต่อ</th>
+                                        <th>รายละเอียด</th>
+                                        <th style="text-align: right; white-space: nowrap;">จัดการ</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="customer-req-table-body">
+                                    <tr><td colspan="7" class="text-center text-muted">กำลังโหลดข้อมูล...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
                 <div id="tab-submit" class="tab-content hidden animate-fade-in">
                     <div class="card" style="max-width: 800px; margin: 0 auto; position: relative; overflow: hidden;">
                         <div style="position: absolute; top: 0; left: 0; width: 4px; height: 100%; background: var(--primary);"></div>
@@ -598,6 +672,13 @@
                                 </div>
                             </div>
                             
+                            <div class="form-group">
+                                <label>อ้างอิงเลขคำร้องจากลูกค้า (ถ้ามี)</label>
+                                <select id="doc-customer-req-select">
+                                    <option value="">-- ไม่ระบุ --</option>
+                                </select>
+                            </div>
+
                             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
                                 <div class="form-group">
                                     <label>ประเภทของเอกสาร</label>
@@ -928,13 +1009,17 @@
         
         emailjs.init(EMAILJS_PUBLIC_KEY);
 
-        async function sendIntraFlowEmail(toEmail, subject, message, actionUrl) {
+        async function sendIntraFlowEmail(toEmail, subject, message, actionUrl, headerText = "เรียน ผู้อำนวยการศูนย์ชันสูตรโรคสัตว์ กำแพงแสน", footerText = "สามารถคลิกที่ลิงก์ด้านล่างเพื่อดำเนินการต่อได้ทันที:") {
             try {
+                // หากไม่มีลิงก์ (actionUrl เป็นค่าว่าง) ให้ซ่อนข้อความ footerText ไปเลย
+                const finalFooter = actionUrl ? footerText : "";
                 await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
                     to_email: toEmail,
                     subject: subject,
                     message: message,
-                    action_url: actionUrl
+                    action_url: actionUrl,
+                    header_text: headerText,
+                    footer_text: finalFooter
                 });
                 console.log(`[EmailJS] ส่งอีเมลสำเร็จไปยัง: ${toEmail}`);
             } catch (error) {
@@ -1014,6 +1099,16 @@
         let targetDocId = urlParams.get('docId');
         let targetToken = urlParams.get('token');
         const isApprovalRoute = targetDocId && targetToken;
+        const isPublicFormRoute = urlParams.get('view') === 'public_form';
+
+        // ปิด Loader ทันทีสำหรับหน้าฟอร์มลูกค้าภายนอก เพื่อไม่ให้ค้าง
+        if (isPublicFormRoute) {
+            document.getElementById('auth-view')?.classList.add('hidden');
+            document.getElementById('app-view')?.classList.add('hidden');
+            document.getElementById('public-view')?.classList.remove('hidden');
+            const globalLoader = document.getElementById('global-loader');
+            if (globalLoader) globalLoader.style.display = 'none';
+        }
 
         // ==================== Utilities ====================
         let loaderTimeout1, loaderTimeout2;
@@ -1203,10 +1298,20 @@
                 document.getElementById('tab-admin-btn').classList.add('hidden');
             }
 
+            const isPublicRoute = new URLSearchParams(window.location.search).get('view') === 'public_form';
+            if (isPublicRoute) {
+                document.getElementById('auth-view')?.classList.add('hidden');
+                document.getElementById('app-view')?.classList.add('hidden');
+                document.getElementById('public-view')?.classList.remove('hidden');
+                showLoader(false);
+                return;
+            }
+
             document.getElementById('auth-view')?.classList.add('hidden');
             document.getElementById('app-view')?.classList.remove('hidden');
 
             loadApproversList(); 
+            if (typeof window.loadCustomerRequests === 'function') window.loadCustomerRequests();
 
             if (isApprovalRoute) {
                 initApprovalView();
@@ -1249,8 +1354,16 @@
             } else {
                 currentUser = null;
                 document.getElementById('first-login-modal')?.classList.add('hidden');
-                document.getElementById('auth-view')?.classList.remove('hidden');
-                document.getElementById('app-view')?.classList.add('hidden');
+                
+                const isPublicRoute = new URLSearchParams(window.location.search).get('view') === 'public_form';
+                if (isPublicRoute) {
+                    document.getElementById('auth-view')?.classList.add('hidden');
+                    document.getElementById('app-view')?.classList.add('hidden');
+                    document.getElementById('public-view')?.classList.remove('hidden');
+                } else {
+                    document.getElementById('auth-view')?.classList.remove('hidden');
+                    document.getElementById('app-view')?.classList.add('hidden');
+                }
                 showLoader(false);
             }
         });
@@ -1336,9 +1449,13 @@
             }
         }
 
-        const tabs = ['list', 'submit', 'export', 'admin'];
+        const tabs = ['list', 'customer-req', 'submit', 'export', 'admin'];
         
         document.getElementById('tab-list-btn')?.addEventListener('click', () => switchTab('list'));
+        document.getElementById('tab-customer-req-btn')?.addEventListener('click', () => {
+            switchTab('customer-req');
+            if (typeof window.loadCustomerRequests === 'function') window.loadCustomerRequests();
+        });
         document.getElementById('tab-submit-btn')?.addEventListener('click', () => switchTab('submit'));
         document.getElementById('tab-export-btn')?.addEventListener('click', () => switchTab('export'));
         document.getElementById('tab-admin-btn')?.addEventListener('click', () => switchTab('admin'));
@@ -1788,6 +1905,7 @@
                 folderNumber: document.getElementById('doc-folder-number')?.value || '',
                 receiptNumber: document.getElementById('doc-receipt-number')?.value || '',
                 invoiceNumber: document.getElementById('doc-invoice-number')?.value || '',
+                customerRequestId: document.getElementById('doc-customer-req-select')?.value || '',
                 
                 cancelReason: document.getElementById('doc-cancel-reason-select')?.value || '',
                 cancelReasonOther: document.getElementById('doc-cancel-other')?.value || '',
@@ -1834,7 +1952,7 @@
                             const data = d.data();
                             const userRolesArray = data.roles || (data.role ? [data.role] : []);
                             if ((userRolesArray.includes('admin') || userRolesArray.includes('responder')) && data.isActive !== false && data.email) {
-                                await sendIntraFlowEmail(data.email, notifySubject, notifyMsg, baseUrl);
+                                await sendIntraFlowEmail(data.email, notifySubject, notifyMsg, baseUrl, "เรียน เจ้าหน้าที่/ผู้ดูแลระบบ");
                             }
                         });
                     } catch (err) { console.error("Notify Email Error:", err); }
@@ -2292,19 +2410,19 @@
                     // 1. กรณีไม่อนุมัติ: ส่งอีเมลหาผู้ใช้งาน (Requester) ทันที
                     const reqSubject = `[IntraFlow] อัปเดตผลการพิจารณาเอกสาร: ไม่อนุมัติ`;
                     const reqMessage = `เอกสารประเภท ${docData.type} ของคุณได้รับการพิจารณาแล้ว\nผลการพิจารณา: ไม่อนุมัติ\nเหตุผล: ${rejectReason.trim()}\nดำเนินการโดย: ${currentUser.email}`;
-                    await sendIntraFlowEmail(docData.requesterEmail, reqSubject, reqMessage, baseUrl);
+                    await sendIntraFlowEmail(docData.requesterEmail, reqSubject, reqMessage, baseUrl, `เรียน คุณ ${docData.requesterName || 'ผู้ขออนุมัติ'}`);
                     
                     // 2. กรณีไม่อนุมัติ: ส่งอีเมลหาแอดมิน (Admin) ทันทีเช่นกัน
                     const adminSubject = `[IntraFlow - Admin] แจ้งเตือนเอกสารไม่อนุมัติ: ${docData.arNumber || docData.type}`;
                     const adminMessage = `แจ้งเตือนผลการพิจารณาเอกสารในระบบ\nเลขที่เอกสาร: ${docData.arNumber || '-'}\nประเภท: ${docData.type}\nสถานะ: ไม่อนุมัติ\nเหตุผล: ${rejectReason.trim()}\nผู้อนุมัติ: ${docData.approverName || currentUser.email}\nวันที่พิจารณา: ${formatDate(new Date())}\n\nกรุณาตรวจสอบรายละเอียดในระบบ`;
-                    for (const adminEmail of adminEmails) { await sendIntraFlowEmail(adminEmail, adminSubject, adminMessage, baseUrl); }
+                    for (const adminEmail of adminEmails) { await sendIntraFlowEmail(adminEmail, adminSubject, adminMessage, baseUrl, "เรียน ผู้ดูแลระบบ (Admin)"); }
                 }
                 
                 if (newStatus === 'approved') {
                     // 3. กรณีอนุมัติ: ส่งอีเมลหาแอดมิน (Admin) อย่างเดียว (ผู้ใช้จะได้รับแจ้งเมื่อแอดมินกด "ดำเนินการแล้ว")
                     const adminSubject = `[IntraFlow - Admin] เอกสารได้รับการอนุมัติ: ${docData.arNumber || docData.type}`;
                     const adminMessage = `แจ้งเตือนการอนุมัติเอกสารใหม่ในระบบ\nเลขที่เอกสาร: ${docData.arNumber || '-'}\nประเภท: ${docData.type}\nสถานะ: อนุมัติแล้ว\nผู้อนุมัติ: ${docData.approverName || currentUser.email}\nวันที่อนุมัติ: ${formatDate(new Date())}\n\nกรุณาตรวจสอบและดำเนินการต่อในระบบ`;
-                    for (const adminEmail of adminEmails) { await sendIntraFlowEmail(adminEmail, adminSubject, adminMessage, baseUrl); }
+                    for (const adminEmail of adminEmails) { await sendIntraFlowEmail(adminEmail, adminSubject, adminMessage, baseUrl, "เรียน ผู้ดูแลระบบ (Admin)"); }
                 }
 
                 showToast(`บันทึกผลการ${statusLabel}สำเร็จ!`, 'success');
@@ -2360,7 +2478,7 @@
 
                 const userSubject = `[IntraFlow] แอดมินดำเนินการเอกสารของคุณเรียบร้อยแล้ว`;
                 const userMessage = `เอกสารประเภท ${docData.type} ของคุณ (เลขที่: ${docData.arNumber || '-'}) \n\nทางแอดมินได้ทำการจัดการข้อมูลเข้าระบบเรียบร้อยแล้ว\nดำเนินการโดย: ${currentUser.email}\n\nคุณสามารถตรวจสอบรายละเอียดได้ในระบบ`;
-                await sendIntraFlowEmail(docData.requesterEmail, userSubject, userMessage, baseUrl);
+                await sendIntraFlowEmail(docData.requesterEmail, userSubject, userMessage, baseUrl, `เรียน คุณ ${docData.requesterName || 'ผู้ขออนุมัติ'}`);
 
                 showToast('บันทึกการดำเนินการและส่งอีเมลแจ้งผู้ใช้งานสำเร็จ!', 'success');
                 setTimeout(() => { initApprovalView(); }, 1500);
@@ -2369,6 +2487,150 @@
                 showLoader(false);
             }
         });
+            // ==================== Customer Public Form & Logic ====================
+        const publicForm = document.getElementById('public-request-form');
+        publicForm?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('btn-submit-public-req');
+            btn.disabled = true;
+            btn.innerHTML = '<div class="loader"></div> กำลังส่งข้อมูล...';
+            
+            const reqId = document.getElementById('public-req-id').value.trim();
+            const reqName = document.getElementById('public-req-name').value.trim();
+            const reqPhone = document.getElementById('public-req-phone').value.trim();
+            const reqEmail = document.getElementById('public-req-email').value.trim();
+            const reqDetail = document.getElementById('public-req-detail').value.trim();
+            
+            try {
+                // [Method 1] แอบดึง IP Address และข้อมูลเบราว์เซอร์เพื่อบันทึกเป็นหลักฐาน
+                let clientIP = "Unknown";
+                try {
+                    const ipRes = await fetch('https://api.ipify.org?format=json');
+                    const ipData = await ipRes.json();
+                    clientIP = ipData.ip;
+                } catch (e) { console.warn("ไม่สามารถดึง IP ได้", e); }
+                const userAgent = navigator.userAgent;
+
+                // สร้างรหัสอ้างอิงระบบ 4 หลักแบบสุ่ม เพื่อป้องกันการเซฟทับเลขเดิม
+                const randomSuffix = Math.random().toString(36).substring(2, 6).toUpperCase();
+                const fullDocId = `${reqId}-${randomSuffix}`;
+
+                // สร้างคำร้องโดยใช้ ID ที่มี -xxxx ต่อท้ายเป็น ID เอกสาร พร้อมเก็บ IP
+                await setDoc(doc(db, 'customer_requests', fullDocId), {
+                    requestId: reqId,
+                    systemSuffix: randomSuffix,
+                    fullId: fullDocId,
+                    customerName: reqName,
+                    phone: reqPhone,
+                    email: reqEmail,
+                    details: reqDetail,
+                    clientIP: clientIP,
+                    userAgent: userAgent,
+                    createdAt: serverTimestamp(),
+                    status: 'new'
+                });
+
+                // [Method 2] ส่งอีเมล Auto-Reply ยืนยันกลับไปหาลูกค้า (ป้องกันการสวมรอย)
+                const emailSubject = `[KVDC] ยืนยันการรับคำร้องขอแก้ไขเอกสาร (รหัสอ้างอิง: ${fullDocId})`;
+                const emailMessage = `ระบบได้รับคำร้องขอแก้ไขเอกสารของท่านเรียบร้อยแล้ว\n\nรายละเอียดคำร้อง:\n- เลขคำร้องที่ต้องการแก้ไข: ${reqId}\n- รหัสอ้างอิงระบบ: ${fullDocId}\n- รายละเอียดการแก้ไข: ${reqDetail}\n\nเจ้าหน้าที่จะรีบตรวจสอบและดำเนินการแก้ไขให้ท่านโดยเร็วที่สุด\n\n⚠️ หมายเหตุสำคัญ: หากท่านไม่ได้เป็นผู้ส่งคำร้องนี้ โปรดติดต่อกลับศูนย์บริการ KVDC ทันที เพื่อความปลอดภัยของข้อมูลท่าน\n\nขอแสดงความนับถือ,\nทีมงาน KVDC`;
+                // ส่งชื่อลูกค้าไปเป็น headerText และส่งลิงก์เป็นค่าว่าง ("") เพื่อให้ระบบตัดข้อความชวนคลิกลิงก์ออกอัตโนมัติ
+                await sendIntraFlowEmail(reqEmail, emailSubject, emailMessage, "", `เรียน คุณ ${reqName}`);
+                document.getElementById('public-request-form').classList.add('hidden');
+                document.getElementById('public-success-msg').classList.remove('hidden');
+            } catch (err) {
+                alert('เกิดข้อผิดพลาดในการส่งข้อมูล: ' + err.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = 'ส่งคำร้อง <i class="ri-send-plane-fill"></i>';
+            }
+        });
+
+        document.getElementById('btn-copy-public-link')?.addEventListener('click', () => {
+            const baseUrl = window.location.href.split('?')[0];
+            const publicUrl = `${baseUrl}?view=public_form`;
+            navigator.clipboard.writeText(publicUrl).then(() => {
+                showToast('คัดลอกลิงก์เรียบร้อยแล้ว ท่านสามารถส่งลิงก์นี้ให้ลูกค้าได้เลย', 'success');
+            });
+        });
+
+        window.loadCustomerRequests = async () => {
+            try {
+                const q = query(collection(db, 'customer_requests'), orderBy('createdAt', 'desc'));
+                const snapshot = await getDocs(q);
+                
+                const tbody = document.getElementById('customer-req-table-body');
+                const selectEl = document.getElementById('doc-customer-req-select');
+                
+                if (tbody) tbody.innerHTML = '';
+                if (selectEl) selectEl.innerHTML = '<option value="">-- ไม่ระบุ --</option>';
+                
+                if (snapshot.empty) {
+                    if (tbody) tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted">ยังไม่มีคำร้องจากลูกค้า</td></tr>';
+                    return;
+                }
+
+                snapshot.forEach(docSnap => {
+                    const data = docSnap.data();
+                    const dateStr = data.createdAt ? formatDate(data.createdAt) : '-';
+                    const sysSuffix = data.systemSuffix || '-';
+                    
+                    if (tbody) {
+                        // สิทธิ์ลบจะให้เฉพาะ Admin
+                        let actionHtml = '<span style="color: var(--text-muted);">-</span>';
+                        if (userRoles.includes('admin')) {
+                            actionHtml = `<button class="btn btn-outline" onclick="window.deleteCustomerReq('${docSnap.id}')" style="padding: 0.25rem 0.5rem; font-size: 0.8rem; border-color: var(--danger); color: var(--danger);"><i class="ri-delete-bin-line"></i> ลบ</button>`;
+                        }
+
+                        // รองรับข้อมูลเดิม (contactInfo) และข้อมูลแบบใหม่ (phone, email)
+                        const contactDisplay = (data.phone && data.email) 
+                            ? `<div style="font-size: 0.85rem;"><i class="ri-phone-line"></i> ${data.phone}</div><div style="font-size: 0.85rem;"><i class="ri-mail-line"></i> ${data.email}</div>` 
+                            : (data.contactInfo || '-');
+                            
+                        // แสดงสัญลักษณ์ IP แจ้งเตือนเมื่อเอาเมาส์ชี้ เพื่อให้ Admin ใช้ตรวจสอบความผิดปกติ
+                        const traceInfo = `IP: ${data.clientIP || 'Unknown'}\nBrowser: ${data.userAgent || 'Unknown'}`;
+                        const ipIconHtml = data.clientIP ? `<i class="ri-shield-keyhole-line" style="color: var(--text-muted); margin-left: 0.5rem; cursor: help;" title="${traceInfo}"></i>` : '';
+                        
+                        tbody.innerHTML += `
+                            <tr>
+                                <td style="vertical-align: top;">${dateStr}</td>
+                                <td style="vertical-align: top;"><span class="badge" style="background: var(--primary-light); color: var(--primary);">${data.requestId}</span></td>
+                                <td style="vertical-align: top;"><span class="badge" style="background: #f1f5f9; color: var(--text-muted); border: 1px solid var(--border); font-family: monospace;">${sysSuffix}</span></td>
+                                <td style="vertical-align: top;">${data.customerName} ${ipIconHtml}</td>
+                                <td style="vertical-align: top;">${contactDisplay}</td>
+                                <td style="vertical-align: top;"><div style="max-height: 80px; overflow-y: auto; white-space: pre-wrap; font-size: 0.9rem;">${data.details}</div></td>
+                                <td style="text-align: right; vertical-align: top;">${actionHtml}</td>
+                            </tr>
+                        `;
+                    }
+                    
+                    if (selectEl) {
+                        // เก็บ value เป็น Full ID (เผื่อต้องใช้อ้างอิงแบบเป๊ะๆ) แต่แสดงแค่ เลขคำร้อง - ชื่อ ตามที่สั่ง
+                        const optionValue = docSnap.id;
+                        selectEl.innerHTML += `<option value="${optionValue}">${data.requestId} - ${data.customerName}</option>`;
+                    }
+                });
+            } catch (err) {
+                console.error('Error loading customer requests:', err);
+                if (document.getElementById('customer-req-table-body')) {
+                    document.getElementById('customer-req-table-body').innerHTML = '<tr><td colspan="7" class="text-center text-danger">โหลดข้อมูลผิดพลาด</td></tr>';
+                }
+            }
+        };
+
+        window.deleteCustomerReq = async (id) => {
+            if(!confirm('ยืนยันการลบคำร้องจากลูกค้านี้? (การกระทำนี้ไม่สามารถย้อนกลับได้)')) return;
+            try {
+                showLoader(true);
+                await deleteDoc(doc(db, 'customer_requests', id));
+                showToast('ลบคำร้องของลูกค้าเรียบร้อยแล้ว', 'success');
+                window.loadCustomerRequests();
+            } catch (err) {
+                showToast('ไม่สามารถลบได้: ' + err.message, 'error');
+            } finally {
+                showLoader(false);
+            }
+        };
+
             window.addEventListener('error', function(e){
                 console.error('Global Error:', e.message);
                 alert('ระบบพบข้อผิดพลาด: ' + e.message);
