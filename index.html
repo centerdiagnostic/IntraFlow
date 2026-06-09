@@ -2009,8 +2009,20 @@
             if(!confirm('ยืนยันการลบเอกสารนี้? (การลบจะไม่สามารถกู้คืนได้)')) return;
             try {
                 showLoader(true);
-                await updateDoc(doc(db, 'documents', docId), { isDeleted: true });
-                showToast('ลบเอกสารเรียบร้อยแล้ว', 'success');
+                // 1. อัปเดตสถานะเอกสารหลักให้เป็นถูกลบ (และอัปเดตว่าไม่มีไฟล์แนบแล้วเพื่อป้องกัน Error)
+                await updateDoc(doc(db, 'documents', docId), { 
+                    isDeleted: true,
+                    hasAttachment: false 
+                });
+                
+                // 2. เข้าไปลบข้อมูลไฟล์แนบ (Base64) ใน document_attachments ทิ้งแบบถาวรเพื่อคืนพื้นที่ Database
+                try {
+                    await deleteDoc(doc(db, 'document_attachments', docId));
+                } catch (attachErr) {
+                    console.warn("ไม่พบไฟล์แนบที่ต้องลบ หรือเกิดข้อผิดพลาดในการลบไฟล์แนบ:", attachErr);
+                }
+
+                showToast('ลบเอกสารและเคลียร์ไฟล์แนบเรียบร้อยแล้ว', 'success');
             } catch (error) {
                 showToast('ไม่สามารถลบได้: ' + error.message, 'error');
             } finally {
