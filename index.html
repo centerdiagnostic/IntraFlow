@@ -364,6 +364,55 @@
             }
         }
 
+        /* ==================== Invoice Request (ใบคำร้องขอยกเลิก/แก้ไข ใบแจ้งหนี้) ==================== */
+        .inv-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+        .inv-seg { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+        .inv-seg input[type="radio"] { position: absolute; opacity: 0; width: 1px; height: 1px; pointer-events: none; }
+        .inv-seg label {
+            display: flex; align-items: center; justify-content: center; gap: 0.4rem; margin: 0;
+            min-height: 48px; padding: 0.75rem 1rem; text-align: center; cursor: pointer;
+            border: 1.5px solid var(--border); border-radius: var(--radius-md);
+            background: var(--background); color: var(--text-main); font-size: 1rem; font-weight: 500;
+            transition: var(--transition);
+        }
+        .inv-seg label:hover { border-color: var(--primary); }
+        .inv-seg input[type="radio"]:checked + label { background: var(--primary); border-color: var(--primary); color: #fff; }
+        .inv-seg input[type="radio"]:focus-visible + label { box-shadow: 0 0 0 4px var(--primary-light); }
+        .inv-subtitle { font-size: 1rem; font-weight: 600; color: var(--text-main); margin: 0.5rem 0 1rem; padding-top: 1rem; border-top: 1px solid var(--border); }
+
+        .inv-modal-content { max-width: 640px; width: 95%; max-height: 90vh; overflow-y: auto; position: relative; }
+        .inv-close-x {
+            position: absolute; top: 0.75rem; right: 0.75rem; width: 40px; height: 40px;
+            display: flex; align-items: center; justify-content: center;
+            background: transparent; border: none; border-radius: 50%; cursor: pointer;
+            font-size: 1.5rem; color: var(--text-muted); transition: var(--transition);
+        }
+        .inv-close-x:hover { background: var(--background); color: var(--text-main); }
+        .inv-sheet-head { text-align: center; padding-bottom: 1rem; margin-bottom: 1.25rem; border-bottom: 1px solid var(--border); }
+        .inv-sheet-head img { max-height: 56px; max-width: 100%; }
+        .inv-sheet-head h3 { color: var(--primary); font-size: 1.2rem; margin: 0.5rem 0 0; }
+        .inv-checks { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.25rem; }
+        .inv-check { display: flex; align-items: center; gap: 0.4rem; color: var(--text-muted); }
+        .inv-check i { font-size: 1.35rem; }
+        .inv-check.is-checked { color: var(--primary); font-weight: 700; }
+        .inv-row { display: grid; grid-template-columns: 1fr; gap: 1rem; margin-bottom: 1rem; }
+        .inv-row.inv-row-2 { grid-template-columns: 1fr 1fr; }
+        .inv-field { display: flex; align-items: flex-end; gap: 0.5rem; min-width: 0; }
+        .inv-label { font-size: 0.85rem; color: var(--text-muted); white-space: nowrap; }
+        .inv-value { flex: 1; min-width: 0; font-weight: 600; color: var(--text-main); border-bottom: 1px dotted var(--text-muted); padding: 0 0.25rem 0.15rem; overflow-wrap: anywhere; }
+        .inv-reason-box {
+            background: #f8fafc; border: 1px solid var(--border); border-radius: var(--radius-md);
+            padding: 1rem; white-space: pre-wrap; min-height: 96px; overflow-wrap: anywhere; color: var(--text-main);
+        }
+        .inv-sheet-foot { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1.25rem; padding-top: 0.75rem; border-top: 1px solid var(--border); font-size: 0.85rem; color: var(--text-muted); }
+        .inv-sheet-foot > div:last-child { text-align: right; }
+        .inv-sheet-foot strong { color: var(--text-main); overflow-wrap: anywhere; }
+        @media (max-width: 768px) {
+            .inv-grid-2, .inv-row.inv-row-2, .inv-sheet-foot { grid-template-columns: 1fr; }
+            .inv-sheet-foot > div:last-child { text-align: left; }
+            .inv-modal-content { padding: 1.25rem; }
+        }
+
     </style>
 </head>
 <body>
@@ -446,6 +495,64 @@
                 <h4 class="mt-2" style="color: white; font-size: 1.2rem;">ส่งคำร้องเรียบร้อยแล้ว</h4>
                 <p style="font-size: 0.95rem; margin-top: 0.5rem;">ระบบได้รับคำร้องของท่านเรียบร้อยแล้ว ขอบคุณครับ</p>
                 <button type="button" class="btn mt-4 w-100" style="background: rgba(255,255,255,0.2); color: white; padding: 1rem; font-size: 1rem; border-radius: 12px;" onclick="window.location.reload()">ส่งคำร้องใหม่</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ฟอร์มใบคำร้องขอยกเลิก/แก้ไข ใบแจ้งหนี้ (สำหรับเจ้าหน้าที่ภายใน) -->
+    <div id="invoice-form-view" class="auth-wrapper hidden" style="padding: 1rem;">
+        <div class="card auth-card animate-fade-in" style="max-width: 640px; width: 100%; padding: 2rem 1.5rem; margin: auto; border-radius: 20px;">
+            <div class="text-center mb-6">
+                <img src="https://kvdc-vetku.com/wp-content/uploads/2026/03/1.png" alt="KVDC Logo" class="auth-logo" style="max-height: 80px;">
+            </div>
+            <h3 class="text-center" style="color: var(--primary); font-size: 1.3rem; margin-bottom: 0.25rem;">ใบคำร้องขอยกเลิก/แก้ไข ใบแจ้งหนี้</h3>
+            <p class="text-center mb-6" style="color: var(--text-muted); font-size: 0.9rem;">สำหรับเจ้าหน้าที่ภายใน</p>
+            <form id="invoice-request-form">
+                <div class="form-group">
+                    <label>ประเภทคำร้อง <span style="color: var(--danger);">*</span></label>
+                    <div class="inv-seg">
+                        <input type="radio" name="inv-req-type" id="inv-req-type-cancel" value="cancel" required>
+                        <label for="inv-req-type-cancel">ยกเลิกใบแจ้งหนี้</label>
+                        <input type="radio" name="inv-req-type" id="inv-req-type-edit" value="edit">
+                        <label for="inv-req-type-edit">แก้ไขใบแจ้งหนี้</label>
+                    </div>
+                </div>
+                <div class="inv-grid-2">
+                    <div class="form-group">
+                        <label for="inv-req-no">เลขที่ใบแจ้งหนี้ <span style="color: var(--danger);">*</span></label>
+                        <input type="text" id="inv-req-no" required placeholder="ระบุเลขที่ใบแจ้งหนี้" style="padding: 1rem; font-size: 1rem;">
+                    </div>
+                    <div class="form-group">
+                        <label for="inv-req-date">วันที่ใบแจ้งหนี้ <span style="color: var(--danger);">*</span></label>
+                        <input type="date" id="inv-req-date" required style="padding: 1rem; font-size: 1rem;">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="inv-req-customer">ชื่อลูกค้า / หน่วยงาน <span style="color: var(--danger);">*</span></label>
+                    <input type="text" id="inv-req-customer" required placeholder="ระบุชื่อลูกค้า / หน่วยงาน" style="padding: 1rem; font-size: 1rem;">
+                </div>
+                <div class="form-group">
+                    <label for="inv-req-amount">จำนวนเงิน (บาท) <span style="color: var(--danger);">*</span></label>
+                    <input type="number" id="inv-req-amount" required step="0.01" min="0" inputmode="decimal" placeholder="0.00" style="padding: 1rem; font-size: 1rem;">
+                </div>
+                <h4 class="inv-subtitle">รายละเอียดที่ต้องยกเลิก/แก้ไข ใบแจ้งหนี้</h4>
+                <div class="form-group">
+                    <label for="inv-req-reason">ระบุสาเหตุ <span style="color: var(--danger);">*</span></label>
+                    <textarea id="inv-req-reason" rows="4" required placeholder="ระบุสาเหตุ..." style="padding: 1rem; font-size: 1rem; resize: vertical;"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="inv-req-submitter">ชื่อผู้ยื่นคำร้อง <span style="color: var(--danger);">*</span></label>
+                    <input type="text" id="inv-req-submitter" required placeholder="ระบุชื่อ-นามสกุลผู้ยื่นคำร้อง" style="padding: 1rem; font-size: 1rem;">
+                </div>
+                <button type="submit" class="btn btn-primary w-100" id="btn-submit-invoice-req" style="padding: 1rem; font-size: 1.1rem; border-radius: 12px;">
+                    ส่งคำร้อง <i class="ri-send-plane-fill"></i>
+                </button>
+            </form>
+            <div id="invoice-success-msg" class="hidden text-center mt-4 p-4" style="background: var(--success); color: white; border-radius: var(--radius-md);">
+                <i class="ri-checkbox-circle-line" style="font-size: 3rem;"></i>
+                <h4 class="mt-2" style="color: white; font-size: 1.2rem;">ส่งคำร้องเรียบร้อยแล้ว</h4>
+                <p style="font-size: 0.95rem; margin-top: 0.5rem;">ระบบได้รับคำร้องของท่านเรียบร้อยแล้ว ขอบคุณครับ</p>
+                <button type="button" id="btn-invoice-new-req" class="btn mt-4 w-100" style="background: rgba(255,255,255,0.2); color: white; padding: 1rem; font-size: 1rem; border-radius: 12px;">ส่งคำร้องใหม่</button>
             </div>
         </div>
     </div>
@@ -649,6 +756,33 @@
                                     </tr>
                                 </thead>
                                 <tbody id="customer-req-table-body">
+                                    <tr><td colspan="7" class="text-center text-muted">กำลังโหลดข้อมูล...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="card" style="border-top: 4px solid var(--primary); margin-top: 1.5rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem;">
+                            <h3 style="margin: 0;"><i class="ri-bill-line"></i> รายการคำร้องขอยกเลิก/แก้ไข ใบแจ้งหนี้ (ภายใน)</h3>
+                            <button id="btn-copy-invoice-link" class="btn btn-outline" style="border-color: var(--primary); color: var(--primary);">
+                                <i class="ri-links-line"></i> คัดลอกลิงก์ฟอร์มสำหรับเจ้าหน้าที่
+                            </button>
+                        </div>
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th style="white-space: nowrap;">วันที่ส่ง</th>
+                                        <th style="white-space: nowrap;">เลขที่ใบแจ้งหนี้</th>
+                                        <th style="white-space: nowrap;">ประเภท</th>
+                                        <th style="white-space: nowrap;">ชื่อลูกค้า/หน่วยงาน</th>
+                                        <th style="text-align: right; white-space: nowrap;">จำนวนเงิน</th>
+                                        <th style="white-space: nowrap;">ผู้ยื่น</th>
+                                        <th style="text-align: right; white-space: nowrap;">จัดการ</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="invoice-req-table-body">
                                     <tr><td colspan="7" class="text-center text-muted">กำลังโหลดข้อมูล...</td></tr>
                                 </tbody>
                             </table>
@@ -917,6 +1051,23 @@
         </div>
     </div>
 
+    <!-- Modal ดูรายละเอียดใบคำร้องขอยกเลิก/แก้ไข ใบแจ้งหนี้ (อ่านอย่างเดียว) -->
+    <div id="invoice-detail-modal" class="modal-overlay hidden">
+        <div class="modal-content inv-modal-content">
+            <button type="button" class="inv-close-x" id="btn-close-invoice-x" aria-label="ปิด"><i class="ri-close-line"></i></button>
+            <div class="inv-sheet">
+                <div class="inv-sheet-head">
+                    <img src="https://kvdc-vetku.com/wp-content/uploads/2026/03/1.png" alt="KVDC Logo">
+                    <h3>ใบคำร้องขอยกเลิก/แก้ไข ใบแจ้งหนี้</h3>
+                </div>
+                <div id="invoice-detail-body"></div>
+            </div>
+            <div style="display: flex; justify-content: flex-end; margin-top: 1.5rem;">
+                <button type="button" class="btn btn-outline" id="btn-close-invoice-modal">ปิด</button>
+            </div>
+        </div>
+    </div>
+
     <div id="custom-confirm-modal" class="modal-overlay hidden">
         <div class="modal-content text-center">
             <h3 id="confirm-modal-title" class="mb-4"></h3>
@@ -1008,6 +1159,8 @@
         const ADMIN_EMAIL = "centerdiagnostic@kvdc-vetku.com";
         
         emailjs.init(EMAILJS_PUBLIC_KEY);
+        const INVOICE_NOTIFY_EMAIL = "fvetprkh@ku.ac.th";
+        const INVOICE_NOTIFY_NAME = "คุณพัชริน ขุนรุ่งเรือง";
 
         async function sendIntraFlowEmail(toEmail, subject, message, actionUrl, headerText = "เรียน ผู้อำนวยการศูนย์ชันสูตรโรคสัตว์ กำแพงแสน", footerText = "สามารถคลิกที่ลิงก์ด้านล่างเพื่อดำเนินการต่อได้ทันที:") {
             try {
@@ -1106,6 +1259,17 @@
             document.getElementById('auth-view')?.classList.add('hidden');
             document.getElementById('app-view')?.classList.add('hidden');
             document.getElementById('public-view')?.classList.remove('hidden');
+            const globalLoader = document.getElementById('global-loader');
+            if (globalLoader) globalLoader.style.display = 'none';
+        }
+
+        // ปิด Loader ทันทีสำหรับหน้าฟอร์มใบคำร้องใบแจ้งหนี้ (เจ้าหน้าที่ภายใน)
+        const isInvoiceFormRoute = urlParams.get('view') === 'invoice_form';
+        if (isInvoiceFormRoute) {
+            document.getElementById('auth-view')?.classList.add('hidden');
+            document.getElementById('app-view')?.classList.add('hidden');
+            document.getElementById('public-view')?.classList.add('hidden');
+            document.getElementById('invoice-form-view')?.classList.remove('hidden');
             const globalLoader = document.getElementById('global-loader');
             if (globalLoader) globalLoader.style.display = 'none';
         }
@@ -1306,12 +1470,21 @@
                 showLoader(false);
                 return;
             }
+            if (new URLSearchParams(window.location.search).get('view') === 'invoice_form') {
+                document.getElementById('auth-view')?.classList.add('hidden');
+                document.getElementById('app-view')?.classList.add('hidden');
+                document.getElementById('public-view')?.classList.add('hidden');
+                document.getElementById('invoice-form-view')?.classList.remove('hidden');
+                showLoader(false);
+                return;
+            }
 
             document.getElementById('auth-view')?.classList.add('hidden');
             document.getElementById('app-view')?.classList.remove('hidden');
 
             loadApproversList(); 
             if (typeof window.loadCustomerRequests === 'function') window.loadCustomerRequests();
+            if (typeof window.loadInvoiceRequests === 'function') window.loadInvoiceRequests();
 
             if (isApprovalRoute) {
                 initApprovalView();
@@ -1360,6 +1533,11 @@
                     document.getElementById('auth-view')?.classList.add('hidden');
                     document.getElementById('app-view')?.classList.add('hidden');
                     document.getElementById('public-view')?.classList.remove('hidden');
+                } else if (new URLSearchParams(window.location.search).get('view') === 'invoice_form') {
+                    document.getElementById('auth-view')?.classList.add('hidden');
+                    document.getElementById('app-view')?.classList.add('hidden');
+                    document.getElementById('public-view')?.classList.add('hidden');
+                    document.getElementById('invoice-form-view')?.classList.remove('hidden');
                 } else {
                     document.getElementById('auth-view')?.classList.remove('hidden');
                     document.getElementById('app-view')?.classList.add('hidden');
@@ -1455,6 +1633,7 @@
         document.getElementById('tab-customer-req-btn')?.addEventListener('click', () => {
             switchTab('customer-req');
             if (typeof window.loadCustomerRequests === 'function') window.loadCustomerRequests();
+            if (typeof window.loadInvoiceRequests === 'function') window.loadInvoiceRequests();
         });
         document.getElementById('tab-submit-btn')?.addEventListener('click', () => switchTab('submit'));
         document.getElementById('tab-export-btn')?.addEventListener('click', () => switchTab('export'));
@@ -2668,6 +2847,227 @@
                 showLoader(false);
             }
         };
+
+        // ==================== Invoice Request Form & Logic (เจ้าหน้าที่ภายใน) ====================
+        function escapeHtml(str) {
+            return String(str ?? '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        const formatInvoiceAmount = (amount) => {
+            const num = Number(amount);
+            if (amount === null || amount === undefined || amount === '' || !Number.isFinite(num)) return '-';
+            return num.toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' บาท';
+        };
+
+        const formatInvoiceDate = (invoiceDate) => {
+            if (!invoiceDate) return '-';
+            const d = new Date(invoiceDate + 'T00:00:00');
+            if (isNaN(d.getTime())) return '-';
+            return d.toLocaleDateString('th-TH', { day: 'numeric', month: 'long', year: 'numeric' });
+        };
+
+        const invoiceReqCache = new Map();
+
+        document.getElementById('invoice-request-form')?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('btn-submit-invoice-req');
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = '<div class="loader"></div> กำลังส่งข้อมูล...';
+            }
+
+            try {
+                const requestType = document.querySelector('input[name="inv-req-type"]:checked')?.value || '';
+                const invoiceNo = (document.getElementById('inv-req-no')?.value || '').trim();
+                const invoiceDate = (document.getElementById('inv-req-date')?.value || '').trim();
+                const customerName = (document.getElementById('inv-req-customer')?.value || '').trim();
+                const amountStr = (document.getElementById('inv-req-amount')?.value || '').trim();
+                const reason = (document.getElementById('inv-req-reason')?.value || '').trim();
+                const submittedBy = (document.getElementById('inv-req-submitter')?.value || '').trim();
+                const amount = Number(amountStr);
+
+                if (requestType !== 'cancel' && requestType !== 'edit') {
+                    alert('กรุณาเลือกประเภทคำร้อง');
+                    return;
+                }
+                if (!invoiceNo || !invoiceDate || !customerName || !reason || !submittedBy) {
+                    alert('กรุณากรอกข้อมูลให้ครบทุกช่อง');
+                    return;
+                }
+                if (amountStr === '' || !Number.isFinite(amount) || amount < 0) {
+                    alert('กรุณาระบุจำนวนเงินเป็นตัวเลขที่ไม่ติดลบ');
+                    return;
+                }
+
+                await addDoc(collection(db, 'invoice_requests'), {
+                    requestType,
+                    invoiceNo,
+                    invoiceDate,
+                    customerName,
+                    amount,
+                    reason,
+                    submittedBy,
+                    createdAt: serverTimestamp(),
+                    status: 'new'
+                });
+
+                // แจ้งเตือนทางอีเมลไปยังผู้รับผิดชอบใบแจ้งหนี้ (หากส่งไม่สำเร็จ sendIntraFlowEmail จะจับ error ไว้เอง)
+                const typeLabel = requestType === 'cancel' ? 'ยกเลิก' : 'แก้ไข';
+                const emailSubject = `[KVDC] ใบคำร้องขอ${typeLabel}ใบแจ้งหนี้ใหม่ (เลขที่ ${invoiceNo})`;
+                const emailMessage = `มีผู้ส่งใบคำร้องขอยกเลิก/แก้ไข ใบแจ้งหนี้เข้ามาใหม่\n\nรายละเอียดคำร้อง:\n- ประเภทคำร้อง: ${typeLabel}ใบแจ้งหนี้\n- เลขที่ใบแจ้งหนี้: ${invoiceNo}\n- วันที่ใบแจ้งหนี้: ${formatInvoiceDate(invoiceDate)}\n- ชื่อลูกค้า / หน่วยงาน: ${customerName}\n- จำนวนเงิน: ${formatInvoiceAmount(amount)}\n- สาเหตุ: ${reason}\n- ผู้ยื่นคำร้อง: ${submittedBy}`;
+                const loginUrl = window.location.href.split('?')[0];
+                await sendIntraFlowEmail(INVOICE_NOTIFY_EMAIL, emailSubject, emailMessage, loginUrl, `เรียน ${INVOICE_NOTIFY_NAME}`, "สามารถคลิกที่ลิงก์ด้านล่างเพื่อเข้าสู่ระบบ แล้วดูรายละเอียดได้ที่แท็บ คำร้องลูกค้า:");
+
+                document.getElementById('invoice-request-form')?.classList.add('hidden');
+                document.getElementById('invoice-success-msg')?.classList.remove('hidden');
+            } catch (err) {
+                alert('เกิดข้อผิดพลาดในการส่งข้อมูล: ' + err.message);
+            } finally {
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = 'ส่งคำร้อง <i class="ri-send-plane-fill"></i>';
+                }
+            }
+        });
+
+        document.getElementById('btn-invoice-new-req')?.addEventListener('click', () => {
+            const form = document.getElementById('invoice-request-form');
+            form?.reset();
+            form?.classList.remove('hidden');
+            document.getElementById('invoice-success-msg')?.classList.add('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+
+        document.getElementById('btn-copy-invoice-link')?.addEventListener('click', () => {
+            const baseUrl = window.location.href.split('?')[0];
+            const invoiceUrl = `${baseUrl}?view=invoice_form`;
+            navigator.clipboard.writeText(invoiceUrl).then(() => {
+                showToast('คัดลอกลิงก์เรียบร้อยแล้ว ส่งลิงก์นี้ให้เจ้าหน้าที่ภายในได้เลย', 'success');
+            });
+        });
+
+        window.loadInvoiceRequests = async () => {
+            const tbody = document.getElementById('invoice-req-table-body');
+            if (!tbody) return;
+            tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted">กำลังโหลดข้อมูล...</td></tr>';
+            try {
+                const q = query(collection(db, 'invoice_requests'), orderBy('createdAt', 'desc'));
+                const snapshot = await getDocs(q);
+                invoiceReqCache.clear();
+
+                if (snapshot.empty) {
+                    tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted">ยังไม่มีคำร้องใบแจ้งหนี้</td></tr>';
+                    return;
+                }
+
+                const isAdmin = userRoles.includes('admin');
+                let rowsHtml = '';
+                snapshot.forEach(docSnap => {
+                    const data = docSnap.data();
+                    invoiceReqCache.set(docSnap.id, data);
+                    const safeId = escapeHtml(docSnap.id);
+                    const dateStr = data.createdAt ? formatDate(data.createdAt) : '-';
+                    const typeBadge = data.requestType === 'cancel'
+                        ? '<span class="badge" style="background: #ffe4e6; color: #be123c;">ยกเลิก</span>'
+                        : (data.requestType === 'edit'
+                            ? '<span class="badge" style="background: #fef3c7; color: #b45309;">แก้ไข</span>'
+                            : '<span style="color: var(--text-muted);">-</span>');
+
+                    let actionHtml = `<button class="btn btn-outline" onclick="window.viewInvoiceReq('${safeId}')" style="padding: 0.25rem 0.5rem; font-size: 0.8rem; border-color: var(--primary); color: var(--primary);"><i class="ri-eye-line"></i> ดู</button>`;
+                    if (isAdmin) {
+                        actionHtml += ` <button class="btn btn-outline" onclick="window.deleteInvoiceReq('${safeId}')" style="padding: 0.25rem 0.5rem; font-size: 0.8rem; border-color: var(--danger); color: var(--danger);"><i class="ri-delete-bin-line"></i> ลบ</button>`;
+                    }
+
+                    rowsHtml += `
+                        <tr>
+                            <td style="vertical-align: top; white-space: nowrap;">${escapeHtml(dateStr)}</td>
+                            <td style="vertical-align: top;"><span class="badge" style="background: var(--primary-light); color: var(--primary);">${escapeHtml(data.invoiceNo || '-')}</span></td>
+                            <td style="vertical-align: top;">${typeBadge}</td>
+                            <td style="vertical-align: top;">${escapeHtml(data.customerName || '-')}</td>
+                            <td style="vertical-align: top; text-align: right; white-space: nowrap;">${escapeHtml(formatInvoiceAmount(data.amount))}</td>
+                            <td style="vertical-align: top;">${escapeHtml(data.submittedBy || '-')}</td>
+                            <td style="vertical-align: top; text-align: right; white-space: nowrap;">${actionHtml}</td>
+                        </tr>
+                    `;
+                });
+                tbody.innerHTML = rowsHtml;
+            } catch (err) {
+                console.error('Error loading invoice requests:', err?.message);
+                tbody.innerHTML = '<tr><td colspan="7" class="text-center text-danger">โหลดข้อมูลผิดพลาด</td></tr>';
+            }
+        };
+
+        window.deleteInvoiceReq = async (id) => {
+            if(!confirm('ยืนยันการลบคำร้องใบแจ้งหนี้นี้? (การกระทำนี้ไม่สามารถย้อนกลับได้)')) return;
+            try {
+                showLoader(true);
+                await deleteDoc(doc(db, 'invoice_requests', id));
+                showToast('ลบคำร้องใบแจ้งหนี้เรียบร้อยแล้ว', 'success');
+                window.loadInvoiceRequests();
+            } catch (err) {
+                showToast('ไม่สามารถลบได้: ' + err.message, 'error');
+            } finally {
+                showLoader(false);
+            }
+        };
+
+        window.viewInvoiceReq = (id) => {
+            const data = invoiceReqCache.get(id);
+            const modal = document.getElementById('invoice-detail-modal');
+            const body = document.getElementById('invoice-detail-body');
+            if (!data || !modal || !body) {
+                showToast('ไม่พบข้อมูลคำร้องนี้ กรุณาโหลดรายการใหม่', 'error');
+                return;
+            }
+            const val = (v) => {
+                const s = (v === null || v === undefined) ? '' : String(v).trim();
+                return s ? escapeHtml(s) : '-';
+            };
+            const check = (checked, label) => `
+                <div class="inv-check${checked ? ' is-checked' : ''}">
+                    <i class="${checked ? 'ri-checkbox-fill' : 'ri-checkbox-blank-line'}"></i> ${label}
+                </div>`;
+
+            body.innerHTML = `
+                <div class="inv-checks">
+                    ${check(data.requestType === 'cancel', 'ยกเลิกใบแจ้งหนี้')}
+                    ${check(data.requestType === 'edit', 'แก้ไขใบแจ้งหนี้')}
+                </div>
+                <div class="inv-row inv-row-2">
+                    <div class="inv-field"><span class="inv-label">เลขที่ใบแจ้งหนี้ :</span><span class="inv-value">${val(data.invoiceNo)}</span></div>
+                    <div class="inv-field"><span class="inv-label">วันที่ :</span><span class="inv-value">${escapeHtml(formatInvoiceDate(data.invoiceDate))}</span></div>
+                </div>
+                <div class="inv-row">
+                    <div class="inv-field"><span class="inv-label">ชื่อลูกค้า / หน่วยงาน :</span><span class="inv-value">${val(data.customerName)}</span></div>
+                </div>
+                <div class="inv-row">
+                    <div class="inv-field"><span class="inv-label">จำนวนเงิน :</span><span class="inv-value">${escapeHtml(formatInvoiceAmount(data.amount))}</span></div>
+                </div>
+                <h4 class="inv-subtitle">รายละเอียดที่ต้องยกเลิก/แก้ไข ใบแจ้งหนี้</h4>
+                <div class="inv-label" style="margin-bottom: 0.4rem;">สาเหตุ</div>
+                <div class="inv-reason-box">${val(data.reason)}</div>
+                <div class="inv-sheet-foot">
+                    <div>ผู้ยื่นคำร้อง: <strong>${val(data.submittedBy)}</strong></div>
+                    <div>วันที่ส่ง: <strong>${escapeHtml(data.createdAt ? formatDate(data.createdAt) : '-')}</strong></div>
+                </div>
+            `;
+            modal.classList.remove('hidden');
+        };
+
+        const closeInvoiceModal = () => document.getElementById('invoice-detail-modal')?.classList.add('hidden');
+        document.getElementById('btn-close-invoice-x')?.addEventListener('click', closeInvoiceModal);
+        document.getElementById('btn-close-invoice-modal')?.addEventListener('click', closeInvoiceModal);
+        document.getElementById('invoice-detail-modal')?.addEventListener('click', (e) => {
+            if (e.target === e.currentTarget) closeInvoiceModal();
+        });
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && !document.getElementById('invoice-detail-modal')?.classList.contains('hidden')) closeInvoiceModal();
+        });
 
             window.addEventListener('error', function(e){
                 console.error('Global Error:', e.message);
