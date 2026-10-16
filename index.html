@@ -466,25 +466,25 @@
             <form id="public-request-form">
                 <div class="form-group">
                     <label>เลขคำร้องที่ต้องการแก้ไข <span style="color: var(--danger);">*</span></label>
-                    <input type="text" id="public-req-id" required placeholder="ระบุเลขคำร้อง" style="padding: 1rem; font-size: 1rem;">
+                    <input type="text" id="public-req-id" required maxlength="50" placeholder="ระบุเลขคำร้อง" style="padding: 1rem; font-size: 1rem;">
                 </div>
                 <div class="form-group">
                     <label>ชื่อลูกค้า / หน่วยงาน <span style="color: var(--danger);">*</span></label>
-                    <input type="text" id="public-req-name" required placeholder="ระบุชื่อ" style="padding: 1rem; font-size: 1rem;">
+                    <input type="text" id="public-req-name" required maxlength="200" placeholder="ระบุชื่อ" style="padding: 1rem; font-size: 1rem;">
                 </div>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
                     <div class="form-group">
                         <label>เบอร์โทรศัพท์ <span style="color: var(--danger);">*</span></label>
-                        <input type="tel" id="public-req-phone" required placeholder="ระบุเบอร์โทรศัพท์" style="padding: 1rem; font-size: 1rem;">
+                        <input type="tel" id="public-req-phone" required maxlength="30" placeholder="ระบุเบอร์โทรศัพท์" style="padding: 1rem; font-size: 1rem;">
                     </div>
                     <div class="form-group">
                         <label>อีเมล <span style="color: var(--danger);">*</span></label>
-                        <input type="email" id="public-req-email" required placeholder="ระบุอีเมล" style="padding: 1rem; font-size: 1rem;">
+                        <input type="email" id="public-req-email" required maxlength="254" placeholder="ระบุอีเมล" style="padding: 1rem; font-size: 1rem;">
                     </div>
                 </div>
                 <div class="form-group">
                     <label>รายละเอียดที่ต้องการแก้ไข <span style="color: var(--danger);">*</span></label>
-                    <textarea id="public-req-detail" rows="4" required placeholder="ระบุรายละเอียด..." style="padding: 1rem; font-size: 1rem; resize: vertical;"></textarea>
+                    <textarea id="public-req-detail" rows="4" required maxlength="5000" placeholder="ระบุรายละเอียด..." style="padding: 1rem; font-size: 1rem; resize: vertical;"></textarea>
                 </div>
                 <button type="submit" class="btn btn-primary w-100" id="btn-submit-public-req" style="padding: 1rem; font-size: 1.1rem; border-radius: 12px;">
                     ส่งคำร้อง <i class="ri-send-plane-fill"></i>
@@ -520,7 +520,7 @@
                 <div class="inv-grid-2">
                     <div class="form-group">
                         <label for="inv-req-no">เลขที่ใบแจ้งหนี้ <span style="color: var(--danger);">*</span></label>
-                        <input type="text" id="inv-req-no" required placeholder="ระบุเลขที่ใบแจ้งหนี้" style="padding: 1rem; font-size: 1rem;">
+                        <input type="text" id="inv-req-no" required maxlength="50" placeholder="ระบุเลขที่ใบแจ้งหนี้" style="padding: 1rem; font-size: 1rem;">
                     </div>
                     <div class="form-group">
                         <label for="inv-req-date">วันที่ใบแจ้งหนี้ <span style="color: var(--danger);">*</span></label>
@@ -529,20 +529,20 @@
                 </div>
                 <div class="form-group">
                     <label for="inv-req-customer">ชื่อลูกค้า / หน่วยงาน <span style="color: var(--danger);">*</span></label>
-                    <input type="text" id="inv-req-customer" required placeholder="ระบุชื่อลูกค้า / หน่วยงาน" style="padding: 1rem; font-size: 1rem;">
+                    <input type="text" id="inv-req-customer" required maxlength="200" placeholder="ระบุชื่อลูกค้า / หน่วยงาน" style="padding: 1rem; font-size: 1rem;">
                 </div>
                 <div class="form-group">
                     <label for="inv-req-amount">จำนวนเงิน (บาท) <span style="color: var(--danger);">*</span></label>
-                    <input type="number" id="inv-req-amount" required step="0.01" min="0" inputmode="decimal" placeholder="0.00" style="padding: 1rem; font-size: 1rem;">
+                    <input type="number" id="inv-req-amount" required step="0.01" min="0" max="1000000000" inputmode="decimal" placeholder="0.00" style="padding: 1rem; font-size: 1rem;">
                 </div>
                 <h4 class="inv-subtitle">รายละเอียดที่ต้องยกเลิก/แก้ไข ใบแจ้งหนี้</h4>
                 <div class="form-group">
                     <label for="inv-req-reason">ระบุสาเหตุ <span style="color: var(--danger);">*</span></label>
-                    <textarea id="inv-req-reason" rows="4" required placeholder="ระบุสาเหตุ..." style="padding: 1rem; font-size: 1rem; resize: vertical;"></textarea>
+                    <textarea id="inv-req-reason" rows="4" required maxlength="2000" placeholder="ระบุสาเหตุ..." style="padding: 1rem; font-size: 1rem; resize: vertical;"></textarea>
                 </div>
                 <div class="form-group">
                     <label for="inv-req-submitter">ชื่อผู้ยื่นคำร้อง <span style="color: var(--danger);">*</span></label>
-                    <input type="text" id="inv-req-submitter" required placeholder="ระบุชื่อ-นามสกุลผู้ยื่นคำร้อง" style="padding: 1rem; font-size: 1rem;">
+                    <input type="text" id="inv-req-submitter" required maxlength="200" placeholder="ระบุชื่อ-นามสกุลผู้ยื่นคำร้อง" style="padding: 1rem; font-size: 1rem;">
                 </div>
                 <button type="submit" class="btn btn-primary w-100" id="btn-submit-invoice-req" style="padding: 1rem; font-size: 1.1rem; border-radius: 12px;">
                     ส่งคำร้อง <i class="ri-send-plane-fill"></i>
@@ -905,7 +905,7 @@
 
                             <div class="form-group" style="background: var(--background); padding: 1.5rem; border-radius: var(--radius-md); border: 1px solid var(--border); margin-bottom: 1.5rem;">
                                 <label style="font-size: 1rem; color: var(--text-main); margin-bottom: 0.5rem;"><i class="ri-attachment-2"></i> แนบไฟล์เอกสารเพิ่มเติม</label>
-                                <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem;">รองรับไฟล์ PDF, JPG, PNG ขนาดไม่เกิน 5MB</p>
+                                <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem;">รองรับไฟล์ PDF, JPG, PNG ขนาดไม่เกิน 750 KB</p>
                                 <input type="file" id="doc-attachment" accept=".pdf, image/jpeg, image/png" style="padding: 0.5rem; background: var(--surface);">
                             </div>
 
@@ -1149,8 +1149,62 @@
         } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { 
             getFirestore, collection, addDoc, getDocs, getDoc, doc, updateDoc, 
-            query, where, serverTimestamp, onSnapshot, setDoc, deleteDoc, or, orderBy, limit
+            query, where, serverTimestamp, onSnapshot, setDoc, deleteDoc, or, and, orderBy, runTransaction
         } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // ==================== [DEV-MODE] เริ่ม: โหมดทดสอบ (Firebase Emulator) ====================
+        // ใช้ Firebase จริงเฉพาะเมื่อเปิดจาก centerdiagnostic.github.io เท่านั้น
+        // ที่อื่นทุกกรณี (localhost, 127.0.0.1, file://, Live Server, IP ในวง LAN) = โหมดทดสอบ
+        import { connectAuthEmulator } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { connectFirestoreEmulator } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        const IS_PROD_HOST = window.location.hostname === 'centerdiagnostic.github.io';
+        const DEV_FIREBASE_CONFIG = { projectId: 'demo-intraflow', apiKey: 'demo-key', authDomain: 'demo-intraflow.firebaseapp.com' };
+        const DEV_EMULATOR_HOST = '127.0.0.1';
+
+        if (!IS_PROD_HOST) {
+            // EmailJS: ไม่ส่งจริง แค่แสดงใน console
+            // (object emailjs จาก CDN แก้ทีละเมธอดไม่ได้ จึงแทนที่ทั้งตัว)
+            window.emailjs = {
+                init: () => {},
+                send: async (serviceId, templateId, params) => {
+                    console.info('[DEV-MODE] ข้ามการส่งอีเมลจริง →', params?.to_email, '| หัวเรื่อง:', params?.subject, '\n' + (params?.message || ''));
+                    return { status: 200, text: 'DEV-MODE' };
+                },
+            };
+
+            // Render (PDF) และ api.ipify.org: ไม่เรียกจริง
+            const devEscape = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+            const realFetch = window.fetch.bind(window);
+            window.fetch = async (input, init) => {
+                const url = String(typeof input === 'string' ? input : input?.url || '');
+                if (url.includes('onrender.com')) {
+                    let data = {};
+                    try { data = JSON.parse(init?.body || '{}'); } catch (e) {}
+                    const sigs = ['requesterSignature', 'approverSignature', 'processedBySignature'];
+                    console.info('[DEV-MODE] ข้ามการสร้าง PDF จริง | status:', data.status, '| ลายเซ็นที่ถูกส่งไป PDF:', Object.fromEntries(sigs.map(k => [k, data[k] ? 'มี' : 'ไม่มี'])));
+                    showToast('โหมดทดสอบ: ข้ามการสร้าง PDF', 'info');
+                    // คืนหน้า HTML สรุปแทน PDF เพื่อดูว่าลายเซ็นไหนจะถูกพิมพ์ลงเอกสาร
+                    const sigHtml = sigs.map(k => `<div style="margin:8px 0"><b>${k}</b>: ${data[k] ? `<img src="${devEscape(data[k])}" style="height:50px;border:1px solid #ccc;vertical-align:middle">` : '(ไม่มี)'}</div>`).join('');
+                    const html = `<!doctype html><meta charset="utf-8"><body style="font-family:sans-serif;padding:16px"><h3>โหมดทดสอบ: ข้ามการสร้าง PDF</h3><p>AR: ${devEscape(data.arNumber)} | สถานะ: ${devEscape(data.status)}</p>${sigHtml}`;
+                    return new Response(new Blob([html], { type: 'text/html;charset=utf-8' }), { status: 200 });
+                }
+                if (url.includes('api.ipify.org')) {
+                    console.info('[DEV-MODE] ข้ามการเรียก api.ipify.org ใช้ IP สมมติ 0.0.0.0');
+                    return new Response(JSON.stringify({ ip: '0.0.0.0' }), { status: 200, headers: { 'Content-Type': 'application/json' } });
+                }
+                return realFetch(input, init);
+            };
+
+            // แถบสีส้มบนสุดของหน้า
+            const devBanner = document.createElement('div');
+            devBanner.id = 'dev-mode-banner';
+            devBanner.textContent = 'โหมดทดสอบ — ต่อฐานข้อมูลจำลองในเครื่อง';
+            devBanner.style.cssText = 'background:#f97316;color:#fff;text-align:center;font-weight:700;padding:6px 12px;position:relative;z-index:100000;';
+            document.body.prepend(devBanner);
+            console.info('[DEV-MODE] โหมดทดสอบ: ต่อ Firebase Emulator ที่', DEV_EMULATOR_HOST, 'project', DEV_FIREBASE_CONFIG.projectId);
+        }
+        // ==================== [DEV-MODE] จบ: โหมดทดสอบ (ส่วนต่อ emulator อยู่หลังสร้าง app) ====================
 
         // ==================== ตั้งค่า EmailJS ====================
         const EMAILJS_SERVICE_ID = "service_slrcztv";
@@ -1181,7 +1235,7 @@
         }
 
         // ==================== Firebase Config ====================
-        const firebaseConfig = {
+        const PROD_FIREBASE_CONFIG = { // [DEV-MODE] เปลี่ยนชื่อจาก firebaseConfig — ใช้เฉพาะบน centerdiagnostic.github.io
             apiKey: "AIzaSyBlo146IfCdTEjng0gHfqhU8DjZ5mRjgzM",
             authDomain: "intraflow-731ad.firebaseapp.com",
             projectId: "intraflow-731ad",
@@ -1189,6 +1243,9 @@
             messagingSenderId: "603428304227",
             appId: "1:603428304227:web:a49c8c37afc9d3208b8f56"
         };
+        // [DEV-MODE] เลือก config: ของจริงเฉพาะบน centerdiagnostic.github.io / ที่อื่นใช้ demo-intraflow
+        const firebaseConfig = IS_PROD_HOST ? PROD_FIREBASE_CONFIG : DEV_FIREBASE_CONFIG;
+        if (!IS_PROD_HOST && firebaseConfig.projectId !== 'demo-intraflow') throw new Error('[DEV-MODE] หยุด: โหมดทดสอบต้องใช้ demo-intraflow เท่านั้น');
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
@@ -1197,6 +1254,14 @@
         // สร้าง Instance ที่สองสำหรับ Admin ใช้สร้างบัญชีใหม่โดยไม่หลุดจากระบบหลัก
         const secondaryApp = initializeApp(firebaseConfig, "SecondaryApp");
         const secondaryAuth = getAuth(secondaryApp);
+
+        // [DEV-MODE] ต่อ emulator ทั้ง app หลักและ SecondaryApp (ที่แอดมินใช้สร้างบัญชี)
+        if (!IS_PROD_HOST) {
+            connectAuthEmulator(auth, `http://${DEV_EMULATOR_HOST}:9099`, { disableWarnings: true });
+            connectAuthEmulator(secondaryAuth, `http://${DEV_EMULATOR_HOST}:9099`, { disableWarnings: true });
+            connectFirestoreEmulator(db, DEV_EMULATOR_HOST, 8080);
+        }
+        // [DEV-MODE] จบ
 
         // Global State
         let currentUser = null;
@@ -1211,13 +1276,23 @@
         let currentPage = 1;
         let exportDataReady = [];
 
+        const ATTACHMENT_MAX_BYTES = 750 * 1024;
+
+        // อ่านไฟล์เป็น data URL (ใช้ตอนกดยื่น เพื่อไม่ให้ไฟล์แนบหายถ้ากดเร็วกว่าที่ FileReader อ่านเสร็จ)
+        const readFileAsDataURL = (file) => new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = () => reject(reader.error);
+            reader.readAsDataURL(file);
+        });
+
         // ตรวจสอบขนาดไฟล์แนบและแปลงเป็น Base64
         document.getElementById('doc-attachment')?.addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (file) {
-                const maxSize = 5 * 1024 * 1024; // จำกัดขนาดที่ 5MB
-                if (file.size > maxSize) {
-                    showToast('ไฟล์มีขนาดใหญ่เกินไป (จำกัดไม่เกิน 5MB)', 'error');
+                // ไฟล์แนบถูกเก็บเป็น base64 ในเอกสาร Firestore 1 ฉบับ (จำกัด 1 MiB ต่อเอกสาร) → ไฟล์จริงต้องไม่เกิน 750 KB
+                if (file.size > ATTACHMENT_MAX_BYTES) {
+                    showToast('ไฟล์มีขนาดใหญ่เกินไป (จำกัดไม่เกิน 750 KB)', 'error');
                     e.target.value = ""; // เคลียร์ค่า input
                     currentAttachmentBase64 = "";
                     return;
@@ -1238,7 +1313,7 @@
                 const reader = new FileReader();
                 reader.onload = function(event) {
                     currentSignatureBase64 = event.target.result;
-                    document.getElementById('signature-preview').innerHTML = `<img src="${currentSignatureBase64}" style="max-height: 50px; object-fit: contain;">`;
+                    document.getElementById('signature-preview').innerHTML = safeImageSrc(currentSignatureBase64) ? `<img src="${escapeHtml(safeImageSrc(currentSignatureBase64))}" style="max-height: 50px; object-fit: contain;">` : "ไฟล์ลายเซ็นไม่ถูกต้อง";
                 };
                 reader.readAsDataURL(file);
             } else {
@@ -1290,15 +1365,36 @@
             }
         }
 
+        // ==================== กัน XSS: ทุกข้อมูลจากผู้ใช้/คนนอก ต้องผ่านฟังก์ชันเหล่านี้ก่อนใส่ใน HTML ====================
+        function escapeHtml(str) {
+            return String(str ?? '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+        // src ของรูป (ลายเซ็น): รับเฉพาะ data:image/... แบบ base64 หรือ https: เท่านั้น
+        function safeImageSrc(value) {
+            const s = String(value ?? '');
+            return (/^data:image\/(png|jpe?g|gif|webp|svg\+xml);base64,[a-z0-9+/=\s]+$/i.test(s) || /^https:\/\//i.test(s)) ? s : '';
+        }
+        // href ของไฟล์แนบ: รับเฉพาะ PDF/JPG/PNG แบบ data: base64 หรือ https: เท่านั้น
+        function safeAttachmentHref(value) {
+            const s = String(value ?? '');
+            return (/^data:(application\/pdf|image\/(png|jpe?g));base64,[a-z0-9+/=\s]+$/i.test(s) || /^https:\/\//i.test(s)) ? s : '';
+        }
+
         function showToast(message, type = 'info') {
             const container = document.getElementById('toast-container');
             if (!container) return;
             const toast = document.createElement('div');
-            let icon = type === 'success' ? '<i class="ri-checkbox-circle-fill"></i>' : 
-                       type === 'error' ? '<i class="ri-error-warning-fill"></i>' : 
+            let icon = type === 'success' ? '<i class="ri-checkbox-circle-fill"></i>' :
+                       type === 'error' ? '<i class="ri-error-warning-fill"></i>' :
                        '<i class="ri-information-fill"></i>';
             toast.className = `toast ${type}`;
-            toast.innerHTML = `${icon} <span>${message}</span>`;
+            toast.innerHTML = `${icon} <span></span>`;
+            toast.querySelector('span').textContent = message;
             container.appendChild(toast);
             setTimeout(() => { 
                 toast.style.transform = 'translateX(120%)';
@@ -1318,7 +1414,7 @@
                 case 'pending': return '<span class="badge badge-pending"><i class="ri-time-line"></i> รออนุมัติ</span>';
                 case 'approved': return '<span class="badge badge-approved"><i class="ri-check-line"></i> อนุมัติแล้ว</span>';
                 case 'rejected': return '<span class="badge badge-rejected"><i class="ri-close-line"></i> ไม่อนุมัติ</span>';
-                default: return `<span class="badge">${status}</span>`;
+                default: return `<span class="badge">${escapeHtml(status)}</span>`;
             }
         }
 
@@ -1381,8 +1477,14 @@
         };
 
         // ฟังก์ชันดึงลายเซ็นที่ขาดหายไปสำหรับเอกสารเก่า
+        // ลายเซ็นผู้อนุมัติแสดงเฉพาะเอกสารที่อนุมัติแล้ว / ลายเซ็นผู้ดำเนินการแสดงเฉพาะเมื่อดำเนินการแล้ว
+        // (เอกสารเก่าที่ถูกปฏิเสธอาจมีลายเซ็นผู้อนุมัติเก็บอยู่ — ไม่แก้ข้อมูล แต่ไม่ส่งไปแสดง)
         async function prepareDocDataWithSignatures(docData) {
             let preparedData = { ...docData };
+            const isApproved = preparedData.status === 'approved';
+            const isProcessed = isApproved && preparedData.isProcessed === true;
+            if (!isApproved) preparedData.approverSignature = '';
+            if (!isProcessed) preparedData.processedBySignature = '';
             try {
                 const fetchSig = async (email) => {
                     if(!email) return '';
@@ -1393,8 +1495,8 @@
                 };
 
                 if (!preparedData.requesterSignature) preparedData.requesterSignature = await fetchSig(preparedData.requesterEmail);
-                if (!preparedData.approverSignature && preparedData.approverEmail) preparedData.approverSignature = await fetchSig(preparedData.approverEmail);
-                if (!preparedData.processedBySignature && preparedData.processedBy) preparedData.processedBySignature = await fetchSig(preparedData.processedBy);
+                if (isApproved && !preparedData.approverSignature && preparedData.approverEmail) preparedData.approverSignature = await fetchSig(preparedData.approverEmail);
+                if (isProcessed && !preparedData.processedBySignature && preparedData.processedBy) preparedData.processedBySignature = await fetchSig(preparedData.processedBy);
             } catch(e) { console.error("Error fetching signatures", e); }
             return preparedData;
         }
@@ -1454,13 +1556,16 @@
             const roleNames = { 'admin': 'ผู้ดูแลระบบ', 'approver': 'ผู้อนุมัติ', 'user': 'พนักงาน', 'responder': 'เจ้าหน้าที่ตอบผล' };
             const rolesText = roles.map(r => roleNames[r] || r).join(', ');
             const roleBadgeEl = document.getElementById('user-role-badge');
-            if (roleBadgeEl) roleBadgeEl.innerHTML = `<i class="ri-shield-user-line"></i> ${rolesText || 'พนักงาน'}`;
+            if (roleBadgeEl) roleBadgeEl.innerHTML = `<i class="ri-shield-user-line"></i> ${escapeHtml(rolesText || 'พนักงาน')}`;
 
             if (roles.includes('admin')) {
                 document.getElementById('tab-admin-btn').classList.remove('hidden');
             } else {
                 document.getElementById('tab-admin-btn').classList.add('hidden');
             }
+
+            // แท็บ Export เฉพาะ admin และ responder
+            document.getElementById('tab-export-btn')?.classList.toggle('hidden', !canUseExport());
 
             const isPublicRoute = new URLSearchParams(window.location.search).get('view') === 'public_form';
             if (isPublicRoute) {
@@ -1611,7 +1716,7 @@
                     const isActive = data.isActive !== false;
                     
                     if (userRolesArray.includes('approver') && isActive) {
-                        optionsHtml += `<option value="${data.email}">${data.displayName || data.name || 'ไม่ระบุชื่อ'} (${data.email})</option>`;
+                        optionsHtml += `<option value="${escapeHtml(data.email)}">${escapeHtml(data.displayName || data.name || 'ไม่ระบุชื่อ')} (${escapeHtml(data.email)})</option>`;
                         count++;
                     }
                 });
@@ -1640,7 +1745,13 @@
         document.getElementById('tab-admin-btn')?.addEventListener('click', () => switchTab('admin'));
         document.getElementById('btn-admin-panel')?.addEventListener('click', () => switchTab('admin'));
 
+        function canUseExport() {
+            return userRoles.includes('admin') || userRoles.includes('responder');
+        }
+
         function switchTab(target) {
+            // แท็บ Export เฉพาะ admin และ responder (บทบาทอื่นถูกส่งกลับไปหน้ารายการ)
+            if (target === 'export' && !canUseExport()) target = 'list';
             // บังคับสลับกลับมาหน้า Dashboard เสมอเมื่อกดเมนูด้านบน
             const dash = document.getElementById('dashboard-section');
             const approvalSec = document.getElementById('approval-section');
@@ -1748,12 +1859,12 @@
                 const safeApproverEmail = (d.approverEmail || '').toLowerCase().trim();
                 
                 if (userRoles.includes('approver') && d.status === 'pending' && safeUserEmail === safeApproverEmail) {
-                    actionHtml += `<button class="btn btn-primary btn-approve-doc" data-id="${d.id}" data-token="${d.token}" style="padding: 0.35rem 0.65rem; font-size: 0.85rem; margin-right: 0.25rem; position: relative; z-index: 2;"><i class="ri-edit-box-line"></i> พิจารณา</button>`;
+                    actionHtml += `<button class="btn btn-primary btn-approve-doc" data-id="${escapeHtml(d.id)}" data-token="${escapeHtml(d.token)}" style="padding: 0.35rem 0.65rem; font-size: 0.85rem; margin-right: 0.25rem; position: relative; z-index: 2;"><i class="ri-edit-box-line"></i> พิจารณา</button>`;
                 }
 
                 // สิทธิ์การลบ: แอดมินลบได้หมด, User ลบได้เฉพาะ Draft ตัวเอง
                 if (userRoles.includes('admin') || (d.status === 'draft' && safeUserEmail === (d.requesterEmail || '').toLowerCase().trim())) {
-                    actionHtml += `<button class="btn btn-outline btn-delete-doc" data-id="${d.id}" style="padding: 0.35rem 0.5rem; font-size: 0.85rem; border-color: var(--danger); color: var(--danger); position: relative; z-index: 2;"><i class="ri-delete-bin-line"></i></button>`;
+                    actionHtml += `<button class="btn btn-outline btn-delete-doc" data-id="${escapeHtml(d.id)}" style="padding: 0.35rem 0.5rem; font-size: 0.85rem; border-color: var(--danger); color: var(--danger); position: relative; z-index: 2;"><i class="ri-delete-bin-line"></i></button>`;
                 }
 
                 let adminCheckboxHtml = `<span style="color: var(--text-muted); font-size: 0.85rem; display: flex; justify-content: center;">-</span>`;
@@ -1769,10 +1880,10 @@
                 tr.innerHTML = `
                     <td style="color: var(--text-muted); font-size: 0.85rem; white-space: nowrap; vertical-align: top;">${formatDate(d.createdAt)}</td>
                     <td style="white-space: nowrap; vertical-align: top;">
-                        <div style="font-weight: 500;">${d.requesterName}</div>
-                        <div style="color: var(--text-muted); font-size: 0.8rem;">${d.requesterEmail}</div>
+                        <div style="font-weight: 500;">${escapeHtml(d.requesterName)}</div>
+                        <div style="color: var(--text-muted); font-size: 0.8rem;">${escapeHtml(d.requesterEmail)}</div>
                     </td>
-                    <td style="font-size: 0.9rem; white-space: nowrap; vertical-align: top;">${d.approverName || d.approverEmail}</td>
+                    <td style="font-size: 0.9rem; white-space: nowrap; vertical-align: top;">${escapeHtml(d.approverName || d.approverEmail)}</td>
                     <td style="white-space: nowrap; vertical-align: top;">${getStatusBadgeHtml(d.status)}</td>
                     <td style="vertical-align: top;">${adminCheckboxHtml}</td>
                     <td style="text-align: right; white-space: nowrap; vertical-align: top;">${actionHtml}</td>
@@ -1786,7 +1897,8 @@
             const startDate = document.getElementById('export-start-date').value;
             const endDate = document.getElementById('export-end-date').value;
             const status = document.getElementById('export-status').value;
-            
+            if (!canUseExport()) { showToast('ไม่มีสิทธิ์ใช้งานเมนู Export', 'error'); return; }
+
             showLoader(true);
             try {
                 let qConstraints = [where('isDeleted', '==', false)];
@@ -1837,9 +1949,9 @@
                     exportDataReady.forEach(item => {
                         tbody.innerHTML += `
                             <tr>
-                                <td>${item['วันที่สร้าง']}</td>
-                                <td>${item['ผู้ขออนุมัติ']}</td>
-                                <td>${item['ประเภทเอกสาร']}</td>
+                                <td>${escapeHtml(item['วันที่สร้าง'])}</td>
+                                <td>${escapeHtml(item['ผู้ขออนุมัติ'])}</td>
+                                <td>${escapeHtml(item['ประเภทเอกสาร'])}</td>
                                 <td>${getStatusBadgeHtml(item['สถานะ'])}</td>
                             </tr>
                         `;
@@ -1854,6 +1966,7 @@
         });
 
         document.getElementById('btn-export-excel')?.addEventListener('click', async () => {
+            if (!canUseExport()) { showToast('ไม่มีสิทธิ์ใช้งานเมนู Export', 'error'); return; }
             if (!exportDataReady || exportDataReady.length === 0) {
                 showToast('ไม่มีข้อมูลสำหรับ Export', 'error');
                 return;
@@ -1886,6 +1999,20 @@
             });
         });
 
+        // ข้อมูลผู้ใช้ที่โหลดล่าสุด ใช้กับปุ่มแก้ไข/ลบ (อ้างด้วย data-id แทนการฝังค่าใน onclick)
+        const adminUsersCache = new Map();
+        document.getElementById('admin-users-table-body')?.addEventListener('click', (e) => {
+            const btn = e.target.closest('button[data-action][data-id]');
+            if (!btn) return;
+            const id = btn.dataset.id;
+            if (btn.dataset.action === 'edit-user') {
+                const u = adminUsersCache.get(id);
+                if (u) window.editAdminUser(id, u.displayName || '', u.email || '', u.rolesAttr, u.isActive);
+            } else if (btn.dataset.action === 'delete-user') {
+                window.deleteAdminUser(id);
+            }
+        });
+
         window.loadAdminUsers = async () => {
             const tbody = document.getElementById('admin-users-table-body');
             if (!tbody) return;
@@ -1893,6 +2020,7 @@
             try {
                 const snapshot = await getDocs(collection(db, 'users'));
                 tbody.innerHTML = '';
+                adminUsersCache.clear();
                 snapshot.forEach(docSnap => {
                     const data = docSnap.data();
                     const userRolesArray = data.roles || (data.role ? [data.role] : ['user']);
@@ -1905,16 +2033,18 @@
                     
                     // แปลง array ให้เก็บใน attribute ง่ายขึ้น
                     const rolesAttr = userRolesArray.join(',');
-                    
+                    adminUsersCache.set(docSnap.id, { displayName: data.displayName, email: data.email, rolesAttr, isActive });
+                    const safeId = escapeHtml(docSnap.id);
+
                     tbody.innerHTML += `
                         <tr>
-                            <td>${data.displayName || '-'}</td>
-                            <td>${data.email}</td>
-                            <td><span class="badge badge-role">${roleText}</span></td>
+                            <td>${escapeHtml(data.displayName || '-')}</td>
+                            <td>${escapeHtml(data.email)}</td>
+                            <td><span class="badge badge-role">${escapeHtml(roleText)}</span></td>
                             <td>${statusBadge}</td>
                             <td style="text-align: right; white-space: nowrap;">
-                                <button class="btn btn-outline" onclick="window.editAdminUser('${docSnap.id}', '${data.displayName}', '${data.email}', '${rolesAttr}', ${isActive})" style="padding: 0.25rem 0.5rem; font-size: 0.8rem;"><i class="ri-edit-line"></i></button>
-                                <button class="btn btn-outline" onclick="window.deleteAdminUser('${docSnap.id}')" style="padding: 0.25rem 0.5rem; font-size: 0.8rem; border-color: var(--danger); color: var(--danger);"><i class="ri-delete-bin-line"></i></button>
+                                <button class="btn btn-outline" data-action="edit-user" data-id="${safeId}" style="padding: 0.25rem 0.5rem; font-size: 0.8rem;"><i class="ri-edit-line"></i></button>
+                                <button class="btn btn-outline" data-action="delete-user" data-id="${safeId}" style="padding: 0.25rem 0.5rem; font-size: 0.8rem; border-color: var(--danger); color: var(--danger);"><i class="ri-delete-bin-line"></i></button>
                             </td>
                         </tr>
                     `;
@@ -1981,7 +2111,7 @@
                 const docSnap = await getDoc(doc(db, 'users', id));
                 if (docSnap.exists() && docSnap.data().signature) {
                     currentSignatureBase64 = docSnap.data().signature;
-                    document.getElementById('signature-preview').innerHTML = `<img src="${currentSignatureBase64}" style="max-height: 50px; object-fit: contain;">`;
+                    document.getElementById('signature-preview').innerHTML = safeImageSrc(currentSignatureBase64) ? `<img src="${escapeHtml(safeImageSrc(currentSignatureBase64))}" style="max-height: 50px; object-fit: contain;">` : "ไฟล์ลายเซ็นไม่ถูกต้อง";
                 } else {
                     currentSignatureBase64 = "";
                     document.getElementById('signature-preview').innerHTML = "ยังไม่มีลายเซ็น";
@@ -2015,6 +2145,51 @@
             } catch(e) { showToast('ลบข้อมูลไม่สำเร็จ', 'error'); }
         };
 
+        // ==================== ออกเลข AR (counter + transaction) ====================
+        // รูปแบบ AR{ปี พ.ศ. 2 หลัก}-{เลขรัน 4 หลัก} เริ่ม 0001 ใหม่ทุก 1 ม.ค. ตามเวลา Asia/Bangkok
+        function getThaiBuddhistYear2Digits(now = new Date()) {
+            const ceYear = Number(new Intl.DateTimeFormat('en-US', { timeZone: 'Asia/Bangkok', year: 'numeric' }).format(now));
+            return (ceYear + 543) % 100;
+        }
+        const formatArNumber = (year, num) => `AR${String(year).padStart(2, '0')}-${String(num).padStart(4, '0')}`;
+
+        // สร้างเอกสาร (และไฟล์แนบถ้ามี) พร้อมเลข AR ใหม่ใน transaction เดียว คืนค่าเลข AR ที่ได้
+        // ถ้ามีคนยื่นพร้อมกันจนเลขชนกัน Firestore อาจตอบ aborted หรือ permission-denied (rules ตรวจ counter ที่ถูกขยับไปแล้ว)
+        // จึงลองใหม่เองสูงสุด 6 ครั้ง (เว้นระยะสุ่ม) — แต่ละครั้งเป็นทั้งหมดหรือไม่มีอะไรเลย จึงไม่มีทางได้เอกสารซ้ำ
+        async function createDocumentWithArNumber(docFields, attachmentBase64) {
+            const MAX_ATTEMPTS = 6;
+            for (let attempt = 1; ; attempt++) {
+                try {
+                    return await runArTransaction(docFields, attachmentBase64);
+                } catch (e) {
+                    const retryable = ['aborted', 'permission-denied', 'failed-precondition', 'unavailable'].includes(e?.code);
+                    if (!retryable || attempt >= MAX_ATTEMPTS) throw e;
+                    await new Promise(r => setTimeout(r, 150 * attempt + Math.random() * 400));
+                }
+            }
+        }
+
+        function runArTransaction(docFields, attachmentBase64) {
+            return runTransaction(db, async (tx) => {
+                const counterRef = doc(db, 'counters', 'ar');
+                const counterSnap = await tx.get(counterRef);
+                const year = getThaiBuddhistYear2Digits();
+                let nextNumber = 1; // ไม่มี counter หรือขึ้นปีใหม่ → เริ่ม 1
+                if (counterSnap.exists()) {
+                    const counter = counterSnap.data();
+                    if (counter.year === year) nextNumber = counter.lastNumber + 1;
+                    else if (counter.year > year) throw new Error('AR_COUNTER_YEAR_AHEAD');
+                }
+                const arNumber = formatArNumber(year, nextNumber);
+                const docRef = doc(db, 'documents', arNumber);
+                if ((await tx.get(docRef)).exists()) throw new Error('AR_NUMBER_TAKEN'); // กันเขียนทับเอกสารเดิม
+                tx.set(counterRef, { year, lastNumber: nextNumber });
+                tx.set(docRef, { ...docFields, arNumber });
+                if (attachmentBase64) tx.set(doc(db, 'document_attachments', arNumber), { attachmentBase64 });
+                return arNumber;
+            });
+        }
+
         // ==================== Submit Logic ====================
         const processSubmit = async (statusType) => {
             const btn = document.getElementById(statusType === 'draft' ? 'btn-save-draft' : 'btn-submit-doc');
@@ -2033,42 +2208,18 @@
                 if (userDocSnap.exists()) userSig = userDocSnap.data().signature || '';
             } catch(e) {}
 
-            // สร้างเลข AR อัตโนมัติและเช็คเพื่อใช้เป็น Document ID (ห้ามซ้ำเด็ดขาด)
-            let generatedArNumber = "";
-            let docRef = null;
-            let isUnique = false;
-            
+            // ไฟล์แนบ: อ่านจากช่องเลือกไฟล์ตอนกดยื่น (ไม่พึ่งค่าที่ FileReader อาจยังอ่านไม่เสร็จ)
+            let attachmentBase64 = '';
             try {
-                const qAr = query(collection(db, 'documents'), orderBy('createdAt', 'desc'), limit(1));
-                const lastDocSnap = await getDocs(qAr);
-                let nextArNum = 1;
-                
-                if (!lastDocSnap.empty) {
-                    const lastData = lastDocSnap.docs[0].data();
-                    if (lastData.arNumber) {
-                        const lastNum = parseInt(lastData.arNumber.replace(/\D/g, '')) || 0;
-                        nextArNum = lastNum + 1;
-                    }
+                const attachFile = document.getElementById('doc-attachment')?.files?.[0];
+                if (attachFile) {
+                    if (attachFile.size > ATTACHMENT_MAX_BYTES) throw new Error('ATTACHMENT_TOO_LARGE');
+                    attachmentBase64 = await readFileAsDataURL(attachFile);
                 }
-
-                const currentYear = new Date().getFullYear().toString().slice(-2); // เช่น 26
-                
-                // ลูปตรวจสอบจนกว่าจะได้ ID ที่ไม่มีในฐานข้อมูล
-                while (!isUnique) {
-                    generatedArNumber = `AR${currentYear}-${String(nextArNum).padStart(4, '0')}`;
-                    docRef = doc(db, 'documents', generatedArNumber);
-                    const checkSnap = await getDoc(docRef);
-                    
-                    if (!checkSnap.exists()) {
-                        isUnique = true; // พบ ID ว่าง ให้ทำต่อ
-                    } else {
-                        nextArNum++; // หาก ID ซ้ำ ให้บวกเพิ่มแล้วเช็คใหม่
-                    }
-                }
-            } catch(e) {
-                console.error("Error generating unique AR Number:", e);
-                generatedArNumber = `AR-ERR-${String(Date.now()).slice(-4)}`;
-                docRef = doc(db, 'documents', generatedArNumber);
+            } catch (e) {
+                showToast(e?.message === 'ATTACHMENT_TOO_LARGE' ? 'ไฟล์มีขนาดใหญ่เกินไป (จำกัดไม่เกิน 750 KB)' : 'อ่านไฟล์แนบไม่สำเร็จ กรุณาเลือกไฟล์ใหม่อีกครั้ง', 'error');
+                resetSubmitButtons();
+                return;
             }
 
             const newDoc = {
@@ -2078,7 +2229,6 @@
                 type: document.getElementById('doc-type')?.value || '',
                 date: document.getElementById('doc-date')?.value || '',
                 
-                arNumber: generatedArNumber,
                 receiveDate: document.getElementById('doc-receive-date')?.value || '',
                 labRoom: document.getElementById('doc-lab-room')?.value || '',
                 folderNumber: document.getElementById('doc-folder-number')?.value || '',
@@ -2093,7 +2243,7 @@
                 cancelTests: getArrayValues('cancel-test-name[]').map((name, i) => ({ name, code: getArrayValues('cancel-test-code[]')[i] || '' })),
                 newTests: getArrayValues('new-test-name[]').map((name, i) => ({ name, code: getArrayValues('new-test-code[]')[i] || '' })),
                 description: document.getElementById('doc-description')?.value || '',
-                hasAttachment: currentAttachmentBase64 ? true : false,
+                hasAttachment: attachmentBase64 ? true : false,
                 
                 approverEmail: (approverSelect?.value || '').toLowerCase().trim(),
                 approverName: approverNameOnly,
@@ -2104,23 +2254,24 @@
             };
 
             try {
-                // 1. บันทึกข้อมูลหลักลง Document (ตัวนี้จะเบามาก เพราะไม่มีไฟล์แนบแล้ว)
-                await setDoc(docRef, newDoc);
-                
-                // 2. แยกบันทึกไฟล์แนบ (ถ้ามี) ไปไว้ที่ Collection ใหม่ เพื่อป้องกัน Limit 1MB ของ Firestore
-                if (currentAttachmentBase64) {
-                    await setDoc(doc(db, 'document_attachments', docRef.id), {
-                        attachmentBase64: currentAttachmentBase64
-                    });
+                // ออกเลข AR + สร้างเอกสาร + ไฟล์แนบ ใน transaction เดียว (สำเร็จทั้งหมด หรือไม่บันทึกอะไรเลย)
+                let arNumber;
+                try {
+                    arNumber = await createDocumentWithArNumber(newDoc, attachmentBase64);
+                } catch (e) {
+                    console.error('ออกเลข AR ไม่สำเร็จ:', e?.code || e?.message);
+                    showToast('ออกเลข AR ไม่สำเร็จ กรุณาลองใหม่อีกครั้ง', 'error');
+                    return; // ไม่ล้างฟอร์ม: ข้อมูลและไฟล์ที่เลือกไว้ยังอยู่
                 }
-                const logId = `SUBMIT_DOC_${docRef.id}`;
+                newDoc.arNumber = arNumber;
+                const logId = `SUBMIT_DOC_${arNumber}`;
                 await logSystemAction(logId, currentUser.email, "SUBMIT_DOCUMENT");
 
                 const baseUrl = window.location.href.split('?')[0]; 
                 
                 // ข้ามการส่งเมลหากเป็นแบบร่าง
                 if (statusType !== 'draft') {
-                    const approvalUrl = `${baseUrl}?docId=${docRef.id}&token=${newDoc.token}`;
+                    const approvalUrl = `${baseUrl}?docId=${arNumber}&token=${newDoc.token}`;
                     const emailSubject = `[IntraFlow] มีเอกสารรออนุมัติ: ${newDoc.type}`;
                 
                     const reasonText = newDoc.cancelReason === 'อื่นๆ' ? `อื่นๆ (${newDoc.cancelReasonOther})` : newDoc.cancelReason;
@@ -2152,12 +2303,16 @@
             } catch (error) {
                 showToast('ไม่สามารถบันทึกได้: ' + error.message, 'error');
             } finally {
-                const btnSave = document.getElementById('btn-save-draft');
-                const btnSub = document.getElementById('btn-submit-doc');
-                if (btnSave) { btnSave.innerHTML = '<i class="ri-save-line"></i> บันทึกร่าง'; btnSave.disabled = false; }
-                if (btnSub) { btnSub.innerHTML = '<i class="ri-send-plane-fill"></i> ยื่นเอกสารเข้าระบบ'; btnSub.disabled = false; }
+                resetSubmitButtons();
             }
         };
+
+        function resetSubmitButtons() {
+            const btnSave = document.getElementById('btn-save-draft');
+            const btnSub = document.getElementById('btn-submit-doc');
+            if (btnSave) { btnSave.innerHTML = '<i class="ri-save-line"></i> บันทึกร่าง'; btnSave.disabled = false; }
+            if (btnSub) { btnSub.innerHTML = '<i class="ri-send-plane-fill"></i> ยื่นเอกสารเข้าระบบ'; btnSub.disabled = false; }
+        }
 
         const submitForm = document.getElementById('submit-doc-form');
         submitForm?.addEventListener('submit', (e) => {
@@ -2277,7 +2432,9 @@
             const statusVal = document.getElementById('filter-status')?.value || 'all';
             if (statusVal !== 'all') qConstraints.push(where('status', '==', statusVal));
 
-            const q = query(collection(db, 'documents'), ...qConstraints);
+            // ห่อทุกเงื่อนไขด้วย and(...): Firestore ไม่ยอมให้ใช้ or(...) คู่กับ where อื่นที่ระดับบนสุด
+            // (เดิมผู้ใช้ที่มีทั้งบทบาท user และ approver ได้ InvalidQuery → หน้ารายการว่าง)
+            const q = query(collection(db, 'documents'), and(...qConstraints));
 
             unsubscribeDocs = onSnapshot(q, (snapshot) => {
                 const tbody = document.getElementById('document-table-body');
@@ -2396,22 +2553,22 @@
                 const contentHtml = `
                     <div style="background: var(--primary-light); color: var(--text-main); padding: 1.5rem; border-radius: var(--radius-md); margin-bottom: 1.5rem; border-left: 4px solid var(--primary);">
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                            <div><span style="color: var(--text-muted); font-size: 0.85rem;">เลขที่คำร้อง (AR Number)</span><br><strong>${docData.arNumber || '-'}</strong></div>
-                            <div><span style="color: var(--text-muted); font-size: 0.85rem;">ประเภทคำร้อง</span><br><strong>${docData.type}</strong></div>
-                            <div><span style="color: var(--text-muted); font-size: 0.85rem;">ผู้ขออนุมัติ</span><br><strong>${docData.requesterName}</strong> <br><span style="font-size: 0.85rem;">(${docData.requesterEmail})</span></div>
-                            <div><span style="color: var(--text-muted); font-size: 0.85rem;">วันที่ส่งตัวอย่าง / วันที่ยื่นเรื่อง</span><br><strong>${docData.receiveDate || '-'} / ${formatDate(docData.createdAt)}</strong></div>
+                            <div><span style="color: var(--text-muted); font-size: 0.85rem;">เลขที่คำร้อง (AR Number)</span><br><strong>${escapeHtml(docData.arNumber || '-')}</strong></div>
+                            <div><span style="color: var(--text-muted); font-size: 0.85rem;">ประเภทคำร้อง</span><br><strong>${escapeHtml(docData.type)}</strong></div>
+                            <div><span style="color: var(--text-muted); font-size: 0.85rem;">ผู้ขออนุมัติ</span><br><strong>${escapeHtml(docData.requesterName)}</strong> <br><span style="font-size: 0.85rem;">(${escapeHtml(docData.requesterEmail)})</span></div>
+                            <div><span style="color: var(--text-muted); font-size: 0.85rem;">วันที่ส่งตัวอย่าง / วันที่ยื่นเรื่อง</span><br><strong>${escapeHtml(docData.receiveDate || '-')} / ${escapeHtml(formatDate(docData.createdAt))}</strong></div>
                         </div>
                     </div>
                     
                     <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; background: var(--background); padding: 1.5rem; border-radius: var(--radius-md); margin-bottom: 1.5rem; border: 1px solid var(--border);">
-                        <div><span style="color: var(--text-muted); font-size: 0.85rem;">ห้องปฏิบัติการ</span><br><strong>${docData.labRoom || '-'}</strong></div>
-                        <div><span style="color: var(--text-muted); font-size: 0.85rem;">หมายเลข Folder</span><br><strong>${docData.folderNumber || '-'}</strong></div>
-                        <div><span style="color: var(--text-muted); font-size: 0.85rem;">เลขที่ใบเสร็จ / ใบแจ้งหนี้</span><br><strong>${docData.receiptNumber || '-'} / ${docData.invoiceNumber || '-'}</strong></div>
+                        <div><span style="color: var(--text-muted); font-size: 0.85rem;">ห้องปฏิบัติการ</span><br><strong>${escapeHtml(docData.labRoom || '-')}</strong></div>
+                        <div><span style="color: var(--text-muted); font-size: 0.85rem;">หมายเลข Folder</span><br><strong>${escapeHtml(docData.folderNumber || '-')}</strong></div>
+                        <div><span style="color: var(--text-muted); font-size: 0.85rem;">เลขที่ใบเสร็จ / ใบแจ้งหนี้</span><br><strong>${escapeHtml(docData.receiptNumber || '-')} / ${escapeHtml(docData.invoiceNumber || '-')}</strong></div>
                     </div>
 
                     <div style="background: var(--background); padding: 1.5rem; border-radius: var(--radius-md); margin-bottom: 1.5rem; border: 1px solid var(--border);">
                         <h4 style="margin-bottom: 0.75rem; color: var(--text-main);"><i class="ri-error-warning-line"></i> สาเหตุในการยกเลิก</h4>
-                        <p style="margin: 0;"><strong>${docData.cancelReason || '-'}</strong> ${docData.cancelReason === 'อื่นๆ' ? `(${docData.cancelReasonOther || ''})` : ''}</p>
+                        <p style="margin: 0;"><strong>${escapeHtml(docData.cancelReason || '-')}</strong> ${docData.cancelReason === 'อื่นๆ' ? `(${escapeHtml(docData.cancelReasonOther || '')})` : ''}</p>
                     </div>
 
                     <div style="background: var(--background); padding: 1.5rem; border-radius: var(--radius-md); margin-bottom: 1.5rem; border: 1px solid var(--border);">
@@ -2419,26 +2576,26 @@
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
                             <div><span style="color: var(--danger); font-size: 0.85rem;">รายการทดสอบที่ยกเลิก</span><br>
                                 ${(docData.cancelTests && docData.cancelTests.length > 0) 
-                                    ? docData.cancelTests.map(t => `<strong>${t.name}</strong> (Code: ${t.code || '-'})`).join('<br>') 
-                                    : `<strong>${docData.cancelTestName || '-'}</strong> (Code: ${docData.cancelTestCode || '-'})`}
+                                    ? docData.cancelTests.map(t => `<strong>${escapeHtml(t.name)}</strong> (Code: ${escapeHtml(t.code || '-')})`).join('<br>') 
+                                    : `<strong>${escapeHtml(docData.cancelTestName || '-')}</strong> (Code: ${escapeHtml(docData.cancelTestCode || '-')})`}
                             </div>
                             <div><span style="color: var(--success); font-size: 0.85rem;">รายการทดสอบที่เพิ่มใหม่</span><br>
                                 ${(docData.newTests && docData.newTests.length > 0) 
-                                    ? docData.newTests.map(t => `<strong>${t.name}</strong> (Code: ${t.code || '-'})`).join('<br>') 
-                                    : `<strong>${docData.newTestName || '-'}</strong> (Code: ${docData.newTestCode || '-'})`}
+                                    ? docData.newTests.map(t => `<strong>${escapeHtml(t.name)}</strong> (Code: ${escapeHtml(t.code || '-')})`).join('<br>') 
+                                    : `<strong>${escapeHtml(docData.newTestName || '-')}</strong> (Code: ${escapeHtml(docData.newTestCode || '-')})`}
                             </div>
                         </div>
                     </div>
 
                     <div>
                         <h4 style="margin-bottom: 0.75rem; color: var(--text-muted);"><i class="ri-file-text-line"></i> รายละเอียด / หมายเหตุเพิ่มเติม</h4>
-                        <div style="white-space: pre-wrap; background: var(--surface); padding: 1.5rem; border: 1px solid var(--border); border-radius: var(--radius-md); line-height: 1.7;">${docData.description || '-'}</div>
+                        <div style="white-space: pre-wrap; background: var(--surface); padding: 1.5rem; border: 1px solid var(--border); border-radius: var(--radius-md); line-height: 1.7;">${escapeHtml(docData.description || '-')}</div>
                     </div>
 
-                    ${docData.attachmentBase64 ? `
+                    ${safeAttachmentHref(docData.attachmentBase64) ? `
                     <div style="margin-top: 1.5rem; background: var(--background); padding: 1.5rem; border-radius: var(--radius-md); border: 1px solid var(--border);">
                         <h4 style="margin-bottom: 0.75rem; color: var(--text-main);"><i class="ri-attachment-2"></i> ไฟล์แนบเอกสาร</h4>
-                        <a href="${docData.attachmentBase64}" download="Attachment_${docData.arNumber}" class="btn btn-outline" style="padding: 0.5rem 1rem; border-color: var(--primary); color: var(--primary); display: inline-flex; align-items: center; gap: 0.5rem; text-decoration: none;">
+                        <a href="${escapeHtml(safeAttachmentHref(docData.attachmentBase64))}" download="Attachment_${escapeHtml(docData.arNumber)}" class="btn btn-outline" style="padding: 0.5rem 1rem; border-color: var(--primary); color: var(--primary); display: inline-flex; align-items: center; gap: 0.5rem; text-decoration: none;">
                             <i class="ri-download-cloud-2-line"></i> โหลดไฟล์แนบ
                         </a>
                     </div>
@@ -2454,8 +2611,8 @@
                 if (docData.status !== 'pending') {
                     let icon = docData.status === 'approved' ? '<i class="ri-check-line" style="color: var(--success); font-size: 1.2rem; vertical-align: middle;"></i>' : '<i class="ri-close-line" style="color: var(--danger); font-size: 1.2rem; vertical-align: middle;"></i>';
                     let statusText = docData.status === 'approved' ? 'อนุมัติ' : 'ไม่อนุมัติ';
-                    let reasonHtml = docData.status === 'rejected' && docData.rejectReason ? `<br><span style="color: var(--danger); font-size: 0.95rem; display: inline-block; margin-top: 0.5rem; background: #ffe4e6; padding: 0.5rem 1rem; border-radius: 6px;"><strong>เหตุผลที่ไม่อนุมัติ:</strong> ${docData.rejectReason}</span>` : '';
-                    let logHtml = `${icon} <span style="vertical-align: middle; font-weight: 600;">เอกสารนี้ได้รับการ${statusText}แล้ว เมื่อ ${formatDate(docData.approvedAt)}</span><br><span style="color: var(--text-muted); font-size: 0.9rem; display: inline-block; margin-top: 0.25rem;">ดำเนินการโดย ${docData.approverName || docData.approvedBy}</span>${reasonHtml}`;
+                    let reasonHtml = docData.status === 'rejected' && docData.rejectReason ? `<br><span style="color: var(--danger); font-size: 0.95rem; display: inline-block; margin-top: 0.5rem; background: #ffe4e6; padding: 0.5rem 1rem; border-radius: 6px;"><strong>เหตุผลที่ไม่อนุมัติ:</strong> ${escapeHtml(docData.rejectReason)}</span>` : '';
+                    let logHtml = `${icon} <span style="vertical-align: middle; font-weight: 600;">เอกสารนี้ได้รับการ${statusText}แล้ว เมื่อ ${escapeHtml(formatDate(docData.approvedAt))}</span><br><span style="color: var(--text-muted); font-size: 0.9rem; display: inline-block; margin-top: 0.25rem;">ดำเนินการโดย ${escapeHtml(docData.approverName || docData.approvedBy)}</span>${reasonHtml}`;
                     
                     if (docData.isProcessed) {
                         logHtml += `<div class="mt-2"><span class="badge badge-success" style="background: var(--primary-light); color: var(--primary);"><i class="ri-macbook-line"></i> แอดมินดำเนินการในระบบเรียบร้อยแล้ว</span></div>`;
@@ -2492,7 +2649,7 @@
                     <div style="text-align: center; padding: 3rem; background: var(--surface); border-radius: var(--radius-md); border: 1px solid var(--border);">
                         <i class="ri-wifi-off-line" style="font-size: 4rem; margin-bottom: 1rem; display: block; color: var(--text-muted);"></i>
                         <h3 style="color: var(--danger); margin-bottom: 1rem;">ดึงข้อมูลไม่สำเร็จ หรือการเชื่อมต่อล้มเหลว</h3>
-                        <p style="color: var(--text-muted); margin-bottom: 1.5rem;">${error.message}</p>
+                        <p style="color: var(--text-muted); margin-bottom: 1.5rem;">${escapeHtml(error.message)}</p>
                         <button onclick="window.location.reload()" class="btn btn-primary" style="padding: 0.75rem 2rem;">
                             <i class="ri-refresh-line"></i> รีเฟรชหน้าจออีกครั้ง
                         </button>
@@ -2582,19 +2739,22 @@
             
             showLoader(true);
             try {
-                let userSig = '';
-                try {
-                    const userDocSnap = await getDoc(doc(db, 'users', currentUser.uid));
-                    if (userDocSnap.exists()) userSig = userDocSnap.data().signature || '';
-                } catch(e) {}
-
                 const updateData = {
                     status: newStatus,
-                    approverSignature: userSig,
                     approvedAt: serverTimestamp(),
                     approvedBy: currentUser.email,
                     auditLog: `[${newStatus.toUpperCase()}] ดำเนินการโดย ${currentUser.email}`
                 };
+
+                // บันทึกลายเซ็นผู้อนุมัติเฉพาะเมื่อ "อนุมัติ" เท่านั้น (ไม่อนุมัติ = ไม่มีลายเซ็น)
+                if (newStatus === 'approved') {
+                    let userSig = '';
+                    try {
+                        const userDocSnap = await getDoc(doc(db, 'users', currentUser.uid));
+                        if (userDocSnap.exists()) userSig = userDocSnap.data().signature || '';
+                    } catch(e) {}
+                    updateData.approverSignature = userSig;
+                }
 
                 // บันทึกเหตุผลลงฐานข้อมูลถ้าไม่อนุมัติ
                 if (newStatus === 'rejected') {
@@ -2795,26 +2955,26 @@
                         // สิทธิ์ลบจะให้เฉพาะ Admin
                         let actionHtml = '<span style="color: var(--text-muted);">-</span>';
                         if (userRoles.includes('admin')) {
-                            actionHtml = `<button class="btn btn-outline" onclick="window.deleteCustomerReq('${docSnap.id}')" style="padding: 0.25rem 0.5rem; font-size: 0.8rem; border-color: var(--danger); color: var(--danger);"><i class="ri-delete-bin-line"></i> ลบ</button>`;
+                            actionHtml = `<button class="btn btn-outline" data-action="delete-customer-req" data-id="${escapeHtml(docSnap.id)}" style="padding: 0.25rem 0.5rem; font-size: 0.8rem; border-color: var(--danger); color: var(--danger);"><i class="ri-delete-bin-line"></i> ลบ</button>`;
                         }
 
                         // รองรับข้อมูลเดิม (contactInfo) และข้อมูลแบบใหม่ (phone, email)
                         const contactDisplay = (data.phone && data.email) 
-                            ? `<div style="font-size: 0.85rem;"><i class="ri-phone-line"></i> ${data.phone}</div><div style="font-size: 0.85rem;"><i class="ri-mail-line"></i> ${data.email}</div>` 
-                            : (data.contactInfo || '-');
+                            ? `<div style="font-size: 0.85rem;"><i class="ri-phone-line"></i> ${escapeHtml(data.phone)}</div><div style="font-size: 0.85rem;"><i class="ri-mail-line"></i> ${escapeHtml(data.email)}</div>` 
+                            : escapeHtml(data.contactInfo || '-');
                             
                         // แสดงสัญลักษณ์ IP แจ้งเตือนเมื่อเอาเมาส์ชี้ เพื่อให้ Admin ใช้ตรวจสอบความผิดปกติ
                         const traceInfo = `IP: ${data.clientIP || 'Unknown'}\nBrowser: ${data.userAgent || 'Unknown'}`;
-                        const ipIconHtml = data.clientIP ? `<i class="ri-shield-keyhole-line" style="color: var(--text-muted); margin-left: 0.5rem; cursor: help;" title="${traceInfo}"></i>` : '';
+                        const ipIconHtml = data.clientIP ? `<i class="ri-shield-keyhole-line" style="color: var(--text-muted); margin-left: 0.5rem; cursor: help;" title="${escapeHtml(traceInfo)}"></i>` : '';
                         
                         tbody.innerHTML += `
                             <tr>
-                                <td style="vertical-align: top;">${dateStr}</td>
-                                <td style="vertical-align: top;"><span class="badge" style="background: var(--primary-light); color: var(--primary);">${data.requestId}</span></td>
-                                <td style="vertical-align: top;"><span class="badge" style="background: #f1f5f9; color: var(--text-muted); border: 1px solid var(--border); font-family: monospace;">${sysSuffix}</span></td>
-                                <td style="vertical-align: top;">${data.customerName} ${ipIconHtml}</td>
+                                <td style="vertical-align: top;">${escapeHtml(dateStr)}</td>
+                                <td style="vertical-align: top;"><span class="badge" style="background: var(--primary-light); color: var(--primary);">${escapeHtml(data.requestId)}</span></td>
+                                <td style="vertical-align: top;"><span class="badge" style="background: #f1f5f9; color: var(--text-muted); border: 1px solid var(--border); font-family: monospace;">${escapeHtml(sysSuffix)}</span></td>
+                                <td style="vertical-align: top;">${escapeHtml(data.customerName)} ${ipIconHtml}</td>
                                 <td style="vertical-align: top;">${contactDisplay}</td>
-                                <td style="vertical-align: top;"><div style="max-height: 80px; overflow-y: auto; white-space: pre-wrap; font-size: 0.9rem;">${data.details}</div></td>
+                                <td style="vertical-align: top;"><div style="max-height: 80px; overflow-y: auto; white-space: pre-wrap; font-size: 0.9rem;">${escapeHtml(data.details)}</div></td>
                                 <td style="text-align: right; vertical-align: top;">${actionHtml}</td>
                             </tr>
                         `;
@@ -2823,7 +2983,7 @@
                     if (selectEl) {
                         // เก็บ value เป็น Full ID (เผื่อต้องใช้อ้างอิงแบบเป๊ะๆ) แต่แสดงแค่ เลขคำร้อง - ชื่อ ตามที่สั่ง
                         const optionValue = docSnap.id;
-                        selectEl.innerHTML += `<option value="${optionValue}">${data.requestId} - ${data.customerName}</option>`;
+                        selectEl.innerHTML += `<option value="${escapeHtml(optionValue)}">${escapeHtml(data.requestId)} - ${escapeHtml(data.customerName)}</option>`;
                     }
                 });
             } catch (err) {
@@ -2833,6 +2993,18 @@
                 }
             }
         };
+
+        // ปุ่มในตารางคำร้องลูกค้า/ใบแจ้งหนี้ อ้างด้วย data-id แทนการฝังค่าใน onclick
+        document.getElementById('customer-req-table-body')?.addEventListener('click', (e) => {
+            const btn = e.target.closest('button[data-action="delete-customer-req"][data-id]');
+            if (btn) window.deleteCustomerReq(btn.dataset.id);
+        });
+        document.getElementById('invoice-req-table-body')?.addEventListener('click', (e) => {
+            const btn = e.target.closest('button[data-action][data-id]');
+            if (!btn) return;
+            if (btn.dataset.action === 'view-invoice-req') window.viewInvoiceReq(btn.dataset.id);
+            else if (btn.dataset.action === 'delete-invoice-req') window.deleteInvoiceReq(btn.dataset.id);
+        });
 
         window.deleteCustomerReq = async (id) => {
             if(!confirm('ยืนยันการลบคำร้องจากลูกค้านี้? (การกระทำนี้ไม่สามารถย้อนกลับได้)')) return;
@@ -2849,15 +3021,6 @@
         };
 
         // ==================== Invoice Request Form & Logic (เจ้าหน้าที่ภายใน) ====================
-        function escapeHtml(str) {
-            return String(str ?? '')
-                .replace(/&/g, '&amp;')
-                .replace(/</g, '&lt;')
-                .replace(/>/g, '&gt;')
-                .replace(/"/g, '&quot;')
-                .replace(/'/g, '&#39;');
-        }
-
         const formatInvoiceAmount = (amount) => {
             const num = Number(amount);
             if (amount === null || amount === undefined || amount === '' || !Number.isFinite(num)) return '-';
@@ -2978,9 +3141,9 @@
                             ? '<span class="badge" style="background: #fef3c7; color: #b45309;">แก้ไข</span>'
                             : '<span style="color: var(--text-muted);">-</span>');
 
-                    let actionHtml = `<button class="btn btn-outline" onclick="window.viewInvoiceReq('${safeId}')" style="padding: 0.25rem 0.5rem; font-size: 0.8rem; border-color: var(--primary); color: var(--primary);"><i class="ri-eye-line"></i> ดู</button>`;
+                    let actionHtml = `<button class="btn btn-outline" data-action="view-invoice-req" data-id="${safeId}" style="padding: 0.25rem 0.5rem; font-size: 0.8rem; border-color: var(--primary); color: var(--primary);"><i class="ri-eye-line"></i> ดู</button>`;
                     if (isAdmin) {
-                        actionHtml += ` <button class="btn btn-outline" onclick="window.deleteInvoiceReq('${safeId}')" style="padding: 0.25rem 0.5rem; font-size: 0.8rem; border-color: var(--danger); color: var(--danger);"><i class="ri-delete-bin-line"></i> ลบ</button>`;
+                        actionHtml += ` <button class="btn btn-outline" data-action="delete-invoice-req" data-id="${safeId}" style="padding: 0.25rem 0.5rem; font-size: 0.8rem; border-color: var(--danger); color: var(--danger);"><i class="ri-delete-bin-line"></i> ลบ</button>`;
                     }
 
                     rowsHtml += `
