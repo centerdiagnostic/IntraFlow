@@ -686,6 +686,10 @@
                         <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem;">
                                 <h3><i class="ri-folder-open-line mr-2"></i> เอกสารในระบบ</h3>
                                 <div style="display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;">
+                                    <div style="display: flex; align-items: center; gap: 0.5rem; max-width: 100%;">
+                                        <label for="doc-search" style="margin: 0; font-size: 0.9rem;"><i class="ri-search-line"></i></label>
+                                        <input type="search" id="doc-search" placeholder="ค้นหา Folder / AR / ใบเสร็จ / ใบแจ้งหนี้" style="width: 280px; max-width: 100%; padding: 0.5rem 1rem; border-radius: 999px;">
+                                    </div>
                                     <div style="display: flex; align-items: center; gap: 0.5rem;">
                                         <label style="margin: 0; font-size: 0.9rem;"><i class="ri-list-ordered"></i> แสดง:</label>
                                         <select id="rows-per-page" style="width: auto; padding: 0.5rem; border-radius: var(--radius-md); outline: none; border: 1px solid var(--border);">
@@ -1814,14 +1818,26 @@
         // ฟังก์ชันดึงค่าจาก Input Array
         const getArrayValues = (name) => Array.from(document.querySelectorAll(`input[name="${name}"]`)).map(el => el.value).filter(val => val.trim() !== '');
 
+        // กรองเอกสารตามคำค้นหา (Folder / AR / ใบเสร็จ / ใบแจ้งหนี้) ฝั่งเบราว์เซอร์
+        const normalizeSearch = (val) => String(val ?? '').replace(/\s+/g, '').toLowerCase();
+        function getFilteredDocs() {
+            const keyword = normalizeSearch(document.getElementById('doc-search')?.value);
+            if (!keyword) return globalDocsData;
+            return globalDocsData.filter(d =>
+                [d.folderNumber, d.arNumber, d.receiptNumber, d.invoiceNumber]
+                    .some(field => normalizeSearch(field).includes(keyword))
+            );
+        }
+
         // ระบบ Pagination Rendering
         window.renderDocumentTable = () => {
             const tbody = document.getElementById('document-table-body');
             if (!tbody) return;
             tbody.innerHTML = '';
-            
+
+            const filteredDocs = getFilteredDocs();
             const rowsPerPage = parseInt(document.getElementById('rows-per-page')?.value || 10);
-            const totalDocs = globalDocsData.length;
+            const totalDocs = filteredDocs.length;
             const totalPages = Math.ceil(totalDocs / rowsPerPage) || 1;
             
             if (currentPage > totalPages) currentPage = totalPages;
@@ -1829,7 +1845,7 @@
             
             const startIdx = (currentPage - 1) * rowsPerPage;
             const endIdx = startIdx + rowsPerPage;
-            const currentDocs = globalDocsData.slice(startIdx, endIdx);
+            const currentDocs = filteredDocs.slice(startIdx, endIdx);
             
             const pageInfo = document.getElementById('pagination-info');
             if (pageInfo) {
@@ -1842,7 +1858,9 @@
             if (btnNext) btnNext.disabled = currentPage === totalPages || totalDocs === 0;
 
             if (currentDocs.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted" style="padding: 3rem;"><i class="ri-inbox-2-line" style="font-size: 2rem; display: block; margin-bottom: 0.5rem;"></i> ไม่มีเอกสารในระบบ</td></tr>';
+                const hasKeyword = normalizeSearch(document.getElementById('doc-search')?.value) !== '';
+                const emptyMsg = hasKeyword ? 'ไม่พบเอกสารที่ตรงกับคำค้นหา' : 'ไม่มีเอกสารในระบบ';
+                tbody.innerHTML = `<tr><td colspan="6" class="text-center text-muted" style="padding: 3rem;"><i class="ri-inbox-2-line" style="font-size: 2rem; display: block; margin-bottom: 0.5rem;"></i> ${emptyMsg}</td></tr>`;
                 return;
             }
 
@@ -1878,7 +1896,7 @@
                 }
 
                 tr.innerHTML = `
-                    <td style="color: var(--text-muted); font-size: 0.85rem; white-space: nowrap; vertical-align: top;">${formatDate(d.createdAt)}</td>
+                    <td style="color: var(--text-muted); font-size: 0.85rem; white-space: nowrap; vertical-align: top;">${formatDate(d.createdAt)}${d.folderNumber ? `<div style="font-size: 0.8rem; color: var(--text-muted);">Folder: ${escapeHtml(d.folderNumber)}</div>` : ''}</td>
                     <td style="white-space: nowrap; vertical-align: top;">
                         <div style="font-weight: 500;">${escapeHtml(d.requesterName)}</div>
                         <div style="color: var(--text-muted); font-size: 0.8rem;">${escapeHtml(d.requesterEmail)}</div>
@@ -2334,9 +2352,10 @@
         });
         document.getElementById('btn-next-page')?.addEventListener('click', () => {
             const rowsPerPage = parseInt(document.getElementById('rows-per-page')?.value || 10);
-            const totalPages = Math.ceil(globalDocsData.length / rowsPerPage);
+            const totalPages = Math.ceil(getFilteredDocs().length / rowsPerPage);
             if (currentPage < totalPages) { currentPage++; window.renderDocumentTable(); }
         });
+        document.getElementById('doc-search')?.addEventListener('input', () => { currentPage = 1; window.renderDocumentTable(); });
 
         // ฟังก์ชันลบเอกสาร
         window.deleteDocument = async (docId) => {
