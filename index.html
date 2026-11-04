@@ -3099,11 +3099,10 @@
                 });
 
                 // แจ้งเตือนทางอีเมลไปยังผู้รับผิดชอบใบแจ้งหนี้ (หากส่งไม่สำเร็จ sendIntraFlowEmail จะจับ error ไว้เอง)
-                const typeLabel = requestType === 'cancel' ? 'ยกเลิก' : 'แก้ไข';
-                const emailSubject = `[KVDC] ใบคำร้องขอ${typeLabel}ใบแจ้งหนี้ใหม่ (เลขที่ ${invoiceNo})`;
-                const emailMessage = `มีผู้ส่งใบคำร้องขอยกเลิก/แก้ไข ใบแจ้งหนี้เข้ามาใหม่\n\nรายละเอียดคำร้อง:\n- ประเภทคำร้อง: ${typeLabel}ใบแจ้งหนี้\n- เลขที่ใบแจ้งหนี้: ${invoiceNo}\n- วันที่ใบแจ้งหนี้: ${formatInvoiceDate(invoiceDate)}\n- ชื่อลูกค้า / หน่วยงาน: ${customerName}\n- จำนวนเงิน: ${formatInvoiceAmount(amount)}\n- สาเหตุ: ${reason}\n- ผู้ยื่นคำร้อง: ${submittedBy}`;
+                const emailSubject = `[IntraFlow] แจ้งเตือน: มีคำร้องใหม่เข้าระบบ (เลขที่อ้างอิง ${invoiceNo})`;
+                const emailMessage = `ระบบได้รับคำร้องใหม่\nเลขที่อ้างอิง: ${invoiceNo}\nลูกค้า/หน่วยงาน: ${customerName}\nผู้ยื่นคำร้อง: ${submittedBy}\n\nกรุณาตรวจสอบรายละเอียดในระบบ ที่แท็บ คำร้องลูกค้า`;
                 const loginUrl = window.location.href.split('?')[0];
-                await sendIntraFlowEmail(INVOICE_NOTIFY_EMAIL, emailSubject, emailMessage, loginUrl, `เรียน ${INVOICE_NOTIFY_NAME}`, "สามารถคลิกที่ลิงก์ด้านล่างเพื่อเข้าสู่ระบบ แล้วดูรายละเอียดได้ที่แท็บ คำร้องลูกค้า:");
+                await sendIntraFlowEmail(INVOICE_NOTIFY_EMAIL, emailSubject, emailMessage, loginUrl, `เรียน ${INVOICE_NOTIFY_NAME}`);
 
                 document.getElementById('invoice-request-form')?.classList.add('hidden');
                 document.getElementById('invoice-success-msg')?.classList.remove('hidden');
