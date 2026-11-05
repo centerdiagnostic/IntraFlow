@@ -198,6 +198,7 @@
         tr { transition: var(--transition); }
         tr:hover { background: #f8fafc; }
         td { font-size: 0.95rem; }
+        #invoice-req-table th, #invoice-req-table td { padding: 1rem 0.75rem; }
 
         /* Toasts */
         #toast-container { position: fixed; bottom: 2rem; right: 2rem; z-index: 9999; display: flex; flex-direction: column; gap: 1rem; }
@@ -774,7 +775,7 @@
                             </button>
                         </div>
                         <div class="table-container">
-                            <table>
+                            <table id="invoice-req-table">
                                 <thead>
                                     <tr>
                                         <th style="white-space: nowrap;">วันที่ส่ง</th>
@@ -3164,17 +3165,19 @@
                             : '<span style="color: var(--text-muted);">-</span>');
 
                     const isDone = data.status === 'done';
-                    const statusHtml = isDone
-                        ? `<span class="badge badge-approved"><i class="ri-check-line"></i> ดำเนินการแล้ว</span><div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">โดย ${escapeHtml(data.processedByName || data.processedBy || '-')} · ${escapeHtml(data.processedAt ? formatDate(data.processedAt) : '-')}</div>`
-                        : '<span class="badge badge-pending"><i class="ri-time-line"></i> รอดำเนินการ</span>';
-
-                    let actionHtml = '';
+                    const tooltip = escapeHtml(`โดย ${data.processedByName || data.processedBy || '-'} เมื่อ ${data.processedAt ? formatDate(data.processedAt) : '-'}`);
+                    let statusHtml;
                     if (!isDone && canMarkDone) {
-                        actionHtml += `<button class="btn btn-outline" data-action="mark-invoice-done" data-id="${safeId}" style="padding: 0.25rem 0.5rem; font-size: 0.8rem; border-color: var(--success); color: var(--success);"><i class="ri-check-double-line"></i> ดำเนินการแล้ว</button> `;
-                    } else if (isDone && isAdmin) {
-                        actionHtml += `<button class="btn btn-outline" data-action="revert-invoice-done" data-id="${safeId}" style="padding: 0.25rem 0.5rem; font-size: 0.8rem; border-color: var(--warning); color: var(--warning);"><i class="ri-arrow-go-back-line"></i> ย้อนสถานะ</button> `;
+                        statusHtml = `<button class="btn" data-action="mark-invoice-done" data-id="${safeId}" title="กดเมื่อดำเนินการเรียบร้อยแล้ว" style="padding: 0.3rem 0.75rem; font-size: 0.8rem; border-radius: 999px; background: #fef3c7; color: #b45309; border: 1px solid #fde68a; white-space: nowrap;"><i class="ri-time-line"></i> รอดำเนินการ</button>`;
+                    } else if (!isDone) {
+                        statusHtml = '<span class="badge badge-pending"><i class="ri-time-line"></i> รอดำเนินการ</span>';
+                    } else if (isAdmin) {
+                        statusHtml = `<button class="btn" data-action="revert-invoice-done" data-id="${safeId}" title="${tooltip} (กดเพื่อย้อนสถานะ)" style="padding: 0.3rem 0.75rem; font-size: 0.8rem; border-radius: 999px; background: #d1fae5; color: #047857; border: 1px solid #a7f3d0; white-space: nowrap;"><i class="ri-check-line"></i> ดำเนินการแล้ว</button>`;
+                    } else {
+                        statusHtml = `<span class="badge badge-approved" title="${tooltip}"><i class="ri-check-line"></i> ดำเนินการแล้ว</span>`;
                     }
-                    actionHtml += `<button class="btn btn-outline" data-action="view-invoice-req" data-id="${safeId}" style="padding: 0.25rem 0.5rem; font-size: 0.8rem; border-color: var(--primary); color: var(--primary);"><i class="ri-eye-line"></i> ดู</button>`;
+
+                    let actionHtml = `<button class="btn btn-outline" data-action="view-invoice-req" data-id="${safeId}" style="padding: 0.25rem 0.5rem; font-size: 0.8rem; border-color: var(--primary); color: var(--primary);"><i class="ri-eye-line"></i> ดู</button>`;
                     if (isAdmin) {
                         actionHtml += ` <button class="btn btn-outline" data-action="delete-invoice-req" data-id="${safeId}" style="padding: 0.25rem 0.5rem; font-size: 0.8rem; border-color: var(--danger); color: var(--danger);"><i class="ri-delete-bin-line"></i> ลบ</button>`;
                     }
@@ -3184,7 +3187,7 @@
                             <td style="vertical-align: top; white-space: nowrap;">${escapeHtml(dateStr)}</td>
                             <td style="vertical-align: top; white-space: nowrap;"><span class="badge" style="background: var(--primary-light); color: var(--primary);">${escapeHtml(data.invoiceNo || '-')}</span></td>
                             <td style="vertical-align: top; white-space: nowrap;">${typeBadge}</td>
-                            <td style="vertical-align: top; white-space: nowrap;">${escapeHtml(data.customerName || '-')}</td>
+                            <td style="vertical-align: top; min-width: 180px;">${escapeHtml(data.customerName || '-')}</td>
                             <td style="vertical-align: top; text-align: right; white-space: nowrap;">${escapeHtml(formatInvoiceAmount(data.amount))}</td>
                             <td style="vertical-align: top; white-space: nowrap;">${escapeHtml(data.submittedBy || '-')}</td>
                             <td style="vertical-align: top; white-space: nowrap;">${statusHtml}</td>
