@@ -80,7 +80,7 @@
         .animate-fade-in { animation: fadeInUp 0.5s ease-out forwards; }
 
         /* Layout */
-        .container { max-width: 1200px; margin: 0 auto; padding: 2rem; }
+        .container { max-width: 1600px; margin: 0 auto; padding: 2rem; }
         
         /* Navbar (Updated to dark blue based on Image 1 & 2) */
         nav { 
@@ -2988,13 +2988,13 @@
                         
                         tbody.innerHTML += `
                             <tr>
-                                <td style="vertical-align: top;">${escapeHtml(dateStr)}</td>
-                                <td style="vertical-align: top;"><span class="badge" style="background: var(--primary-light); color: var(--primary);">${escapeHtml(data.requestId)}</span></td>
-                                <td style="vertical-align: top;"><span class="badge" style="background: #f1f5f9; color: var(--text-muted); border: 1px solid var(--border); font-family: monospace;">${escapeHtml(sysSuffix)}</span></td>
-                                <td style="vertical-align: top;">${escapeHtml(data.customerName)} ${ipIconHtml}</td>
-                                <td style="vertical-align: top;">${contactDisplay}</td>
-                                <td style="vertical-align: top;"><div style="max-height: 80px; overflow-y: auto; white-space: pre-wrap; font-size: 0.9rem;">${escapeHtml(data.details)}</div></td>
-                                <td style="text-align: right; vertical-align: top;">${actionHtml}</td>
+                                <td style="vertical-align: top; white-space: nowrap;">${escapeHtml(dateStr)}</td>
+                                <td style="vertical-align: top; white-space: nowrap;"><span class="badge" style="background: var(--primary-light); color: var(--primary);">${escapeHtml(data.requestId)}</span></td>
+                                <td style="vertical-align: top; white-space: nowrap;"><span class="badge" style="background: #f1f5f9; color: var(--text-muted); border: 1px solid var(--border); font-family: monospace;">${escapeHtml(sysSuffix)}</span></td>
+                                <td style="vertical-align: top; white-space: nowrap;">${escapeHtml(data.customerName)} ${ipIconHtml}</td>
+                                <td style="vertical-align: top; white-space: nowrap;">${contactDisplay}</td>
+                                <td style="vertical-align: top; min-width: 240px;"><div style="max-height: 80px; overflow-y: auto; white-space: pre-wrap; font-size: 0.9rem;">${escapeHtml(data.details)}</div></td>
+                                <td style="text-align: right; vertical-align: top; white-space: nowrap;">${actionHtml}</td>
                             </tr>
                         `;
                     }
@@ -3167,11 +3167,11 @@
                     rowsHtml += `
                         <tr>
                             <td style="vertical-align: top; white-space: nowrap;">${escapeHtml(dateStr)}</td>
-                            <td style="vertical-align: top;"><span class="badge" style="background: var(--primary-light); color: var(--primary);">${escapeHtml(data.invoiceNo || '-')}</span></td>
-                            <td style="vertical-align: top;">${typeBadge}</td>
-                            <td style="vertical-align: top;">${escapeHtml(data.customerName || '-')}</td>
+                            <td style="vertical-align: top; white-space: nowrap;"><span class="badge" style="background: var(--primary-light); color: var(--primary);">${escapeHtml(data.invoiceNo || '-')}</span></td>
+                            <td style="vertical-align: top; white-space: nowrap;">${typeBadge}</td>
+                            <td style="vertical-align: top; white-space: nowrap;">${escapeHtml(data.customerName || '-')}</td>
                             <td style="vertical-align: top; text-align: right; white-space: nowrap;">${escapeHtml(formatInvoiceAmount(data.amount))}</td>
-                            <td style="vertical-align: top;">${escapeHtml(data.submittedBy || '-')}</td>
+                            <td style="vertical-align: top; white-space: nowrap;">${escapeHtml(data.submittedBy || '-')}</td>
                             <td style="vertical-align: top; text-align: right; white-space: nowrap;">${actionHtml}</td>
                         </tr>
                     `;
