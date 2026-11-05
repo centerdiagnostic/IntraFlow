@@ -783,11 +783,12 @@
                                         <th style="white-space: nowrap;">ชื่อลูกค้า/หน่วยงาน</th>
                                         <th style="text-align: right; white-space: nowrap;">จำนวนเงิน</th>
                                         <th style="white-space: nowrap;">ผู้ยื่น</th>
+                                        <th style="white-space: nowrap;">สถานะ</th>
                                         <th style="text-align: right; white-space: nowrap;">จัดการ</th>
                                     </tr>
                                 </thead>
                                 <tbody id="invoice-req-table-body">
-                                    <tr><td colspan="7" class="text-center text-muted">กำลังโหลดข้อมูล...</td></tr>
+                                    <tr><td colspan="8" class="text-center text-muted">กำลังโหลดข้อมูล...</td></tr>
                                 </tbody>
                             </table>
                         </div>
@@ -1153,7 +1154,7 @@
         } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { 
             getFirestore, collection, addDoc, getDocs, getDoc, doc, updateDoc, 
-            query, where, serverTimestamp, onSnapshot, setDoc, deleteDoc, or, and, orderBy, runTransaction
+            query, where, serverTimestamp, onSnapshot, setDoc, deleteDoc, or, and, orderBy, runTransaction, deleteField
         } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // ==================== [DEV-MODE] เริ่ม: โหมดทดสอบ (Firebase Emulator) ====================
@@ -3023,6 +3024,8 @@
             if (!btn) return;
             if (btn.dataset.action === 'view-invoice-req') window.viewInvoiceReq(btn.dataset.id);
             else if (btn.dataset.action === 'delete-invoice-req') window.deleteInvoiceReq(btn.dataset.id);
+            else if (btn.dataset.action === 'mark-invoice-done') window.markInvoiceDone(btn.dataset.id);
+            else if (btn.dataset.action === 'revert-invoice-done') window.revertInvoiceDone(btn.dataset.id);
         });
 
         window.deleteCustomerReq = async (id) => {
@@ -3135,18 +3138,19 @@
         window.loadInvoiceRequests = async () => {
             const tbody = document.getElementById('invoice-req-table-body');
             if (!tbody) return;
-            tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted">กำลังโหลดข้อมูล...</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="8" class="text-center text-muted">กำลังโหลดข้อมูล...</td></tr>';
             try {
                 const q = query(collection(db, 'invoice_requests'), orderBy('createdAt', 'desc'));
                 const snapshot = await getDocs(q);
                 invoiceReqCache.clear();
 
                 if (snapshot.empty) {
-                    tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted">ยังไม่มีคำร้องใบแจ้งหนี้</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="8" class="text-center text-muted">ยังไม่มีคำร้องใบแจ้งหนี้</td></tr>';
                     return;
                 }
 
                 const isAdmin = userRoles.includes('admin');
+                const canMarkDone = userRoles.includes('admin') || userRoles.includes('responder');
                 let rowsHtml = '';
                 snapshot.forEach(docSnap => {
                     const data = docSnap.data();
@@ -3159,7 +3163,18 @@
                             ? '<span class="badge" style="background: #fef3c7; color: #b45309;">แก้ไข</span>'
                             : '<span style="color: var(--text-muted);">-</span>');
 
-                    let actionHtml = `<button class="btn btn-outline" data-action="view-invoice-req" data-id="${safeId}" style="padding: 0.25rem 0.5rem; font-size: 0.8rem; border-color: var(--primary); color: var(--primary);"><i class="ri-eye-line"></i> ดู</button>`;
+                    const isDone = data.status === 'done';
+                    const statusHtml = isDone
+                        ? `<span class="badge badge-approved"><i class="ri-check-line"></i> ดำเนินการแล้ว</span><div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">โดย ${escapeHtml(data.processedByName || data.processedBy || '-')} · ${escapeHtml(data.processedAt ? formatDate(data.processedAt) : '-')}</div>`
+                        : '<span class="badge badge-pending"><i class="ri-time-line"></i> รอดำเนินการ</span>';
+
+                    let actionHtml = '';
+                    if (!isDone && canMarkDone) {
+                        actionHtml += `<button class="btn btn-outline" data-action="mark-invoice-done" data-id="${safeId}" style="padding: 0.25rem 0.5rem; font-size: 0.8rem; border-color: var(--success); color: var(--success);"><i class="ri-check-double-line"></i> ดำเนินการแล้ว</button> `;
+                    } else if (isDone && isAdmin) {
+                        actionHtml += `<button class="btn btn-outline" data-action="revert-invoice-done" data-id="${safeId}" style="padding: 0.25rem 0.5rem; font-size: 0.8rem; border-color: var(--warning); color: var(--warning);"><i class="ri-arrow-go-back-line"></i> ย้อนสถานะ</button> `;
+                    }
+                    actionHtml += `<button class="btn btn-outline" data-action="view-invoice-req" data-id="${safeId}" style="padding: 0.25rem 0.5rem; font-size: 0.8rem; border-color: var(--primary); color: var(--primary);"><i class="ri-eye-line"></i> ดู</button>`;
                     if (isAdmin) {
                         actionHtml += ` <button class="btn btn-outline" data-action="delete-invoice-req" data-id="${safeId}" style="padding: 0.25rem 0.5rem; font-size: 0.8rem; border-color: var(--danger); color: var(--danger);"><i class="ri-delete-bin-line"></i> ลบ</button>`;
                     }
@@ -3172,6 +3187,7 @@
                             <td style="vertical-align: top; white-space: nowrap;">${escapeHtml(data.customerName || '-')}</td>
                             <td style="vertical-align: top; text-align: right; white-space: nowrap;">${escapeHtml(formatInvoiceAmount(data.amount))}</td>
                             <td style="vertical-align: top; white-space: nowrap;">${escapeHtml(data.submittedBy || '-')}</td>
+                            <td style="vertical-align: top; white-space: nowrap;">${statusHtml}</td>
                             <td style="vertical-align: top; text-align: right; white-space: nowrap;">${actionHtml}</td>
                         </tr>
                     `;
@@ -3179,7 +3195,7 @@
                 tbody.innerHTML = rowsHtml;
             } catch (err) {
                 console.error('Error loading invoice requests:', err?.message);
-                tbody.innerHTML = '<tr><td colspan="7" class="text-center text-danger">โหลดข้อมูลผิดพลาด</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="8" class="text-center text-danger">โหลดข้อมูลผิดพลาด</td></tr>';
             }
         };
 
@@ -3192,6 +3208,55 @@
                 window.loadInvoiceRequests();
             } catch (err) {
                 showToast('ไม่สามารถลบได้: ' + err.message, 'error');
+            } finally {
+                showLoader(false);
+            }
+        };
+
+        window.markInvoiceDone = async (id) => {
+            if (!(userRoles.includes('admin') || userRoles.includes('responder'))) {
+                showToast('ไม่มีสิทธิ์ดำเนินการ', 'error');
+                return;
+            }
+            if (!confirm('ยืนยันว่าดำเนินการคำร้องนี้เรียบร้อยแล้ว?')) return;
+            try {
+                showLoader(true);
+                const userSnap = await getDoc(doc(db, 'users', currentUser.uid));
+                const displayName = userSnap.exists() ? String(userSnap.data().displayName || '').trim() : '';
+                const processedByName = (displayName || currentUser.email || '').slice(0, 200);
+                await updateDoc(doc(db, 'invoice_requests', id), {
+                    status: 'done',
+                    processedBy: currentUser.email,
+                    processedByName: processedByName,
+                    processedAt: serverTimestamp()
+                });
+                showToast('บันทึกว่าดำเนินการแล้วเรียบร้อย', 'success');
+                await window.loadInvoiceRequests();
+            } catch (err) {
+                showToast('บันทึกไม่สำเร็จ: ' + err.message, 'error');
+            } finally {
+                showLoader(false);
+            }
+        };
+
+        window.revertInvoiceDone = async (id) => {
+            if (!userRoles.includes('admin')) {
+                showToast('เฉพาะผู้ดูแลระบบเท่านั้น', 'error');
+                return;
+            }
+            if (!confirm('ยืนยันย้อนสถานะคำร้องนี้กลับเป็น "รอดำเนินการ"?')) return;
+            try {
+                showLoader(true);
+                await updateDoc(doc(db, 'invoice_requests', id), {
+                    status: 'new',
+                    processedBy: deleteField(),
+                    processedByName: deleteField(),
+                    processedAt: deleteField()
+                });
+                showToast('ย้อนสถานะเรียบร้อย', 'success');
+                await window.loadInvoiceRequests();
+            } catch (err) {
+                showToast('บันทึกไม่สำเร็จ: ' + err.message, 'error');
             } finally {
                 showLoader(false);
             }
@@ -3232,6 +3297,9 @@
                 <h4 class="inv-subtitle">รายละเอียดที่ต้องยกเลิก/แก้ไข ใบแจ้งหนี้</h4>
                 <div class="inv-label" style="margin-bottom: 0.4rem;">สาเหตุ</div>
                 <div class="inv-reason-box">${val(data.reason)}</div>
+                <div class="inv-row"><div class="inv-field"><span class="inv-label">สถานะ :</span><span class="inv-value">${data.status === 'done'
+                    ? `ดำเนินการแล้ว โดย ${val(data.processedByName || data.processedBy)} เมื่อ ${escapeHtml(data.processedAt ? formatDate(data.processedAt) : '-')}`
+                    : 'รอดำเนินการ'}</span></div></div>
                 <div class="inv-sheet-foot">
                     <div>ผู้ยื่นคำร้อง: <strong>${val(data.submittedBy)}</strong></div>
                     <div>วันที่ส่ง: <strong>${escapeHtml(data.createdAt ? formatDate(data.createdAt) : '-')}</strong></div>
